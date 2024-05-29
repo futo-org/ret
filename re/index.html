@@ -35,19 +35,23 @@
 <script src="../re/lib.js"></script>
 <script src="../re/main.js"></script>
 <script>
-ReTool.asm.updateCode(`// Arm preprocessor test
-.macro HELLO_WORLD
-	.ascii "Hello, World"
-.endm
-
-b string_end
+ReTool.asm.updateCode(`
+b skip
 string:
-	HELLO_WORLD
-	.byte 0
-	.align 4
-string_end:
+.ascii "Hello, World\\n"
+.byte 0
+.align 4
+skip:
 
-// Store address of string in r0
-adr r0, string`);
+adr r1, string
+top:
+	ldrb r0, [r1]
+	cmp r0, #0x0
+	beq end
+	svc #0x0
+	add r1, r1, #0x1
+	b top
+end:
+`.trim());
 </script>
 </html>

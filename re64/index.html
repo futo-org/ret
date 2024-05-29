@@ -35,16 +35,25 @@
 <script src="../re/lib.js"></script>
 <script src="../re/main.js"></script>
 <script>
-ReTool.asm.updateCode(`b string_end
+ReTool.asm.updateCode(`
+b skip
 string:
-	.ascii "Hello, World"
-	.byte 0
-	.align 4
-string_end:
+.ascii "Hello, World\\n"
+.byte 0
+.align 4
+skip:
 
-adr x0, string
-
-mov w1, #0x123`);
+adr x1, string
+top:
+	ldrb w0, [x1]
+	cmp w0, #0x0
+	beq end
+	svc #0x0
+	add x1, x1, #0x1
+	b top
+end:
+nop;nop;nop // Unicorn bug requires this (?)
+`.trim());
 
 ReTool.ks_arch = ks.ARCH_ARM64;
 ReTool.cs_arch = cs.ARCH_ARM64;

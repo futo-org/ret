@@ -12,6 +12,9 @@ var ReTool = {
 	log: function (t) {
 		this.log_.value += t + "\n";
 	},
+	logch: function (t) {
+		this.log_.value += t;
+	},
 
 	exportC: function () {
 		this.log_.value = "char export[] = {";
@@ -100,7 +103,7 @@ var ReTool = {
 		var a = new ks.Keystone(this.ks_arch, mode);
 		var code;
 		try {
-			code = a.asm(this.asm.toString(), this.baseAddr);
+			code = a.asm(this.asm.toString() + "\n", this.baseAddr);
 		} catch (err) {
 			this.log(err);
 			throw err;
@@ -113,40 +116,43 @@ var ReTool = {
 		this.prettify();
 	},
 
+	read_reg: function(e, i) {
+		if (this.uc_arch == uc.ARCH_ARM64) {
+			return e.reg_read_i64(uc["ARM64_REG_X" + i]) >>> 0;
+		} else if (this.uc_arch == uc.ARCH_ARM) {
+			return e.reg_read_i32(uc["ARM_REG_R" + i]) >>> 0;
+		} else if (this.uc_arch == uc.ARCH_X86) {
+			var x86 = ["X86_REG_EAX", "X86_REG_EBX", "X86_REG_ECX", "X86_REG_ESP", "X86_REG_EBP", "X86_REG_EDI", "X86_REG_ESI", "X86_REG_EDX"];
+			return e.reg_read_i32(uc[x86[i]]) >>> 0;
+		} else {
+			throw Error("bad");
+		}
+	},
+
 	execute: function () {
 		var code = this.convertHex(this.bytes.value);
 		var mode = 0;
-		if (this.ks_arch == ks.ARCH_ARM64 || this.ks_arch == ks.ARCH_ARM) mode |= ks.MODE_ARM;
-		if (this.ks_arch == ks.ARCH_X86) mode |= ks.MODE_32;
+		if (this.uc_arch == uc.ARCH_ARM64 || this.uc_arch == uc.ARCH_ARM) mode |= uc.MODE_ARM;
+		if (this.uc_arch == uc.ARCH_X86) mode |= uc.MODE_32;
 		var e = new uc.Unicorn(this.uc_arch, mode);
-		console.log(e);
+		e.hook_add(uc.HOOK_INTR, function(e, intr, user_data) {
+			var chr = ReTool.read_reg(e, 0);
+			ReTool.logch(String.fromCharCode(chr));
+		});
 		e.mem_map(eval(this.baseAddr), 1024 * 1024 * 2, uc.PROT_ALL);
 		e.mem_write(eval(this.baseAddr), code);
 
 		try {
-			e.emu_start(eval(this.baseAddr), eval(this.baseAddr) + code.length + 0x100, 0, 0);
+			e.emu_start(eval(this.baseAddr), eval(this.baseAddr) + code.length, 0, 0);
 		} catch (err) {
-			console.log(err);
 			this.log(err);
 		}
 
-		var r0;
-		if (ReTool.uc_arch == uc.ARCH_ARM64) {
-			for (var i = 1; i < 10; i++) {
-				this.log("X" + i + ":\t0x" + (e.reg_read_i64(uc["ARM64_REG_X" + i]) >>> 0).toString(16)) >> 0;
-			}
-			r0 = e.reg_read_i64(uc.ARM64_REG_X0);
-			this.log("x0 return value: " + (r0 >>> 0).toString(16));
-		} else if (this.uc_arch == uc.ARCH_ARM) {
-			for (var i = 1; i < 10; i++) {
-				this.log("r" + i + ":\t0x" + (e.reg_read_i32(uc["ARM_REG_R" + i]) >>> 0).toString(16)) >> 0;
-			}
-			r0 = e.reg_read_i32(uc.ARM_REG_R0);
-			this.log("r0 return value: " + (r0 >>> 0).toString(16));
-		} else if (this.uc_arch == uc.ARCH_X86) {
-			r0 = e.reg_read_i32(uc.ARM_REG_EAX);
-			this.log("eax return value: " + (r0 >>> 0).toString(16));
+		var r0 = this.read_reg(e, 0);
+		for (var i = 1; i < 8; i++) {
+			console.log("r" + i + ":\t0x" + this.read_reg(e, i).toString(16)) >> 0;
 		}
+		this.log("r0 return value: " + r0.toString(16));
 
 		try {
 			var returnString = e.mem_read(r0, 100);
@@ -162,7 +168,6 @@ var ReTool = {
 			}
 		} catch (e) {
 			console.log(e);
-			this.log(e);
 		}
 		this.log_.scrollTop = this.log_.scrollHeight;
 	},
