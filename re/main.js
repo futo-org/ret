@@ -154,21 +154,6 @@ var ReTool = {
 		}
 		this.log("r0 return value: " + r0.toString(16));
 
-		try {
-			var returnString = e.mem_read(r0, 100);
-
-			var i;
-			for (i = 0; returnString[i] != 0; i++);
-
-			returnString = returnString.slice(0, i);
-			try {
-				this.log("Return string: " + String.fromCharCode.apply(null, returnString));
-			} catch {
-				console.log("No string");
-			}
-		} catch (e) {
-			console.log(e);
-		}
 		this.log_.scrollTop = this.log_.scrollHeight;
 	},
 
