@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>re</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="../re/sublime.css">
+	<div class="loading">
+		<p>Loading <code>capstone-arm.min.js</code>... (1.4mb)</p> 
+		<script src="capstone-arm.min.js"></script> Done. 
+		<p>Loading <code>keystone-arm.min.js</code>... (3.0mb)</p> 
+		<script src="keystone-arm.min.js"></script> Done. 
+		<p>Loading <code>unicorn-arm.min.js</code>... (2.3mb)</p> 
+		<script src="unicorn-arm.min.js"></script> Done. 
+	</div>
+</head>
+<body>
+	<div class="menu">
+		<button onclick="ReTool.dis()">Disassemble as hex</button>
+		<button onclick="ReTool.assemble()">Assemble</button>
+		<button onclick="ReTool.execute()">Execute</button>
+		<button onclick="ReTool.assemble(); ReTool.execute()">Assemble + Execute</button>
+		<button onclick="ReTool.prettify()">Format hex</button>
+		<button onclick="ReTool.prettifyUint()">Format u32</button>
+		<button onclick="ReTool.exportC()">Export bytes as C</button>
+		<div id="input">Base address: <input type="text" onkeyup="ReTool.	baseAddr = this.value" value="0x10000"></div>
+	</div>
+
+	<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+	<div id="asm" class="editor language-c"></div>
+	<textarea spellcheck="false" id="log"></textarea>
+</body>
+<script src="../re/highlight.js"></script>
+<script src="../re/codejar.js"></script>
+<script src="../re/lib.js"></script>
+<script src="../re/main.js"></script>
+<script>
+ReTool.asm.updateCode(`// Arm preprocessor test
+.macro HELLO_WORLD
+	.ascii "Hello, World"
+.endm
+
+b string_end
+string:
+	HELLO_WORLD
+	.byte 0
+	.align 4
+string_end:
+
+// Store address of string in r0
+adr r0, string`);
+</script>
+</html>

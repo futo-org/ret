@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>re64</title>
+	<link rel="stylesheet" type="text/css" href="../re/style.css">
+	<link rel="stylesheet" type="text/css" href="../re/sublime.css">
+	<div class="loading">
+		<p>Loading <code>capstone-arm64.min.js</code>... (1.4mb)</p> 
+		<script src="capstone-x86.min.js"></script> Done. 
+		<p>Loading <code>keystone-x86.min.js</code>... (3.0mb)</p> 
+		<script src="keystone-x86.min.js"></script> Done. 
+		<p>Loading <code>unicorn-x86.min.js</code>... (2.3mb)</p> 
+		<script src="unicorn-x86.min.js"></script> Done.
+	</div>
+</head>
+<body>
+	<div class="menu">
+		<button onclick="ReTool.dis()">Disassemble as hex</button>
+		<button onclick="ReTool.assemble()">Assemble</button>
+		<button onclick="ReTool.execute()">Execute</button>
+		<button onclick="ReTool.assemble(); ReTool.execute()">Assemble + Execute</button>
+		<button onclick="ReTool.exportC()">Export bytes as C</button>
+		<div id="input">Base address: <input type="text" onkeyup="ReTool.	baseAddr = this.value" value="0x10000"></div>
+	</div>
+
+	<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+	<div id="asm" class="editor language-c"></div>
+	<textarea spellcheck="false" id="log"></textarea>
+</body>
+<script src="../re/highlight.js"></script>
+<script src="../re/codejar.js"></script>
+<script src="../re/lib.js"></script>
+<script src="../re/main.js"></script>
+<script>
+ReTool.asm.updateCode(`mov eax, 10h`);
+
+ReTool.ks_arch = ks.ARCH_X86;
+ReTool.cs_arch = cs.ARCH_X86;
+ReTool.uc_arch = uc.ARCH_X86;
+</script>
+</html>
