@@ -72,10 +72,6 @@ var ReTool = {
 	dis: function () {
 		var byte = this.convertHex(this.bytes.value);
 		this.asm.updateCode("");
-		if (byte.length < 4) {
-			this.log("Not enough bytes from parser");
-			return;
-		}
 		var offset = this.baseAddr;
 		var d = new cs.Capstone(this.cs_arch, cs.MODE_LITTLE_ENDIAN);
 		try {
