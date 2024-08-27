@@ -34,6 +34,33 @@ var ReTool = {
 		}
 		return ret;
 	},
+	
+	fromU32: function () {
+		var array = this.convertHex(this.bytes.value);
+		var byteArray = [];
+
+		for (let i = 0; i < array.length; i++) {
+		    const u32 = array[i];
+		    byteArray.push(u32 & 0xFF);
+		    byteArray.push((u32 >> 8) & 0xFF);
+		    byteArray.push((u32 >> 16) & 0xFF);
+		    byteArray.push((u32 >> 24) & 0xFF);
+		}
+		
+		this.bytes.value = "";
+		for (var i = 0; i < byteArray.length; i++) {
+			var hex = byteArray[i].toString(16);
+			if (hex.length == 1) {
+				this.bytes.value += "0";
+			}
+			this.bytes.value += hex;
+			if (i != 0 && !((i + 1) % 4)) {
+				this.bytes.value += "\n";
+			} else {
+				this.bytes.value += " ";
+			}
+		}
+	},
 
 	prettify: function () {
 		var text = this.bytes.value;
