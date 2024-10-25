@@ -1,0 +1,3 @@
+[submodule "wasm/keystone"]
+	path = wasm/keystone
+	url = https://github.com/keystone-engine/keystone.git
