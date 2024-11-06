@@ -1,0 +1,4 @@
+*.wasm
+*.o
+wasm/hello.html
+wasm/hello.js
