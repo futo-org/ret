@@ -1,3 +1,6 @@
-[submodule "wasm/keystone"]
-	path = wasm/keystone
+[submodule "keystone"]
+	path = keystone
 	url = https://github.com/keystone-engine/keystone.git
+[submodule "capstone"]
+	path = capstone
+	url = https://github.com/capstone-engine/capstone.git

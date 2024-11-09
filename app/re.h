@@ -1,6 +1,5 @@
-struct ReTool {
-	
-};
+#pragma once
+#include <stdint.h>
 
 enum Arch {
 	ARCH_ARM,
@@ -9,16 +8,36 @@ enum Arch {
 	ARCH_ARM64,
 };
 
-// Frontend methods
-int re_clear_code_editor(struct ReTool *re);
-int re_append_code_editor(struct ReTool *re, const char *text);
-int re_clear_hex_editor(struct ReTool *re);
-int re_append_hex_editor(struct ReTool *re, const char *text);
-int re_clear_log(struct ReTool *re);
-int re_append_log(struct ReTool *re, const char *text);
+struct ReTool {
+	enum Arch arch;
+};
 
-int re_assemble(struct ReTool *re, const char *input);
+struct OutBuffer {
+	void *handle;
+	char *buffer;
+	int offset;
+	int length;
+	void (*clear)(struct OutBuffer *);
+	void (*append)(struct OutBuffer*, const void *buf, int len);
+};
+
+// Frontend methods
+int ret_entry_ui(struct ReTool *re);
+
+int prettify_hex(struct ReTool *re, struct OutBuffer *buf, const char *input);
+int re_asm(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input);
+
+int re_assemble(struct ReTool *re, const char *input, struct OutBuffer *buf);
 int re_disassemble(struct ReTool *re, const char *input);
 int re_format_hex(struct ReTool *re, const char *input);
 int re_save_hex(struct ReTool *re, const char *input);
 int re_export_c_bytes(struct ReTool *re, const char *input);
+
+struct OutBuffer create_mem_buffer(int size);
+struct OutBuffer create_stdout_hex_buffer();
+struct OutBuffer create_stdout_buffer();
+
+struct __attribute((packed)) Settings {
+	uint32_t version;
+	uint32_t default_arch;
+};
