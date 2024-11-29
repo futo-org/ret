@@ -9,10 +9,10 @@ OBJ := $(call convert_target,$(OBJ))
 ret.out: $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS) -o ret
 
-WIN_LIBS += $(LIBLUA_A) $(LIBUI_DLL)
-WIN_LIBS += $(WIN_LINK_ESSENTIALS) -lstdc++ -lgcc -lpthread
-ret.exe: $(OBJ) assets/app.res
-	$(CC) $(OBJ) /usr/x86_64-w64-mingw32/lib/libkeystone.a $(WIN_LIBS) assets/app.res -o ret.exe
+LIB_FILES += $(LIBLUA_A) $(LIBUI_A) /usr/x86_64-w64-mingw32/lib/libkeystone.a /usr/$(ARCH)-w64-mingw32/lib/ui_scintilla.a
+WIN_LIBS += $(WIN_LINK_ESSENTIALS) -lstdc++ -lgcc -pthread -limm32
+ret.exe: $(OBJ) $(LIB_FILES) assets/app.res
+	$(CPP) -static $(OBJ) $(LIB_FILES) $(WIN_LIBS) assets/app.res -o ret.exe
 
 clean:
 	rm -rf *.out *.o *.elf *.d *.exe assets/*.res

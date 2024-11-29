@@ -1,3 +1,4 @@
+compile_commands.json
 *.wasm
 *.o
 wasm/hello.html

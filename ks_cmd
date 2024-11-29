@@ -1,0 +1,7 @@
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DLLVM_TARGETS_TO_BUILD="AArch64;X86;ARM" -G "Unix Makefiles" .. 
+
+cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_TOOLCHAIN_FILE=../../mingw.cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DLLVM_TARGETS_TO_BUILD="AArch64;X86;ARM" -DMINGW=ON -G "Unix Makefiles" ..
+
+sudo cp ./llvm/lib/libkeystone.dll.a /usr/x86_64-w64-mingw32/lib/
+sudo cp -r ../include/keystone /usr/x86_64-w64-mingw32/include/
+sudo cp ./llvm/lib/libkeystone.a /usr/x86_64-w64-mingw32/lib/

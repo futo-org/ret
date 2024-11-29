@@ -5,6 +5,7 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include <lua.h>
+#include <ui_scintilla.h>
 #include "re.h"
 
 const char *demo_arm64 =
@@ -28,24 +29,24 @@ const char *demo_arm64 =
 struct App {
 	struct ReTool *re;
 	uiWindow *main;
-	uiMultilineEntry *code;
-	uiMultilineEntry *hex;
+	uiScintilla *code;
+	uiScintilla *hex;
 	struct OutBuffer log;
 };
 
 static void editor_clear(struct OutBuffer *buf) {
-	uiMultilineEntrySetText(buf->handle, "");
+	uiScintillaSetText(buf->handle, "");
 }
 static void editor_append_u8(struct OutBuffer *buf, const void *in, int len) {
 	for (int i = 0; i < len; i++) {
 		if ((buf->length & 0b11) == 0 && buf->length != 0) {
-			uiMultilineEntryAppend(buf->handle, "\n");
+			uiScintillaAppend(buf->handle, "\n");
 		}
 
 		char buffer[16];
 		sprintf(buffer, "%02x ", ((uint8_t *)in)[i]);
 
-		uiMultilineEntryAppend(buf->handle, buffer);
+		uiScintillaAppend(buf->handle, buffer);
 
 		buf->length++;
 	}
@@ -54,11 +55,11 @@ static void editor_append_u32(struct OutBuffer *buf, const void *in, int len) {
 	for (int i = 0; i < len; i++) {
 		char buffer[16];
 		sprintf(buffer, "%04x\n", ((uint8_t *)in)[i]);
-		uiMultilineEntryAppend(buf->handle, buffer);
+		uiScintillaAppend(buf->handle, buffer);
 	}
 }
 static void editor_append_string(struct OutBuffer *buf, const void *in, int len) {
-	uiMultilineEntryAppend(buf->handle, (const char *)in);
+	uiScintillaAppend(buf->handle, (const char *)in);
 }
 
 extern int luaopen_libuilua(lua_State *L);
@@ -102,7 +103,7 @@ static void run_script_clicked(uiMenuItem *item, uiWindow *w, void *data) {
 
 void btn_onclick_asm(uiButton *b, void *data) {
 	struct App *app = data;
-	char *s = uiMultilineEntryText(app->code);
+	char *s = uiScintillaText(app->code);
 
 	struct OutBuffer buf;
 	buf.length = 0;
@@ -114,7 +115,7 @@ void btn_onclick_asm(uiButton *b, void *data) {
 }
 
 static void prettify(struct App *app, int size) {
-	char *s = uiMultilineEntryText(app->hex);
+	char *s = uiScintillaText(app->hex);
 	struct OutBuffer buf;
 	buf.length = 0;
 	buf.handle = app->hex;
@@ -184,12 +185,15 @@ int ret_entry_ui(struct ReTool *re) {
 	uiMenu *menu;
 	uiMenuItem *item;
 
-	menu = uiNewMenu("Code");
-	item = uiMenuAppendItem(menu, "Assemble");
+	menu = uiNewMenu("File");
 	item = uiMenuAppendItem(menu, "Open");
 	item = uiMenuAppendItem(menu, "Save");
-	item = uiMenuAppendPreferencesItem(menu);
+	item = uiMenuAppendItem(menu, "Export workspace");
 	item = uiMenuAppendQuitItem(menu);
+
+	menu = uiNewMenu("Assembly");
+ 	item = uiMenuAppendItem(menu, "Assemble");
+ 	item = uiMenuAppendItem(menu, "Settings");
 
 	menu = uiNewMenu("Hex");
 	item = uiMenuAppendItem(menu, "Export as file");
@@ -199,7 +203,7 @@ int ret_entry_ui(struct ReTool *re) {
 	item = uiMenuAppendItem(menu, "Prettify as u32");
 	uiMenuItemOnClicked(item, item_onclick_prettify_u32, &app);
 	item = uiMenuAppendItem(menu, "Parse as base10");
-	item = uiMenuAppendItem(menu, "Advanced");
+	item = uiMenuAppendItem(menu, "Settings");
 
 	menu = uiNewMenu("Architecture");
 	item = uiMenuAppendItem(menu, "Switch to X86_64");
@@ -226,23 +230,23 @@ int ret_entry_ui(struct ReTool *re) {
 	{
 		uiBoxSetPadded(hbox, 0);
 	
-		app.code = uiNewNonWrappingMultilineEntry();
+		app.code = uiNewScintilla();
 		uiBoxAppend(hbox, uiControl(app.code), 1);
-		uiMultilineEntrySetText(app.code, demo_arm64);
+		uiScintillaSetText(app.code, demo_arm64);
 	
 		uiBox *vbox = uiNewVerticalBox();
 	
-		app.hex = uiNewNonWrappingMultilineEntry();
-		uiBoxAppend(vbox, uiControl(app.hex), 1);
-		uiMultilineEntrySetText(app.hex, "00 00 00 00");
+		app.hex = uiNewScintilla();
+		uiBoxAppend(vbox, (uiControl *)app.hex, 1);
+		uiScintillaSetText(app.hex, "00 00 00 00");
 	
-		uiMultilineEntry *log = uiNewNonWrappingMultilineEntry();
+		uiScintilla *log = uiNewScintilla();
 		app.log.length = 0;
 		app.log.handle = log;
 		app.log.append = editor_append_string;
 		app.log.clear = editor_clear;
 
-		uiBoxAppend(vbox, uiControl(log), 1);
+		uiBoxAppend(vbox, (uiControl *)log, 1);
 		app.log.append(&app.log, "RET v4 (Reverse-Engineering Tool)\n", 0);
 		app.log.append(&app.log, "Logs go here.\n", 0);
 	
