@@ -5,8 +5,9 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include <lua.h>
-#include <ui_scintilla.h>
+#include <ui/ui_scintilla.h>
 #include "re.h"
+#include "sci.h"
 
 const char *demo_arm64 =
 "b skip\n"
@@ -161,6 +162,33 @@ void arch_switch_x86_64(uiMenuItem *i, uiWindow *w, void *data) {
 	set_arch(data, ARCH_X86_64);
 }
 
+void config_editor(uiScintilla *e) {
+	uiScintillaSendMessage(e, SCI_SETVIEWWS, SCWS_INVISIBLE, 0);
+	uiScintillaSendMessage(e, SCI_SETELEMENTCOLOUR, SC_ELEMENT_CARET, 0xffffffff);
+	uiScintillaSendMessage(e, SCI_SETELEMENTCOLOUR, SC_ELEMENT_WHITE_SPACE_BACK, 0x0);
+	uiScintillaSendMessage(e, SCI_STYLESETBACK, STYLE_DEFAULT, 0x080808);
+//	uiScintillaSendMessage(e, SCI_SETELEMENTCOLOUR, SC_ELEMENT_WHITE_SPACE, 0x0);
+	uiScintillaSendMessage(e, SCI_STYLESETFORE, STYLE_DEFAULT, 0xffffff);
+
+	uiScintillaSendMessage(e, SCI_SETELEMENTCOLOUR, SC_ELEMENT_SELECTION_BACK, 0xffaaaaaa);
+	uiScintillaSendMessage(e, SCI_SETELEMENTCOLOUR, SC_ELEMENT_SELECTION_TEXT, 0xff000000);
+
+#ifdef WIN32
+uiScintillaSendMessage(e, SCI_STYLESETFONT, STYLE_DEFAULT, (uintptr_t)"FreeMono");
+#else
+	uiScintillaSendMessage(e, SCI_STYLESETFONT, STYLE_DEFAULT, (uintptr_t)"Monospace");
+#endif
+
+	uiScintillaSendMessage(e, SCI_STYLECLEARALL, 0, 0);
+	uiScintillaSendMessage(e, SCI_SETTABWIDTH, 4, 0);
+
+	uiScintillaSendMessage(e, SCI_SETMARGINMASKN, 0, 0);
+	uiScintillaSendMessage(e, SCI_STYLESETFORE, STYLE_LINENUMBER, 0xeeeeee);
+	uiScintillaSendMessage(e, SCI_STYLESETBACK, STYLE_LINENUMBER, 0x262626);
+	uiScintillaSendMessage(e, SCI_SETMARGINTYPEN, 0, SC_MARGIN_NUMBER);
+	uiScintillaSendMessage(e, SCI_SETMARGINWIDTHN, 0, 30);
+}
+
 int ret_entry_ui(struct ReTool *re) {
 	struct App app;
 	app.re = re;
@@ -232,15 +260,18 @@ int ret_entry_ui(struct ReTool *re) {
 	
 		app.code = uiNewScintilla();
 		uiBoxAppend(hbox, uiControl(app.code), 1);
+		config_editor(app.code);
 		uiScintillaSetText(app.code, demo_arm64);
 	
 		uiBox *vbox = uiNewVerticalBox();
 	
 		app.hex = uiNewScintilla();
 		uiBoxAppend(vbox, (uiControl *)app.hex, 1);
+		config_editor(app.hex);
 		uiScintillaSetText(app.hex, "00 00 00 00");
 	
 		uiScintilla *log = uiNewScintilla();
+		config_editor(log);
 		app.log.length = 0;
 		app.log.handle = log;
 		app.log.append = editor_append_string;

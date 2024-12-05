@@ -1,13 +1,22 @@
 include cross.mk
 
-CFLAGS := -I../keystone/include $(shell pkg-config --cflags lua5.3)
-LDFLAGS := -L/usr/local/lib/ -lkeystone $(shell pkg-config --libs lua5.3) -lui
+CFLAGS := -I../keystone/include
+LDFLAGS := -L/usr/local/lib/ -lkeystone
 
 OBJ := re.o libui.o buffers.o parser.o
 OBJ := $(call convert_target,$(OBJ))
 
-ret.out: $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) -o ret
+ifeq ($(TARGET),w)
+
+endif
+
+ifeq ($(TARGET),l)
+CFLAGS += $(shell pkg-config --cflags lua5.3 gtk+-3.0)
+LDFLAGS += $(shell pkg-config --libs lua5.3 gtk+-3.0) -lui
+endif
+
+ret.out: $(OBJ) /usr/lib/ui_scintilla.a
+	$(CXX) $(OBJ) /usr/lib/ui_scintilla.a $(LDFLAGS) -o ret.out
 
 LIB_FILES += $(LIBLUA_A) $(LIBUI_A) /usr/x86_64-w64-mingw32/lib/libkeystone.a /usr/$(ARCH)-w64-mingw32/lib/ui_scintilla.a
 WIN_LIBS += $(WIN_LINK_ESSENTIALS) -lstdc++ -lgcc -pthread -limm32
