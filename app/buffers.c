@@ -39,6 +39,7 @@ static void stdio_append_hex(struct OutBuffer *buf, const void *in, int len) {
 }
 static void stdio_append(struct OutBuffer *buf, const void *in, int len) {
 	printf("%s", (const char *)in);
+	fflush(stdout);
 }
 struct OutBuffer create_stdout_hex_buffer() {
 	struct OutBuffer buf;

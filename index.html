@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>re64</title>
+	<link rel="stylesheet" type="text/css" href="../re/style.css">
+	<link rel="stylesheet" type="text/css" href="../re/sublime.css">
+  <script src="build/ret.js"></script> Done. 
+</head>
+<body>
+	<div class="menu">
+		<button onclick="ReTool.dis()">Disassemble as hex</button>
+		<button onclick="ReTool.assemble()">Assemble</button>
+		<button onclick="ReTool.execute()">Execute</button>
+		<button onclick="ReTool.assemble(); ReTool.execute()">Assemble + Execute</button>
+		<button onclick="ReTool.prettify()">Format hex</button>
+		<button onclick="ReTool.prettifyUint()">Format u32</button>
+		<button onclick="ReTool.fromU32()">From u32</button>
+		<button onclick="ReTool.exportC()">Export bytes as C</button>
+		<div id="input">Base address: <input type="text" onkeyup="ReTool.	baseAddr = this.value" value="0x10000"></div>
+	</div>
+
+	<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+	<div id="asm" class="editor language-c"></div>
+	<textarea spellcheck="false" id="log"></textarea>
+</body>
+<script src="re/highlight.js"></script>
+<script src="re/codejar.js"></script>
+<script src="re/lib.js"></script>
+<script>
+
+const highlight = editor => {
+	editor.textContent = editor.textContent
+	hljs.highlightBlock(editor)
+};
+
+let editor = CodeJar(document.querySelector(".editor"), highlight);
+
+/*
+ReTool.asm.updateCode(`
+b skip
+string:
+.ascii "Hello, World\\n"
+.byte 0
+.align 4
+skip:
+
+adr x1, string
+top:
+	ldrb w0, [x1]
+	cmp w0, #0x0
+	beq end
+	svc #0x0
+	add x1, x1, #0x1
+	b top
+end:
+nop;nop;nop // Unicorn bug requires this (?)
+`.trim());
+
+ReTool.ks_arch = ks.ARCH_ARM64;
+ReTool.cs_arch = cs.ARCH_ARM64;
+ReTool.uc_arch = uc.ARCH_ARM64;
+*/
+</script>
+</html>

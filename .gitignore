@@ -3,3 +3,5 @@ compile_commands.json
 *.o
 wasm/hello.html
 wasm/hello.js
+build
+.cache

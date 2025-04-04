@@ -41,7 +41,7 @@ static int asm_to_buf(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer
     err = ks_asm(ks, input, 0, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
 		char buffer[128];
-		sprintf(buffer, "ERROR: failed on ks_asm() with count = %lu, error code = %u\n", count, ks_errno(ks));
+		printf("ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)\n", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
 		err_buf->append(err_buf, buffer, 0);
 	} else {
 		buf->append(buf, encode, (int)size);
@@ -52,6 +52,18 @@ static int asm_to_buf(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer
 
 int re_asm(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
 	return asm_to_buf(re, buf, err_buf, re->arch, input);
+}
+
+int cli_asm_test(void) {
+	struct ReTool re;
+	re.arch = ARCH_ARM64;
+
+	struct OutBuffer buf = create_stdout_hex_buffer();
+	struct OutBuffer err = create_stdout_buffer();
+
+	int rc = asm_to_buf(&re, &buf, &err, ARCH_ARM64, "nop\nnop\nmov x0, 123000000000000");
+	printf("\n");
+	return rc;
 }
 
 static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
@@ -111,6 +123,11 @@ int prettify(void) {
 	return 0;
 }
 
+struct ReTool *re_new(void) {
+	struct ReTool *re = malloc(sizeof(struct ReTool));
+	return re;
+}
+
 static int help() {
 	printf("ret <arch> <action> <file>\n");
 	printf("--x86, --arm, --arm64\n");
@@ -131,8 +148,7 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();
 	}
 
-	printf("Start UI...\n");
-	ret_entry_ui(&re);
+	printf("Doing DOM stuff...\n");
 
 	return 0;
 }
