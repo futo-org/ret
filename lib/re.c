@@ -6,6 +6,20 @@
 #include <keystone/arm64.h>
 #include "re.h"
 #include "parser.h"
+#include <emscripten.h>
+
+static struct OutBuffer re_buf_err;
+static struct OutBuffer re_buf_hex;
+static struct OutBuffer re_buf_str;
+
+void re_init_globals(void) {
+	re_buf_hex = create_mem_hex_buffer(10000);
+	re_buf_err = create_mem_string_buffer(10000);
+}
+
+struct OutBuffer *re_get_err_buffer(void) { return &re_buf_err; }
+struct OutBuffer *re_get_hex_buffer(void) { return &re_buf_hex; }
+struct OutBuffer *re_get_str_buffer(void) { return &re_buf_str; }
 
 void re_log(struct ReTool *re, char *fmt, ...) {
 	va_list args;
@@ -14,7 +28,7 @@ void re_log(struct ReTool *re, char *fmt, ...) {
 	va_end(args);
 }
 
-static int asm_to_buf(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer *err_buf, enum Arch arch, const char *input) {
+int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
 	buf->clear(buf);
 	ks_engine *ks;
 	ks_err err;
@@ -26,6 +40,8 @@ static int asm_to_buf(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer
 		_ks_mode |= KS_MODE_64;
 	} else if (arch == ARCH_ARM64) {
 		_ks_arch = KS_ARCH_ARM64;
+	} else {
+		abort();
 	}
 
 	err = ks_open(_ks_arch, _ks_mode, &ks);
@@ -46,22 +62,15 @@ static int asm_to_buf(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer
 	} else {
 		buf->append(buf, encode, (int)size);
 	}
-	
+
 	return 0;
 }
 
-int re_asm(struct ReTool *re, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
-	return asm_to_buf(re, buf, err_buf, re->arch, input);
-}
-
 int cli_asm_test(void) {
-	struct ReTool re;
-	re.arch = ARCH_ARM64;
-
 	struct OutBuffer buf = create_stdout_hex_buffer();
 	struct OutBuffer err = create_stdout_buffer();
 
-	int rc = asm_to_buf(&re, &buf, &err, ARCH_ARM64, "nop\nnop\nmov x0, 123000000000000");
+	int rc = re_assemble(ARCH_ARM64, 0, &buf, &err, "nop\nnop\nmov x0, 123000000000000");
 	printf("\n");
 	return rc;
 }
@@ -91,12 +100,12 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = asm_to_buf(re, &buf, &err, arch, input);
+	int rc = re_assemble(re->arch, 0, &buf, &err, input);
 	printf("\n");
 	return rc;
 }
 
-int prettify_hex(struct ReTool *re, struct OutBuffer *buf, const char *input) {
+int re_prettify_hex(struct OutBuffer *buf, const char *input) {
 	buf->clear(buf);
 	struct HexPars p;
 	create_parser(&p, input, 0);
@@ -123,12 +132,7 @@ int prettify(void) {
 	return 0;
 }
 
-struct ReTool *re_new(void) {
-	struct ReTool *re = malloc(sizeof(struct ReTool));
-	return re;
-}
-
-static int help() {
+static int help(void) {
 	printf("ret <arch> <action> <file>\n");
 	printf("--x86, --arm, --arm64\n");
 	return 0;
@@ -148,7 +152,7 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();
 	}
 
-	printf("Doing DOM stuff...\n");
+	help();
 
 	return 0;
 }

@@ -5,3 +5,5 @@ wasm/hello.html
 wasm/hello.js
 build
 .cache
+build
+build_em

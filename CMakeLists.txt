@@ -18,12 +18,16 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/keystone ${CMAKE_CURRENT_BINARY_DIR
 option(BUILD_SHARED_LIBS "" ON)
 
 add_executable(ret
-	app/buffers.c
-	app/parser.c
-	app/re.c
+	lib/buffers.c
+	lib/parser.c
+	lib/re.c
 )
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
-target_link_libraries(ret PUBLIC capstone_static keystone
-	-sEXPORTED_FUNCTIONS=_cli_asm_test,_main,_re_log,_re_new,cwrap
-	-sINVOKE_RUN=0
-)
+if(EMSCRIPTEN)
+	target_link_libraries(ret PUBLIC capstone_static keystone
+		-sEXPORTED_FUNCTIONS=_cli_asm_test,_re_init_globals,_re_assemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_log,cwrap,_get_buffer_contents
+		-sINVOKE_RUN=0
+	)
+else()
+	target_link_libraries(ret PUBLIC capstone_static keystone)
+endif()
