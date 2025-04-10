@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "re.h"
 
-inline int is_end_of_4(int c) {
+static int is_end_of_4(int c) {
 	return (c >= 3) && ((c - 3) % 4 == 0);
 }
 
