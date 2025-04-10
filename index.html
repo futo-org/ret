@@ -3,21 +3,34 @@
 <head>
 	<meta charset="UTF-8">
 	<title>re64</title>
+	<link rel="icon" href="favicon.ico">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" type="text/css" href="sublime.css">
 	<script src="build_em/ret.js"></script>
 </head>
 <body>
 	<div class="menu">
-		<button onclick="ReTool.dis()">Disassemble as hex</button>
-		<button onclick="ReTool.assemble()">Assemble</button>
-		<button onclick="ReTool.execute()">Execute</button>
-		<button onclick="ReTool.assemble(); ReTool.execute()">Assemble + Execute</button>
-		<button onclick="ReTool.prettify()">Format hex</button>
-		<button onclick="ReTool.prettifyUint()">Format u32</button>
-		<button onclick="ReTool.fromU32()">From u32</button>
-		<button onclick="ReTool.exportC()">Export bytes as C</button>
-		<div id="input">Base address: <input type="text" onkeyup="ReTool.	baseAddr = this.value" value="0x10000"></div>
+		<div class="btn" onclick="ReTool.assemble()">Assemble</div>
+		<div class="btn" onclick="ReTool.dis()">Disassemble</div>
+		<div class="btn" onclick="ReTool.execute()">Execute</div>
+		<div class="btn" onclick="ReTool.assemble(); ReTool.execute()">Assemble + Execute</div>
+		<div class="btn dropdown">
+			<span>Hex &#9660;</span>
+			<div class="dropdown-content">
+				<button class="btn" onclick="ReTool.prettify()">Format hex</button>
+				<button class="btn" onclick="ReTool.prettifyUint()">Format u32</button>
+				<button class="btn" onclick="ReTool.fromU32()">From u32</button>
+				<button class="btn" onclick="ReTool.exportC()">Export bytes as C</button>
+			</div>
+		</div>
+		<div class="right">
+		<div class="btn">Base address: <input type="text" onkeyup="ReTool.baseAddr = this.value" value="0x10000"></div>
+		<select class="btn">
+			<option>ARM64</option>
+			<option>X86</option>
+			<option>ARM</option>
+		</select>
+		</div>
 	</div>
 
 	<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
