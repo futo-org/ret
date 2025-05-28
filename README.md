@@ -23,7 +23,7 @@ cmake --build build_em
 If you want to run it, you have to start a http server.
 ```
 python3 -m http.server 8000
-``
+```
 
 # Legacy version
 
