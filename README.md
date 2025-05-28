@@ -10,7 +10,27 @@ This tool makes it as easy as possible to disassemble bits of assembly or try ou
 - [ ] Compile UnicornVM as wasm
 - [ ] Use godbolt as C compiler
 
-The legacy version made using unicorn.js, capstone.js, and keystone.js is available here:
+# Compiling WASM
+NOTE: Wasm port is UNFINISHED. It doesn't do anything yet.
+
+- You need the emscripten toolchain/SDK
+- You also need a emscripten cmake toolchain file. You can use something similar to [mine](https://github.com/petabyt/dotfiles/blob/master/emscripten.cmake)
+with a modified `EMSCRIPTEN_ROOT_PATH`
+```
+cmake -G Ninja -B build_em -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake
+cmake --build build_em
+```
+If you want to run it, you have to start a http server.
+```
+python3 -m http.server 8000
+``
+
+# Legacy version
+
+The legacy version made using unicorn.js, capstone.js, and keystone.js will always be available here:
+
 - https://s1.danielc.dev/re
 - https://s1.danielc.dev/re64
 - https://s1.danielc.dev/re86
+
+(These are aliases to legacy/ in this repo)
