@@ -9,7 +9,14 @@
 	<script src="build_em/ret.js"></script>
 </head>
 <body>
+<div class="container">
 	<div class="menu">
+		<select class="btn" id="arch-select">
+			<option>ARM64</option>
+			<option>X86</option>
+			<option>ARM</option>
+			<option>WASM</option>
+		</select>
 		<div class="btn" onclick="ReTool.assemble()">Assemble</div>
 		<div class="btn" onclick="ReTool.dis()">Disassemble</div>
 		<div class="btn" onclick="ReTool.execute()">Execute</div>
@@ -25,23 +32,62 @@
 		</div>
 		<div class="right">
 		<div class="btn">Base address: <input type="text" onkeyup="ReTool.baseAddr = this.value" value="0x10000"></div>
-		<select class="btn">
-			<option>ARM64</option>
-			<option>X86</option>
-			<option>ARM</option>
-		</select>
 		</div>
 	</div>
 
-	<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
-	<div id="asm" class="editor language-c"></div>
-	<textarea spellcheck="false" id="log"></textarea>
+	<div class="panels">
+		<div class="panel" id="panel1">
+			<div id="asm" class="editor language-c">"asd"</div>
+		</div>
+		<div class="panel" id="right-column">
+			<div id="hseparator"></div>
+			<div class="panel" id="panel2">
+				<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+			</div>
+			<div class="panel" id="panel3">
+				<textarea spellcheck="false" id="log" placeholder="Logs to here"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
 </body>
 <script src="js/highlight.js"></script>
 <script src="js/codejar.js"></script>
 <script src="js/lib.js"></script>
 <script src="js/web.js"></script>
 <script>
+
+const leftPanel = document.querySelector("#panel1");
+const rightPanel = document.querySelector("#right-column");
+const gutter = document.querySelector("#hseparator");
+
+function resizePanel(event) {
+	let prevX = event.x;
+
+	let lefthPanelWidth = leftPanel.getBoundingClientRect().width;
+	let rightPanelWidth = rightPanel.getBoundingClientRect().width;
+	function mousemove(e) {
+		let distance =  e.x - prevX;
+		// Only resize left panel, right panel will flex
+		leftPanel.style.flex = "none";
+		leftPanel.style.width = `${lefthPanelWidth + distance}px`;
+
+		leftPanel.style.userSelect = "none";
+		rightPanel.style.userSelect = "none";
+	}
+
+	function mouseup() {
+		leftPanel.style.userSelect = "all";
+		rightPanel.style.userSelect = "all";
+
+		window.removeEventListener('mousemove', mousemove)
+		window.removeEventListener('mouseup', mouseup)
+	}
+
+	window.addEventListener('mousemove', mousemove);
+	window.addEventListener('mouseup', mouseup);
+}
+gutter.addEventListener('mousedown', resizePanel);
 
 const highlight = editor => {
 	editor.textContent = editor.textContent
