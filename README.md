@@ -34,3 +34,9 @@ The legacy version made using unicorn.js, capstone.js, and keystone.js will alwa
 - https://s1.danielc.dev/re86
 
 (These are aliases to legacy/ in this repo)
+
+# Credits
+
+- Unicorn: https://github.com/unicorn-engine/unicorn/blob/master/COPYING
+- Capstone: https://github.com/capstone-engine/capstone/blob/next/LICENSES/LICENSE.TXT
+- Keystone: https://github.com/keystone-engine/keystone/blob/master/COPYING
