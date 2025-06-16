@@ -2,10 +2,13 @@
 #include <stdint.h>
 
 enum Arch {
-	ARCH_ARM = 0,
-	ARCH_X86 = 1,
-	ARCH_X86_64 = 2,
-	ARCH_ARM64 = 3,
+	ARCH_ARM64 = 0,
+	ARCH_ARM32 = 1,
+	ARCH_X86 = 2,
+	ARCH_X86_64 = 3,
+	ARCH_RISCV32 = 4,
+	ARCH_RISCV64 = 5,
+	ARCH_WASM = 6,
 };
 
 struct ReTool {

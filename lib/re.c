@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 	enum Arch arch = ARCH_ARM64;
 	for (int i = 0; i < argc; i++) {
 		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86_64;
-		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM;
+		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
 		if (!strcmp(argv[i], "--asm")) return cli_asm(&re, arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--hex")) return prettify();
