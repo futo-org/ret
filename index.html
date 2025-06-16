@@ -21,9 +21,9 @@
 		<div class="btn" onclick="ReTool.dis()">Disassemble</div>
 		<div class="btn" onclick="ReTool.execute()">Execute</div>
 		<div class="btn" onclick="ReTool.assemble(); ReTool.execute()">Assemble + Execute</div>
-		<div class="btn dropdown">
+		<div class="btn dropdown" id="hex-dropdown">
 			<span>Hex &#9660;</span>
-			<div class="dropdown-content">
+			<div class="dropdown-content" id="hex-dropdown-box">
 				<button class="btn" onclick="ReTool.prettify()">Format hex</button>
 				<button class="btn" onclick="ReTool.prettifyUint()">Format u32</button>
 				<button class="btn" onclick="ReTool.fromU32()">From u32</button>
@@ -88,6 +88,20 @@ function resizePanel(event) {
 	window.addEventListener('mouseup', mouseup);
 }
 gutter.addEventListener('mousedown', resizePanel);
+
+function setupDropDown(hoverButton, box) {
+	hoverButton.addEventListener("mouseenter", function() {
+		box.style.display = "flex";
+	})
+	hoverButton.addEventListener("mouseleave", function() {
+		box.style.display = "none";
+	})
+	box.addEventListener("mouseup", function() {
+		box.style.display = "none";
+	})
+}
+
+setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
 
 const highlight = editor => {
 	editor.textContent = editor.textContent

@@ -108,9 +108,6 @@ textarea {
 	font-family: Sans-Serif;
 	font-size: 10pt;
 }
-.btn:nth-child(even) {
-	background: #363636;
-}
 
 .btn span {
 	display: block;
@@ -144,10 +141,6 @@ textarea {
 .dropdown-content .btn {
 	display: block;
 	width: 100%;
-}
-
-.dropdown:hover .dropdown-content {
-	display: flex;
 }
 
 .right {
