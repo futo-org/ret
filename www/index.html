@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>re64</title>
+	<link rel="icon" href="favicon.ico">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="sublime.css">
+</head>
+<body>
+<div class="container">
+	<div class="menu" id="menu">
+		<select class="btn" id="arch-select">
+			<option>ARM64</option>
+			<option>X86</option>
+			<option>ARM</option>
+			<option>WASM</option>
+		</select>
+		<div class="btn" id="assemble" >Assemble</div>
+		<div class="btn" id="disassemble">Disassemble</div>
+		<div class="btn" id="execute">Execute</div>
+		<div class="btn" id="run">Assemble + Execute</div>
+		<div class="btn dropdown" id="hex-dropdown">
+			<span>Hex &#9660;</span>
+			<div class="dropdown-content" id="hex-dropdown-box">
+				<button class="btn" onclick="ReTool.prettify()">Format hex</button>
+				<button class="btn" onclick="ReTool.prettifyUint()">Format u32</button>
+				<button class="btn" onclick="ReTool.fromU32()">From u32</button>
+				<button class="btn" onclick="ReTool.exportC()">Export bytes as C</button>
+			</div>
+		</div>
+		<div class="right">
+			<div class="btn">Base address: <input type="text" onkeyup="ReTool.baseAddr = this.value" value="0x10000"></div>
+		</div>
+	</div>
+
+	<div class="panels">
+		<div class="panel" id="panel1">
+			<div id="asm" class="editor language-c"></div>
+		</div>
+		<div class="panel" id="right-column">
+			<div id="hseparator"></div>
+			<div class="panel" id="panel2">
+				<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+			</div>
+			<div class="panel" id="panel3">
+				<textarea readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+<script src="../build_em/ret.js"></script>
+<!-- <script src="ret.js"></script> <!-- TODO: Delete me before release --> -->
+<script src="highlight.js"></script>
+<script src="codejar.js"></script>
+<script src="lib.js"></script>
+<script src="web.js"></script>
+</html>

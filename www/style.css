@@ -69,13 +69,13 @@ textarea {
 	background: black;
 }
 
+textarea, #asm {
+    border: 3px solid black;
+}
+
 #bytes {
 	background: #313131;
 	color: white;
-}
-
-#asm {
-	
 }
 
 .editor {

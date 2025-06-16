@@ -41,7 +41,8 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
 	} else if (arch == ARCH_ARM64) {
 		_ks_arch = KS_ARCH_ARM64;
 	} else {
-		abort();
+		printf("Unknown architecture %d\n", arch);
+		return -1;
 	}
 
 	err = ks_open(_ks_arch, _ks_mode, &ks);
@@ -57,8 +58,10 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
     err = ks_asm(ks, input, 0, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
 		char buffer[128];
-		printf("ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)\n", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
+		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
+		printf("%s\n", buffer);
 		err_buf->append(err_buf, buffer, 0);
+		return -1;
 	} else {
 		buf->append(buf, encode, (int)size);
 	}

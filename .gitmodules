@@ -4,3 +4,6 @@
 [submodule "capstone"]
 	path = capstone
 	url = https://github.com/capstone-engine/capstone.git
+[submodule "unicorn-wasm"]
+	path = unicorn-wasm
+	url = https://github.com/petabyt/unicorn-wasm.git
