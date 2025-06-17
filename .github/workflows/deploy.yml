@@ -3,12 +3,8 @@ name: Compile and deploy ret
 on:
   push:
     branches: [master]
-
-on:
-  release:
-    types:
-      - published
-# create
+#on:
+#  create
 
 jobs:
   build:
@@ -25,15 +21,17 @@ jobs:
 
       - name: Compile 3 arches
         run: |
+          make config_all -j`nproc`
           make build_all
 
-      - name: Setup root
-        run: |
-          cp build/ret.js www/
-          cp build/ret.wasm www/
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./www
+#      - name: Setup root
+#        run: |
+#          cp build/ret.js www/
+#          cp build/ret.wasm www/
+#
+#      - name: Deploy to GitHub Pages
+#        uses: peaceiris/actions-gh-pages@v4
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          publish_dir: ./www
+#
