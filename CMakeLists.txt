@@ -53,7 +53,7 @@ if(UNICORN_SUPPORT)
 	option(BUILD_SHARED_LIBS "" OFF)
 	option(UNICORN_BUILD_SAMPLES "" OFF)
 	option(UNICORN_INSTALL "" OFF)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../unicorn-wasm ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/unicorn-wasm ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
 	# TODO
 endif()
 
