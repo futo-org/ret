@@ -7,3 +7,9 @@ build
 .cache
 build
 build_em
+build_arm64
+build_x86
+build_arm32
+build_risc
+build_riscv
+deploy

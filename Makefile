@@ -1,8 +1,18 @@
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DCMAKE_BUILD_TYPE=Release
 
 serve:
 	python3 -m http.server 8000
+
+.PHONY: deploy
+deploy:
+	mkdir -p deloy
+	rm -rf deploy/*
+	cp -r www/* deploy/
+	rm -rf deploy/build
+	mkdir deploy/build
+	cp build/ret.js deploy/build/
+	cp build/ret.wasm deploy/build/
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON
@@ -22,4 +32,4 @@ build_all:
 	cmake --build build_x86
 
 clean:
-	rm -rf build_arm32 build_arm64 build_x86 build build_em
+	rm -rf build_arm32 build_arm64 build_x86 build build_em deploy

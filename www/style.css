@@ -6,6 +6,9 @@ html, body {
 	color: white;
 }
 
+a {color: lightblue;}
+a:visited {color: #719aa6;}
+
 .container {
 	display: flex;
 	flex-flow: column;
@@ -144,10 +147,14 @@ textarea, #asm {
 
 #help-textarea {
 	width: 500px;
-	height: 500px;
+	height: 200px;
 }
 
 .right {
 	display: flex;
 	margin-left: auto;
+}
+
+#help-dropdown img {
+	height: 30px;
 }

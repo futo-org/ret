@@ -33,7 +33,7 @@
 			<div class="btn">Base address: <input type="text" onkeyup="ReTool.baseAddr = this.value" value="0x10000"></div>
 
 			<div class="btn dropdown" id="help-dropdown">
-				<span>? &#9660;</span>
+				<img src="ret.png">
 				<div class="dropdown-content" id="help-dropdown-box">
 					<textarea readonly="true" spellcheck="false" id="help-textarea">
 ______ _   _ _____ _____ 
@@ -43,6 +43,10 @@ ______ _   _ _____ _____
 | |   | |_| | | | \ \_/ /
 \_|    \___/  \_/  \___/ 
 					</textarea>
+					<ul>
+						<li><a target="_blank" href="https://github.com/petabyt/ret">Source code</a></li>
+						<li><a target="_blank" href="futo.org">FUTO website</a></li>
+					</ul>
 				</div>
 			</div>
 		</div>
@@ -75,6 +79,6 @@ var Module = {
 	}
 };
 </script>
-<script src="../build_em/ret.js"></script>
+<script src="build/ret.js"></script>
 <script src="web.js"></script>
 </html>

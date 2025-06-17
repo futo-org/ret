@@ -22,6 +22,15 @@ const x86_64_demo =
 mov eax, 10h
 `;
 
+// Prevent selection while dragging
+function pauseEvent(e){
+    if(e.stopPropagation) e.stopPropagation();
+    if(e.preventDefault) e.preventDefault();
+    e.cancelBubble = true;
+    e.returnValue = false;
+    return false;
+}
+
 function createResizeBar(leftPanel, rightPanel, separator) {
 	function resizePanel(event) {
 		let prevX = event.x;
@@ -36,6 +45,8 @@ function createResizeBar(leftPanel, rightPanel, separator) {
 	
 			leftPanel.style.userSelect = "none";
 			rightPanel.style.userSelect = "none";
+
+			pauseEvent(e);
 		}
 	
 		function mouseup() {
@@ -48,6 +59,8 @@ function createResizeBar(leftPanel, rightPanel, separator) {
 	
 		window.addEventListener('mousemove', mousemove);
 		window.addEventListener('mouseup', mouseup);
+
+		pauseEvent(event);
 	}
 	separator.addEventListener('mousedown', resizePanel);
 }
