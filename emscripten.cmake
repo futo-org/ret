@@ -99,12 +99,12 @@ if (NOT EMSCRIPTEN_VERSION)
   set(EMSCRIPTEN_VERSION "${CMAKE_MATCH_1}")
 endif()
 
-execute_process(COMMAND "${EMSCRIPTEN_ROOT_PATH}/em-config${EMCC_SUFFIX}" "CACHE"
+execute_process(COMMAND "${EMSCRIPTEN_BIN_PATH}/em-config${EMCC_SUFFIX}" "CACHE"
   RESULT_VARIABLE _emcache_result
   OUTPUT_VARIABLE _emcache_output
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 if (NOT _emcache_result EQUAL 0)
-  message(FATAL_ERROR "Failed to find emscripten cache directory with command \"'${EMSCRIPTEN_ROOT_PATH}/em-config${EMCC_SUFFIX}' CACHE\"! Process returned with error code ${_emcache_result}.")
+  message(FATAL_ERROR "Failed to find emscripten cache directory with command \"'${EMSCRIPTEN_BIN_PATH}/em-config${EMCC_SUFFIX}' CACHE\"! Process returned with error code ${_emcache_result}.")
 endif()
 file(TO_CMAKE_PATH "${_emcache_output}" _emcache_output)
 set(EMSCRIPTEN_SYSROOT "${_emcache_output}/sysroot")
