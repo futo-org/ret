@@ -1,21 +1,25 @@
 const arm64_demo =
 `
+adr x1, string
+top:
+	ldrb w0, [x1]
+	cmp w0, #0x0
+	beq end
+	svc #0x0
+	add x1, x1, #0x1
+	b top
+end:
+
 b skip
 string:
 .ascii "Hello, World\\n"
 .byte 0
 .align 4
 skip:
-
-adr x1, string
-top:
-	ldrb w0, [x1]
-	cmp w0, #0x0
-	beq end
-	svc #0x0 // print character out
-	add x1, x1, #0x1
-	b top
-end:
+`;
+const x86_64_demo =
+`
+mov eax, 10h
 `;
 
 function createResizeBar(leftPanel, rightPanel, separator) {
@@ -98,6 +102,7 @@ const ret = {
 	re_log: Module.cwrap('re_log', 'void', ['number', 'string']),
 	re_init_globals: Module.cwrap('re_init_globals', 'void', []),
 	re_assemble: Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']),
+	re_disassemble: Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']),
 	re_get_hex_buffer: Module.cwrap('re_get_hex_buffer', 'number', []),
 	re_get_err_buffer: Module.cwrap('re_get_err_buffer', 'number', []),
 	re_get_str_buffer: Module.cwrap('re_get_str_buffer', 'number', []),
@@ -105,12 +110,15 @@ const ret = {
 
 	err_buf: null,
 	hex_buf: null,
+	str_buf: null,
 
 	main: function() {
 		ret.re_init_globals();
 		ret.err_buf = ret.re_get_err_buffer();
 		ret.hex_buf = ret.re_get_hex_buffer();
+		ret.str_buf = ret.re_get_str_buffer();
 
+		ret.clearLog();
 		ret.log("Ret v4");
 		ret.log("Running in WebAssembly with Capstone, keystone, and Unicorn.");
 	},
@@ -150,8 +158,6 @@ const ret = {
 };
 ret.init();
 
-Module['onRuntimeInitialized'] = ret.main;
-
 const highlight = editor => {
 	editor.textContent = editor.textContent
 	hljs.highlightBlock(editor)
@@ -160,6 +166,7 @@ const highlight = editor => {
 let editor = CodeJar(document.querySelector(".editor"), highlight);
 
 setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
+setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
 
 createResizeBar(
 	document.querySelector("#panel1"),
@@ -175,6 +182,7 @@ if (ret.currentArch == ret.ARCH_ARM64) {
 }
 
 document.querySelector("#assemble").onclick = function() {
+	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
 	ret.clearLog();
 	var code = editor.toString();
 	var then = Date.now();
@@ -194,9 +202,26 @@ document.querySelector("#assemble").onclick = function() {
 	}
 }
 
+document.querySelector("#disassemble").onclick = function() {
+	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
+	ret.clearLog();
+	var code = editor.toString();
+	var then = Date.now();
+	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value);
+	var now = Date.now();
+	if (rc != 0) {
+		ret.log(ret.get_buffer_contents(ret.err_buf));
+	} else {
+		editor.updateCode(ret.get_buffer_contents(ret.str_buf));
+		ret.log("Disassembled in " + String(now - then) + "us");
+	}
+}
+
 // Set editor text if empty (will not be if window was duplicated)
 if (editor.toString() == "") {
 	switch (ret.currentArch) {
 		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
+		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 	}
 }
+

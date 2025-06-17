@@ -5,22 +5,20 @@ This tool makes it as easy as possible to disassemble bits of assembly or try ou
 
 - [x] CLI tool
 - [x] Capstone/Keystone compiling in wasm
-- [ ] Improved UI (Dear ImGui? Some other web framework?)
-- [ ] Option to use godbolt as assembler
-- [ ] Compile UnicornVM as wasm
-- [ ] Use godbolt as C compiler
+- [x] Run Unicorn in wasm
+- [x] Improved UI
+- [x] Use godbolt as a optional assembler pass
+- [ ] Allow different x86 syntax
+- [ ] Use godbolt or [xcc](https://github.com/tyfkda/xcc) as a C compiler
+- [ ] Implement all improved hex transforms
 
 # Compiling WASM
-NOTE: Wasm port is UNFINISHED. It doesn't do anything yet.
-
-- You need the emscripten toolchain/SDK
-- You also need a emscripten cmake toolchain file. You can use something similar to [mine](https://github.com/petabyt/dotfiles/blob/master/emscripten.cmake)
-with a modified `EMSCRIPTEN_ROOT_PATH`
+Install emscripten (`sudo apt install emscripten`). It should located in `/usr/share/emscripten`.
 ```
 cmake -G Ninja -B build_em -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake
 cmake --build build_em
 ```
-If you want to run it, you have to start a http server.
+Run it in a web server:
 ```
 python3 -m http.server 8000
 ```

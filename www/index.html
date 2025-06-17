@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>re64</title>
+	<title>Ret</title>
 	<link rel="icon" href="favicon.ico">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" type="text/css" href="sublime.css">
@@ -18,7 +18,7 @@
 		</select>
 		<div class="btn" id="assemble" >Assemble</div>
 		<div class="btn" id="disassemble">Disassemble</div>
-		<div class="btn" id="execute">Execute</div>
+		<!-- <div class="btn" id="execute">Execute</div> -->
 		<div class="btn" id="run">Assemble + Execute</div>
 		<div class="btn dropdown" id="hex-dropdown">
 			<span>Hex &#9660;</span>
@@ -31,6 +31,20 @@
 		</div>
 		<div class="right">
 			<div class="btn">Base address: <input type="text" onkeyup="ReTool.baseAddr = this.value" value="0x10000"></div>
+
+			<div class="btn dropdown" id="help-dropdown">
+				<span>? &#9660;</span>
+				<div class="dropdown-content" id="help-dropdown-box">
+					<textarea readonly="true" spellcheck="false" id="help-textarea">
+______ _   _ _____ _____ 
+|  ___| | | |_   _|  _  |
+| |_  | | | | | | | | | |
+|  _| | | | | | | | | | |
+| |   | |_| | | | \ \_/ /
+\_|    \___/  \_/  \___/ 
+					</textarea>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -50,10 +64,17 @@
 	</div>
 </div>
 </body>
-<script src="../build_em/ret.js"></script>
-<!-- <script src="ret.js"></script> <!-- TODO: Delete me before release --> -->
 <script src="highlight.js"></script>
 <script src="codejar.js"></script>
 <script src="lib.js"></script>
+<script>
+// emscripten js will merge with (?) this object
+var Module = {
+	onRuntimeInitialized: function() {
+		ret.main();
+	}
+};
+</script>
+<script src="../build_em/ret.js"></script>
 <script src="web.js"></script>
 </html>

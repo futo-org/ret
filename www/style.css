@@ -85,15 +85,9 @@ textarea, #asm {
 	box-sizing: border-box;
 }
 
-.editor.hljs {
-    padding: 10px;
-}
-
-#log {
-}
-
 .btn {
-	height: 51px;
+	user-select: none;
+	height: 40px;
 	margin: 0px;
 	border: none;
 	padding: 0px 10px;
@@ -128,19 +122,29 @@ textarea, #asm {
 
 .dropdown-content {
 	position: absolute;
-	top: 90%;
+	top: 100%;
 	left: 0;
 	min-width: 160px;
 	z-index: 1;
 	display: none;
 	flex-direction: column;
 	background: #292929;
-	box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+	border: 3px solid black;
 }
 
 .dropdown-content .btn {
 	display: block;
 	width: 100%;
+}
+
+#help-dropdown-box {
+	left: unset;
+	right: 0;
+}
+
+#help-textarea {
+	width: 500px;
+	height: 500px;
 }
 
 .right {

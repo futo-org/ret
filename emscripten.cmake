@@ -14,6 +14,8 @@
 # you may download and use 'mingw32-make' instead.
 set(EMSCRIPTEN_ROOT_PATH /usr/share/emscripten)
 
+set(EMSCRIPTEN_BIN_PATH /usr/bin)
+
 # The following variable describes the target OS we are building to.
 set(CMAKE_SYSTEM_NAME Emscripten)
 set(CMAKE_SYSTEM_VERSION 1)
@@ -70,11 +72,11 @@ else()
 endif()
 
 # Specify the compilers to use for C and C++
-set(CMAKE_C_COMPILER "${EMSCRIPTEN_ROOT_PATH}/emcc${EMCC_SUFFIX}")
-set(CMAKE_CXX_COMPILER "${EMSCRIPTEN_ROOT_PATH}/em++${EMCC_SUFFIX}")
-set(CMAKE_NM "${EMSCRIPTEN_ROOT_PATH}/emnm${EMCC_SUFFIX}")
-set(CMAKE_AR "${EMSCRIPTEN_ROOT_PATH}/emar${EMCC_SUFFIX}")
-set(CMAKE_RANLIB "${EMSCRIPTEN_ROOT_PATH}/emranlib${EMCC_SUFFIX}")
+set(CMAKE_C_COMPILER "${EMSCRIPTEN_BIN_PATH}/emcc${EMCC_SUFFIX}")
+set(CMAKE_CXX_COMPILER "${EMSCRIPTEN_BIN_PATH}/em++${EMCC_SUFFIX}")
+set(CMAKE_NM "${EMSCRIPTEN_BIN_PATH}/emnm${EMCC_SUFFIX}")
+set(CMAKE_AR "${EMSCRIPTEN_BIN_PATH}/emar${EMCC_SUFFIX}")
+set(CMAKE_RANLIB "${EMSCRIPTEN_BIN_PATH}/emranlib${EMCC_SUFFIX}")
 set(CMAKE_C_COMPILER_AR "${CMAKE_AR}")
 set(CMAKE_CXX_COMPILER_AR "${CMAKE_AR}")
 set(CMAKE_C_COMPILER_RANLIB "${CMAKE_RANLIB}")

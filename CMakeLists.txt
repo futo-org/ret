@@ -3,9 +3,13 @@ cmake_minimum_required(VERSION 3.10)
 project(fudge)
 
 option(UNICORN_SUPPORT "" ON)
-option(SUPPORT_ARM64 "" ON)
-option(SUPPORT_ARM32 "" ON)
-option(SUPPORT_X86 "" ON)
+option(SUPPORT_ARM64 "" OFF)
+option(SUPPORT_ARM32 "" OFF)
+option(SUPPORT_X86 "" OFF)
+
+if(NOT SUPPORT_ARM64 AND NOT SUPPORT_ARM32 AND NOT SUPPORT_X86)
+	message(FATAL_ERROR "at least one arch required")
+endif()
 
 set(CMAKE_C_FLAGS_RELEASE -O3)
 set(CMAKE_CXX_FLAGS_RELEASE -O3)
@@ -61,8 +65,11 @@ add_executable(ret
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
 if(EMSCRIPTEN)
 	target_link_libraries(ret PUBLIC capstone_static keystone
-		-sEXPORTED_FUNCTIONS=_cli_asm_test,_re_init_globals,_re_assemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_log,cwrap,_get_buffer_contents
+		-sEXPORTED_FUNCTIONS=_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_log,cwrap,_get_buffer_contents
 		-sINVOKE_RUN=0
+		-sALLOW_MEMORY_GROWTH
+		-sALLOW_TABLE_GROWTH
+		-sEXPORTED_RUNTIME_METHODS=addFunction
 	)
 else()
 	target_link_libraries(ret PUBLIC capstone_static keystone)
