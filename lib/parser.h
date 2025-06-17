@@ -2,11 +2,11 @@
 #pragma once
 
 enum Types {
-	PARSE_AS_U8 = 0,
-	PARSE_AS_U16 = 1,
-	PARSE_AS_U32 = 2,
-	PARSE_AS_U64 = 3,
-	PARSE_AS_SMART = 4,
+	PARSE_AS_U8 = 1 << 0,
+	PARSE_AS_U16 = 1 << 1,
+	PARSE_AS_U32 = 1 << 2,
+	PARSE_AS_U64 = 1 << 3,
+	PARSE_AS_SMART = 1 << 4,
 };
 
 struct HexPars {

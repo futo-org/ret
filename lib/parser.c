@@ -1,4 +1,4 @@
-// Hex parser
+// A smart hex parser, should be able to intelligently parse hex text output from any program. 
 #include <stdio.h>
 #include "re.h"
 #include "parser.h"
@@ -58,7 +58,7 @@ static int guess_data_type(int n_of_chars) {
 	case 2:
 	case 3:
 		return 1;
-	// Can't think of a case where u16 won't be 4 bytes
+	// u16 should be 4 chars
 	case 4:
 		return 2;
 	case 8:
@@ -197,4 +197,18 @@ struct Number parser_next(struct HexPars *p) {
 			p->of++;
 		}
 	}
+}
+
+int parser_to_buf(const char *input, struct OutBuffer *buf, int options) {
+	buf->clear(buf);
+	struct HexPars p;
+	create_parser(&p, input, 0);
+
+	while (1) {
+		struct Number n = parser_next(&p);
+		if (n.eof) break;
+		buf->append(buf, &n.n, n.data_type_size);
+	}
+
+	return 0;
 }

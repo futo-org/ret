@@ -4,17 +4,20 @@
 #include <stdarg.h>
 #include <keystone/keystone.h>
 #include <keystone/arm64.h>
+#include <capstone/capstone.h>
 #include "re.h"
 #include "parser.h"
-#include <emscripten.h>
 
 static struct OutBuffer re_buf_err;
 static struct OutBuffer re_buf_hex;
+static struct OutBuffer re_buf_mem;
 static struct OutBuffer re_buf_str;
 
 void re_init_globals(void) {
 	re_buf_hex = create_mem_hex_buffer(10000);
+	re_buf_mem = create_mem_buffer(10000);
 	re_buf_err = create_mem_string_buffer(10000);
+	re_buf_str = create_mem_string_buffer(10000);
 }
 
 struct OutBuffer *re_get_err_buffer(void) { return &re_buf_err; }
@@ -51,9 +54,9 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
         return -1;
     }
 
-    size_t count;
-    unsigned char *encode;
-    size_t size;
+    size_t count = 0;
+    unsigned char *encode = NULL;
+    size_t size = 0;
 
     err = ks_asm(ks, input, 0, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
@@ -64,7 +67,63 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
 		return -1;
 	} else {
 		buf->append(buf, encode, (int)size);
+		ks_free(encode);
 	}
+
+	return 0;
+}
+
+int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
+	buf->clear(buf);
+	err_buf->clear(err_buf);
+
+	re_buf_mem.clear(&re_buf_mem);
+	struct HexPars p;
+	create_parser(&p, input, 0);
+
+	while (1) {
+		struct Number n = parser_next(&p);
+		if (n.eof) break;
+		re_buf_mem.append(&re_buf_mem, &n.n, n.data_type_size);
+	}
+
+	csh handle;
+	cs_insn *insn;
+	size_t count;
+
+	cs_arch _cs_arch = 0;
+	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
+	if (arch == ARCH_X86_64) {
+		_cs_arch = CS_ARCH_X86;
+		_cs_mode |= CS_MODE_64;
+	} else if (arch == ARCH_ARM64) {
+		_cs_arch = CS_ARCH_AARCH64;
+	} else {
+		printf("Unknown architecture %d\n", arch);
+		return -1;
+	}
+
+	if (cs_open(_cs_arch, _cs_mode, &handle) != CS_ERR_OK) {
+		printf("cs_open failed\n");
+		return -1;
+	}
+
+	count = cs_disasm(handle, (const uint8_t *)re_buf_mem.buffer, re_buf_mem.offset, base_addr, 0, &insn);
+	if (count > 0) {
+		size_t j;
+		for (j = 0; j < count; j++) {
+			char inst_buf[512];
+			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", insn[j].mnemonic, insn[j].op_str);
+			buf->append(buf, inst_buf, 0);
+		}
+
+		cs_free(insn, count);
+	} else {
+		err_buf->append(err_buf, "ERROR: Failed to disassemble given code!", 0);
+		return -1;
+	}
+
+	cs_close(&handle);
 
 	return 0;
 }
@@ -106,20 +165,6 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 	int rc = re_assemble(re->arch, 0, &buf, &err, input);
 	printf("\n");
 	return rc;
-}
-
-int re_prettify_hex(struct OutBuffer *buf, const char *input) {
-	buf->clear(buf);
-	struct HexPars p;
-	create_parser(&p, input, 0);
-
-	while (1) {
-		struct Number n = parser_next(&p);
-		if (n.eof) return 0;
-		buf->append(buf, &n.n, n.data_type_size);
-	}
-
-	return 0;
 }
 
 int prettify(void) {

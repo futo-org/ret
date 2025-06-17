@@ -10,12 +10,13 @@ static int is_end_of_4(int c) {
 
 static void buf_clear(struct OutBuffer *buf) {
 	buf->offset = 0;
+	buf->counter = 0;
 }
 static void buf_append(struct OutBuffer *buf, const void *in, unsigned int len) {
 	if (buf->length < (len + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + len + 1000);
 	}
-	memcpy(buf->buffer, in, len);
+	memcpy(buf->buffer + buf->offset, in, len);
 	buf->offset += len;
 }
 static void buf_append_hex(struct OutBuffer *buf, const void *in, unsigned int len) {
