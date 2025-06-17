@@ -1,0 +1,34 @@
+name: Compile and deploy ret
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deps
+        run: |
+          sudo apt update
+          sudo apt install -y emscripten cmake ninja-build
+
+      - name: Compile
+        run: |
+          cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM32=OFF -DSUPPORT_X86=OFF
+          cmake --build build
+
+      - name: Setup root
+        run: |
+          cp build/ret.js www/
+          cp build/ret.wasm www/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./www
