@@ -24,6 +24,19 @@ struct OutBuffer *re_get_err_buffer(void) { return &re_buf_err; }
 struct OutBuffer *re_get_hex_buffer(void) { return &re_buf_hex; }
 struct OutBuffer *re_get_str_buffer(void) { return &re_buf_str; }
 
+int re_is_arch_supported(int arch) {
+#ifdef RET_SUPPORT_ARM64
+	if (arch == ARCH_ARM64) return 1;
+#endif
+#ifdef RET_SUPPORT_ARM32
+	if (arch == ARCH_ARM32) return 1;
+#endif
+#ifdef RET_SUPPORT_X86
+	if (arch == ARCH_X86 || arch == ARCH_X86_64) return 1;
+#endif
+	return 0;
+}
+
 void re_log(struct ReTool *re, char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
@@ -98,6 +111,8 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf
 		_cs_mode |= CS_MODE_64;
 	} else if (arch == ARCH_ARM64) {
 		_cs_arch = CS_ARCH_AARCH64;
+	} else if (arch == ARCH_ARM32) {
+		_cs_arch = CS_ARCH_ARM;
 	} else {
 		printf("Unknown architecture %d\n", arch);
 		return -1;

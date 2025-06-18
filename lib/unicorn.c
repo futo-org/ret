@@ -78,11 +78,11 @@ int emulator(char *filename) {
 		return 1;
 	}
 
-	err = uc_mmio_map(uc, FRAMEBUFFER_ADDR, FRAMEBUFFER_SIZE, NULL, NULL, fb_mmio_writes, NULL);
-	if (err != UC_ERR_OK) {
-		puts("MMIO map error");
-		return 1;
-	}
+//	err = uc_mmio_map(uc, FRAMEBUFFER_ADDR, FRAMEBUFFER_SIZE, NULL, NULL, fb_mmio_writes, NULL);
+//	if (err != UC_ERR_OK) {
+//		puts("MMIO map error");
+//		return 1;
+//	}
 
 	// err = uc_mmio_map(uc, ROCKCHIP_IO_START, ROCKCHIP_IO_SIZE, io_mmio_reads, NULL, io_mmio_writes, NULL);
 	// if (err != UC_ERR_OK) {

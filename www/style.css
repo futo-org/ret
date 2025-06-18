@@ -9,6 +9,10 @@ html, body {
 a {color: lightblue;}
 a:visited {color: #719aa6;}
 
+input:focus {
+  outline: none;
+}
+
 .container {
 	display: flex;
 	flex-flow: column;
@@ -121,6 +125,7 @@ textarea, #asm {
 	position: relative;
 	display: flex;
 	flex-direction: column;
+	cursor: auto;
 }
 
 .dropdown-content {

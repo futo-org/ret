@@ -16,6 +16,7 @@ This tool makes it as easy as possible to disassemble bits of assembly or try ou
 - [x] Run Unicorn in wasm
 - [x] Improved UI
 - [x] Use godbolt as a optional assembler pass
+- [ ] Merge in https://github.com/unicorn-engine/unicorn/pull/850/files (?) (looks like https://github.com/unicorn-engine/unicorn/tree/staging will work)
 - [ ] Allow different x86 syntax
 - [ ] Use godbolt or [xcc](https://github.com/tyfkda/xcc) as a C compiler
 - [ ] Implement all improved hex transforms
@@ -37,3 +38,5 @@ python3 -m http.server 8000
 - Unicorn: https://github.com/unicorn-engine/unicorn/blob/master/COPYING
 - Capstone: https://github.com/capstone-engine/capstone/blob/next/LICENSES/LICENSE.TXT
 - Keystone: https://github.com/keystone-engine/keystone/blob/master/COPYING
+- CodeJar: https://github.com/antonmedv/codejar/blob/master/LICENSE
+- Highlight.js: https://github.com/highlightjs/highlight.js/blob/main/LICENSE

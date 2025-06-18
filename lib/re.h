@@ -27,7 +27,7 @@ struct OutBuffer {
 	/// @brief Clear and reset buffer
 	void (*clear)(struct OutBuffer *);
 	/// @brief Append string or binary data. If string, len can be 0.
-	void (*append)(struct OutBuffer*, const void *buf, unsigned int len);
+	void (*append)(struct OutBuffer *, const void *buf, unsigned int len);
 };
 
 int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input);

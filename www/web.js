@@ -230,6 +230,13 @@ document.querySelector("#disassemble").onclick = function() {
 	}
 }
 
+document.querySelector("#base-address").value = "0x" + (ret.currentBaseOffset).toString(16);
+document.querySelector("#base-address").onkeyup = function() {
+	if (Number(this.value) != NaN) {
+		ret.currentBaseOffset = Number(this.value);
+	}
+}
+
 // Set editor text if empty (will not be if window was duplicated)
 if (editor.toString() == "") {
 	switch (ret.currentArch) {

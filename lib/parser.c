@@ -1,4 +1,4 @@
-// A smart hex parser, should be able to intelligently parse hex text output from any program. 
+// A smart hex parser, should be able to parse hex text in as many weird formats as possible.
 #include <stdio.h>
 #include "re.h"
 #include "parser.h"

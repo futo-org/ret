@@ -23,15 +23,14 @@
 		<div class="btn dropdown" id="hex-dropdown">
 			<span>Hex &#9660;</span>
 			<div class="dropdown-content" id="hex-dropdown-box">
-				<button class="btn" onclick="ReTool.prettify()">Format hex</button>
-				<button class="btn" onclick="ReTool.prettifyUint()">Format u32</button>
-				<button class="btn" onclick="ReTool.fromU32()">From u32</button>
-				<button class="btn" onclick="ReTool.exportC()">Export bytes as C</button>
+				<button class="btn" id="format-hex">Format hex</button>
+				<button class="btn" id="format-u32">Format u32</button>
+				<button class="btn" id="from-u32">From u32</button>
+				<button class="btn" id="export-c">Export bytes as C</button>
 			</div>
 		</div>
 		<div class="right">
-			<div class="btn">Base address: <input type="text" onkeyup="ReTool.baseAddr = this.value" value="0x10000"></div>
-
+			<div class="btn">Base address: <input type="text" id="base-address" value="0x0"></div>
 			<div class="btn dropdown" id="help-dropdown">
 				<img src="ret.png">
 				<div class="dropdown-content" id="help-dropdown-box">
