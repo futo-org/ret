@@ -23,6 +23,7 @@ jobs:
           sudo apt install -y cmake ninja-build
       - name: emsdk
         run: |
+          cd
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
           ./emsdk install latest
