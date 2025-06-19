@@ -6,13 +6,17 @@ serve:
 
 .PHONY: deploy
 deploy:
-	mkdir -p deloy
+	mkdir -p deploy
 	rm -rf deploy/*
-	cp -r www/* deploy/
-	rm -rf deploy/build
-	mkdir deploy/build
-	cp build/ret.js deploy/build/
-	cp build/ret.wasm deploy/build/
+	rm -rf www/build # remove symlink
+	mkdir www/build
+
+	mkdir -p deploy/arm64
+	cp -r www/* deploy/arm64
+	cp build_arm64/ret.js deploy/arm64/build/
+	cp build_arm64/ret.wasm deploy/arm64/build/
+
+	echo "Dummy index.html" > deploy/index.html
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=emscripten.cmake -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON

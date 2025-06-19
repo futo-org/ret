@@ -27,14 +27,13 @@ jobs:
           make config_all -j`nproc`
           make build_all
 
-#      - name: Setup root
-#        run: |
-#          cp build/ret.js www/
-#          cp build/ret.wasm www/
-#
-#      - name: Deploy to GitHub Pages
-#        uses: peaceiris/actions-gh-pages@v4
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: ./www
-#
+      - name: Setup root
+        run: |
+          make deploy
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
+
