@@ -112,20 +112,20 @@ const ret = {
 		document.querySelector("#log").value += str + "\n";
 	},
 
-	re_log: Module.cwrap('re_log', 'void', ['number', 'string']),
-	re_init_globals: Module.cwrap('re_init_globals', 'void', []),
-	re_assemble: Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']),
-	re_disassemble: Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']),
-	re_get_hex_buffer: Module.cwrap('re_get_hex_buffer', 'number', []),
-	re_get_err_buffer: Module.cwrap('re_get_err_buffer', 'number', []),
-	re_get_str_buffer: Module.cwrap('re_get_str_buffer', 'number', []),
-	get_buffer_contents: Module.cwrap('get_buffer_contents', 'string', ['number']),
-
 	err_buf: null,
 	hex_buf: null,
 	str_buf: null,
 
 	main: function() {
+		re_log = Module.cwrap('re_log', 'void', ['number', 'string']);
+		re_init_globals = Module.cwrap('re_init_globals', 'void', []);
+		re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']);
+		re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']);
+		re_get_hex_buffer = Module.cwrap('re_get_hex_buffer', 'number', []);
+		re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
+		re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
+		get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
+
 		ret.re_init_globals();
 		ret.err_buf = ret.re_get_err_buffer();
 		ret.hex_buf = ret.re_get_hex_buffer();
