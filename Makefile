@@ -22,7 +22,7 @@ deploy:
 	cp build_arm64/ret.js deploy/arm64/build/
 	cp build_arm64/ret.wasm deploy/arm64/build/
 
-	cp www/landing.html > deploy/index.html
+	cp www/landing.html deploy/index.html
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON
