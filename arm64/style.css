@@ -131,7 +131,6 @@ textarea, #asm {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	min-width: 160px;
 	z-index: 1;
 	display: none;
 	flex-direction: column;
@@ -158,8 +157,4 @@ textarea, #asm {
 .right {
 	display: flex;
 	margin-left: auto;
-}
-
-#help-dropdown img {
-	height: 30px;
 }
