@@ -1,5 +1,5 @@
 // A smart hex parser, should be able to parse hex text in as many weird formats as possible.
-#include <stdio.h>
+//#include <stdio.h>
 #include "re.h"
 #include "parser.h"
 
@@ -56,9 +56,9 @@ static int guess_data_type(int n_of_chars) {
 	// Handle single digits, double, and triple (0ab, 021)
 	case 1:
 	case 2:
-	case 3:
 		return 1;
 	// u16 should be 4 chars
+	case 3:
 	case 4:
 		return 2;
 	case 8:
@@ -71,14 +71,13 @@ static int guess_data_type(int n_of_chars) {
 
 // Parse a number at current position
 struct Number lex_number(struct HexPars *p) {
-	struct Number n;
-	n.eof = 0;
-	n.too_long = 0;
+	struct Number n = {0};
 	uint64_t w = 0;
 	int n_of_chars = 0;
 	int starting_of = p->of;
 	const char *in = p->buf;
 	int of = p->of;
+
 	while (1) {
 		char c = in[of];
 		if (c == '\0') {
@@ -99,16 +98,16 @@ struct Number lex_number(struct HexPars *p) {
 		of++;
 		n_of_chars++;
 
-		if (n_of_chars >= 2 && p->parse_as == PARSE_AS_U8) {
+		if (n_of_chars >= 2 && (p->options & PARSE_AS_U8)) {
 			n.data_type_size = 1;
 			break;
-		} else if (n_of_chars >= 4 && p->parse_as == PARSE_AS_U16) {
+		} else if (n_of_chars >= 4 && (p->options & PARSE_AS_U16)) {
 			n.data_type_size = 2;
 			break;
-		} else if (n_of_chars >= 8 && p->parse_as == PARSE_AS_U32) {
+		} else if (n_of_chars >= 8 && (p->options & PARSE_AS_U32)) {
 			n.data_type_size = 4;
 			break;
-		} else if (n_of_chars >= 16 && p->parse_as == PARSE_AS_U32) {
+		} else if (n_of_chars >= 16 && (p->options & PARSE_AS_U32)) {
 			n.data_type_size = 8;
 			break;
 		} else if (n_of_chars > 16) {
@@ -119,7 +118,7 @@ struct Number lex_number(struct HexPars *p) {
 		}
 	}
 
-	if (p->parse_as == PARSE_AS_SMART) {
+	if (p->options & PARSE_AS_SMART) {
 		n.data_type_size = guess_data_type(n_of_chars);
 	}
 
@@ -129,36 +128,26 @@ struct Number lex_number(struct HexPars *p) {
 	return n;
 }
 
-static int parse_as_to_size(enum Types as) {
-	switch (as) {
-	case PARSE_AS_U8:
-	case PARSE_AS_SMART:
-		return 1;
-	case PARSE_AS_U16:
-		return 2;
-	case PARSE_AS_U32:
-		return 4;
-	case PARSE_AS_U64:
-		return 8;
-	}
-}
+//static int parse_as_to_size(uint32_t option) {
+//	if (option & PARSE_AS_U8) return 1;
+//	if (option & PARSE_AS_U16) return 2;
+//	if (option & PARSE_AS_U32) return 4;
+//	if (option & PARSE_AS_U64) return 8;
+//	return 1;
+//}
 
 void create_parser(struct HexPars *p, const char *in, int options) {
-	p->parse_as = PARSE_AS_SMART;
+	p->options = PARSE_AS_SMART;
 	p->buf = in;
 	p->parsing_long_hex = 0;
 	p->of = 0;
 }
 
 struct Number parser_next(struct HexPars *p) {
-	int is_hex = 1;
-	uint64_t w = 0;
-	int n_of_chars = 0;
 	const char *in = p->buf;
 
-	struct Number eof = {
-		.eof = 1,
-	};
+	struct Number eof = {0};
+	eof.eof = 1;
 
 	parsing_long_hex:;
 	if (p->parsing_long_hex) {
@@ -176,16 +165,11 @@ struct Number parser_next(struct HexPars *p) {
 			return eof;
 		}
 	
-		int is_hex = 1;
-		uint64_t w = 0;
-		int n_of_chars = 0;
-
 		// Always parse as hex if '0x' is found
 		// TODO: Check buf+2
 		if (in[p->of] == '0' && in[p->of + 1] == 'x') {
 			p->of += 2;
-			is_hex = 1;
-			// TODO: Check if following is valid hex, may not me
+			// TODO: Check if following is valid hex, may not be
 		}
 		if (is_digit(in[p->of]) || is_hexa(in[p->of])) {
 			struct Number n = lex_number(p);
@@ -202,7 +186,7 @@ struct Number parser_next(struct HexPars *p) {
 int parser_to_buf(const char *input, struct OutBuffer *buf, int options) {
 	buf->clear(buf);
 	struct HexPars p;
-	create_parser(&p, input, 0);
+	create_parser(&p, input, options);
 
 	while (1) {
 		struct Number n = parser_next(&p);

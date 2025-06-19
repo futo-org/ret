@@ -66,6 +66,7 @@ function createResizeBar(leftPanel, rightPanel, separator) {
 }
 
 function setupDropDown(hoverButton, box) {
+//box.style.display = "flex";
 	hoverButton.addEventListener("mouseenter", function() {
 		box.style.display = "flex";
 	})
@@ -77,9 +78,39 @@ function setupDropDown(hoverButton, box) {
 	})
 }
 
+function setupRadio(elementName, initialOptionIndex, callback) {
+	var names = document.getElementsByName(elementName);
+	for (var i = 0; i < names.length; i++) {
+		if (i == initialOptionIndex) names[i].checked = true;
+		names[i].index = i;
+		names[i].onchange = function() {
+			callback(this.index, this.value, this);
+		}
+	}
+}
+
 const ret = {
+	ARCH_ARM64: 0,
+	ARCH_ARM32: 1,
+	ARCH_X86: 2,
+	ARCH_X86_64: 3,
+	ARCH_RISCV32: 4,
+	ARCH_RISCV64: 5,
+	ARCH_WASM: 6,
+
+	PARSE_AS_MASK: 0x1f,
+	PARSE_AS_U8: 1 << 0,
+	PARSE_AS_U16: 1 << 1,
+	PARSE_AS_U32: 1 << 2,
+	PARSE_AS_U64: 1 << 3,
+	PARSE_AS_SMART: 1 << 4,
+	SKIP_1_AT_START: 1 << 5,
+	SKIP_2_AT_START: 1 << 6,
+	PARSE_AS_BASE_10: 1 << 10,
+
 	init: function() {
 		this.currentArch = this.checkArch();
+		this.currentParseOption = this.PARSE_AS_SMART;
 	},
 	checkArch: function() {
 		if (window.location.href.endsWith("arm") || window.location.href.endsWith("arm32")) {
@@ -96,14 +127,8 @@ const ret = {
 	},
 	currentArch: 0,
 	currentBaseOffset: 0,
-
-	ARCH_ARM64: 0,
-	ARCH_ARM32: 1,
-	ARCH_X86: 2,
-	ARCH_X86_64: 3,
-	ARCH_RISCV32: 4,
-	ARCH_RISCV64: 5,
-	ARCH_WASM: 6,
+	currentParseOption: 0,
+	currentOutputOption: 0,
 
 	clearLog: function(str) {
 		document.querySelector("#log").value = "";
@@ -125,6 +150,7 @@ const ret = {
 		ret.re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
 		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
+		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number']);
 
 		ret.re_init_globals();
 		ret.err_buf = ret.re_get_err_buffer();
@@ -230,12 +256,42 @@ document.querySelector("#disassemble").onclick = function() {
 	}
 }
 
+document.querySelector("#format-hex").onclick = function() {
+	if (ret.hex_buf == null) throw "NULL";	
+	ret.clearLog();
+	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.currentParseOption);
+	if (rc != 0) {
+		ret.log("Failed to parse bytes");
+	} else {
+		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+		ret.log("Formatted hex");
+	}
+}
+
 document.querySelector("#base-address").value = "0x" + (ret.currentBaseOffset).toString(16);
 document.querySelector("#base-address").onkeyup = function() {
 	if (Number(this.value) != NaN) {
 		ret.currentBaseOffset = Number(this.value);
 	}
 }
+
+setupRadio("select_parse_as", 0, function(index, value, e) {
+	var option = 0;
+	if (value == "smart") option = ret.PARSE_AS_SMART;
+	if (value == "u8") option = ret.PARSE_AS_U8;
+	if (value == "u16") option = ret.PARSE_AS_U16;
+	if (value == "u32") option = ret.PARSE_AS_U32;
+	ret.currentParseOption = (ret.currentParseOption ^ ret.PARSE_AS_MASK) | option;
+});
+
+
+setupRadio("select_output_as", 0, function(index, value, e) {
+	var option = 0;
+	if (value == "u8") option = ret.PARSE_AS_U8;
+	if (value == "c") option = ret.PARSE_AS_U16;
+	if (value == "u32") option = ret.PARSE_AS_U32;
+//	ret.currentParseOption = (ret.currentParseOption ^ ret.PARSE_AS_MASK) | option;
+});
 
 // Set editor text if empty (will not be if window was duplicated)
 if (editor.toString() == "") {
@@ -244,4 +300,3 @@ if (editor.toString() == "") {
 		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 	}
 }
-

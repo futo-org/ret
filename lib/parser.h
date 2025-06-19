@@ -7,14 +7,16 @@ enum Types {
 	PARSE_AS_U32 = 1 << 2,
 	PARSE_AS_U64 = 1 << 3,
 	PARSE_AS_SMART = 1 << 4,
+
+	// Skip X numbers at the beginning of a line
+	SKIP_1_AT_START = 1 << 5,
+	SKIP_2_AT_START = 1 << 6,
+
+	PARSE_AS_BASE_10 = 1 << 10,
 };
 
 struct HexPars {
-	// How many numbers to ignore at the start of every line
-	int skip_numbers;
-	// How to handle the lengths of numbers
-	enum Types parse_as;
-	int parse_as_base10;
+	uint32_t options;
 
 	const char *buf;
 	int of;

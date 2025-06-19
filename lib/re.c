@@ -184,7 +184,7 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 
 int prettify(void) {
 	struct HexPars p;
-	create_parser(&p, "a a a a a 3 22 30:zd: a c", 0);
+	create_parser(&p, "123 123 123", PARSE_AS_SMART);
 
 	while (1) {
 		struct Number n = parser_next(&p);

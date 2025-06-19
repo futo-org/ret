@@ -72,11 +72,13 @@ add_executable(ret
 	$<$<BOOL:${UNICORN_SUPPORT}>:lib/unicorn.c>
 )
 
+set(EXPORT_FUNCS _cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_log,_get_buffer_contents,_emulator,_parser_to_buf)
+
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
 target_compile_definitions(ret PRIVATE ${RET_DEFINES})
 if(EMSCRIPTEN)
 	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>
-		-sEXPORTED_FUNCTIONS=_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_log,_get_buffer_contents,_emulator,ccall,cwrap
+		-sEXPORTED_FUNCTIONS=${EXPORT_FUNCS},ccall,cwrap
 		-sINVOKE_RUN=0
 		-sALLOW_MEMORY_GROWTH
 		-sALLOW_TABLE_GROWTH
