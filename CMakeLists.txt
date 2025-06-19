@@ -62,7 +62,7 @@ if(UNICORN_SUPPORT)
 	option(UNICORN_BUILD_SAMPLES "" OFF)
 	option(UNICORN_INSTALL "" OFF)
 	option(UNICORN_INTERPRETER "Use interpreter mode" ON)
-	add_subdirectory(/home/daniel/Pulled/unicorn ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/unicorn-wasm ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
 endif()
 
 add_executable(ret
