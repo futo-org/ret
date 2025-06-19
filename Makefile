@@ -6,7 +6,7 @@ debug_build:
 	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DCMAKE_BUILD_TYPE=Release
 
 cli_build:
-	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON
+	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DUNICORN_SUPPORT=OFF
 
 serve:
 	python3 -m http.server 8000
@@ -22,7 +22,7 @@ deploy:
 	cp build_arm64/ret.js deploy/arm64/build/
 	cp build_arm64/ret.wasm deploy/arm64/build/
 
-	echo "Dummy index.html" > deploy/index.html
+	cp www/landing.html > deploy/index.html
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON

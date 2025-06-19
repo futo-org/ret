@@ -300,3 +300,16 @@ if (editor.toString() == "") {
 		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 	}
 }
+
+// Try to get F9 to trigger assembler
+document.addEventListener("keydown",keyCapt,false); 
+document.addEventListener("keyup",keyCapt,false);
+document.addEventListener("keypress",keyCapt,false);
+function keyCapt(e) {
+	if(typeof window.event!="undefined"){
+		e=window.event;	
+	}
+	if (e.type == "keydown" && (e.keyCode == 120)) {
+		document.querySelector("#assemble").click();
+	}
+}
