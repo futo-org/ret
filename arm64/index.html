@@ -10,17 +10,18 @@
 <body>
 <div class="container">
 	<div class="menu" id="menu">
-		<select class="btn" id="arch-select">
-			<option>ARM64</option>
-			<option>X86</option>
-			<option>ARM</option>
-			<option>WASM</option>
-		</select>
+		<div class="btn" id="arch-select">
+			<span id="arch-select-text">ARM64</span><span>&#9660;</span>
+			<div class="dropdown-content" id="arch-dropdown-box">
+				<button class="btn" id="switch-arm64">ARM64</button>
+				<button class="btn" id="switch-arm32">ARM32</button>
+				<button class="btn" id="switch-x86">X86</button>
+			</div>
+		</div>
 		<div class="btn" id="assemble" >Assemble</div>
-		<div class="btn" id="run">Assemble and Run</div>
 		<div class="btn" id="disassemble">Disassemble</div>
-		<!-- <div class="btn" id="execute">Execute</div> -->
-		<div class="btn dropdown" id="hex-dropdown">
+		<div class="btn" id="run">Assemble and Run</div>
+		<div class="btn" id="hex-dropdown">
 			<span>Bytes &#9660;</span>
 			<div class="dropdown-content" id="hex-dropdown-box">
 				<div>
@@ -52,7 +53,7 @@
 		</div>
 		<div class="right">
 			<div class="btn">Base address: <input type="text" id="base-address" value="0x0"></div>
-			<div class="btn dropdown" id="help-dropdown">
+			<div class="btn" id="help-dropdown">
 				<img src="ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
 					<textarea readonly="true" spellcheck="false" id="help-textarea">

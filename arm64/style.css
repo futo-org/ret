@@ -121,11 +121,11 @@ textarea, #asm {
 	background: #3d3c3c;
 }
 
-.dropdown {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-}
+/* .dropdown { */
+/* 	position: relative; */
+/* 	display: flex; */
+/* 	flex-direction: column; */
+/* } */
 
 .dropdown-content {
 	position: absolute;
@@ -157,4 +157,8 @@ textarea, #asm {
 .right {
 	display: flex;
 	margin-left: auto;
+}
+
+#arch-dropdown-box {
+	min-width: 160px;
 }
