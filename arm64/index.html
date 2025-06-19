@@ -17,16 +17,37 @@
 			<option>WASM</option>
 		</select>
 		<div class="btn" id="assemble" >Assemble</div>
+		<div class="btn" id="run">Assemble and Run</div>
 		<div class="btn" id="disassemble">Disassemble</div>
 		<!-- <div class="btn" id="execute">Execute</div> -->
-		<div class="btn" id="run">Assemble + Execute</div>
 		<div class="btn dropdown" id="hex-dropdown">
-			<span>Hex &#9660;</span>
+			<span>Bytes &#9660;</span>
 			<div class="dropdown-content" id="hex-dropdown-box">
-				<button class="btn" id="format-hex">Format hex</button>
-				<button class="btn" id="format-u32">Format u32</button>
-				<button class="btn" id="from-u32">From u32</button>
-				<button class="btn" id="export-c">Export bytes as C</button>
+				<div>
+					<button class="btn" id="format-hex">Format hex</button>
+					Parse as:
+					<form>
+						<input type="radio" name="select_parse_as" id="smart" value="smart">
+						<label for="u32">smart</label>
+						<input type="radio" name="select_parse_as" id="u8" value="u8">
+						<label for="u8">u8</label>
+						<input type="radio" name="select_parse_as" id="u16" value="u16">
+						<label for="u16">u16</label>
+						<input type="radio" name="select_parse_as" id="u32" value="u32">
+						<label for="u32">u32</label>
+					</form>
+
+					Output as:
+					<form>
+						<input type="radio" name="select_output_as" id="u8" value="u8">
+						<label for="u8">u8</label>
+						<input type="radio" name="select_output_as" id="u32" value="u32">
+						<label for="u32">u32</label>
+						<input type="radio" name="select_output_as" id="c" value="c">
+						<label for="u32">C array</label>
+					</form>
+
+				</div>
 			</div>
 		</div>
 		<div class="right">
@@ -44,7 +65,7 @@ ______ _   _ _____ _____
 					</textarea>
 					<ul>
 						<li><a target="_blank" href="https://github.com/petabyt/ret">Source code</a></li>
-						<li><a target="_blank" href="futo.org">FUTO website</a></li>
+						<li><a target="_blank" href="https://futo.org/">FUTO website</a></li>
 					</ul>
 				</div>
 			</div>
