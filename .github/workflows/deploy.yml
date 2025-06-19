@@ -20,12 +20,18 @@ jobs:
       - name: Deps
         run: |
           sudo apt update
-          sudo apt install -y emscripten cmake ninja-build
+          sudo apt install -y cmake ninja-build
+      - name: emsdk
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
 
       - name: Compile 3 arches
         run: |
-          make config_all -j`nproc`
-          make build_all
+          make CMAKE=~/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake config_all -j`nproc`
+          make CMAKE=~/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake build_all
 
       - name: Setup root
         run: |
