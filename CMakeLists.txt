@@ -6,6 +6,7 @@ option(UNICORN_SUPPORT "" ON)
 option(SUPPORT_ARM64 "" OFF)
 option(SUPPORT_ARM32 "" OFF)
 option(SUPPORT_X86 "" OFF)
+option(SUPPORT_MULTITHREADING "" OFF)
 
 if(NOT SUPPORT_ARM64 AND NOT SUPPORT_ARM32 AND NOT SUPPORT_X86)
 	message(FATAL_ERROR "at least one arch required ${SUPPORT_ARM64} ${SUPPORT_ARM32} ${SUPPORT_X86}")
@@ -13,6 +14,11 @@ endif()
 
 set(CMAKE_C_FLAGS_RELEASE -Os)
 set(CMAKE_CXX_FLAGS_RELEASE -Os)
+
+if(SUPPORT_MULTITHREADING)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -matomics -mbulk-memory")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -matomics -mbulk-memory")
+endif()
 
 set(RET_DEFINES "")
 
@@ -72,17 +78,18 @@ add_executable(ret
 	$<$<BOOL:${UNICORN_SUPPORT}>:lib/unicorn.c>
 )
 
-set(EXPORT_FUNCS _cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_log,_get_buffer_contents,_emulator,_parser_to_buf)
+set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_re_emulator,_parser_to_buf,_start_vm)
 
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
 target_compile_definitions(ret PRIVATE ${RET_DEFINES})
 if(EMSCRIPTEN)
 	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>
-		-sEXPORTED_FUNCTIONS=${EXPORT_FUNCS},ccall,cwrap
+		-sEXPORTED_FUNCTIONS=${EXPORT_FUNCS}
 		-sINVOKE_RUN=0
 		-sALLOW_MEMORY_GROWTH
 		-sALLOW_TABLE_GROWTH
-		-sEXPORTED_RUNTIME_METHODS=addFunction
+		-sEXPORTED_RUNTIME_METHODS=addFunction,ccall,cwrap
+		$<$<BOOL:${SUPPORT_MULTITHREADING}>:-sUSE_PTHREADS=1 -sPTHREAD_POOL_SIZE=2 -pthread>
 	)
 else()
 	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>)

@@ -1,12 +1,34 @@
 const arm64_demo =
 `
-adr x1, string
+mov x0, #0x9000000
+str w0, [x0]
+
+//adr x1, string
+//top:
+//	ldrb w0, [x1]
+//	cmp w0, #0x0
+//	beq end
+//	svc #0x0
+//	add x1, x1, #0x1
+//	b top
+//end:
+//
+//b skip
+//string:
+//.ascii "Hello, World\\n"
+//.byte 0
+//.align 4
+//skip:
+`;
+
+const arm32_demo = `
+adr r1, string
 top:
-	ldrb w0, [x1]
-	cmp w0, #0x0
+	ldrb r0, [r1]
+	cmp r0, #0x0
 	beq end
 	svc #0x0
-	add x1, x1, #0x1
+	add r1, r1, #0x1
 	b top
 end:
 
@@ -16,6 +38,7 @@ string:
 .byte 0
 .align 4
 skip:
+
 `;
 const x86_64_demo =
 `
@@ -24,8 +47,8 @@ mov eax, 10h
 
 // Prevent selection while dragging
 function pauseEvent(e){
-    if(e.stopPropagation) e.stopPropagation();
-    if(e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
     e.cancelBubble = true;
     e.returnValue = false;
     return false;
@@ -111,15 +134,16 @@ const ret = {
 	init: function() {
 		this.currentArch = this.checkArch();
 		this.currentParseOption = this.PARSE_AS_SMART;
+		this.log("Loading..");
 	},
 	checkArch: function() {
-		if (window.location.href.endsWith("arm") || window.location.href.endsWith("arm32")) {
-			return ret.ARCH_ARM32;
-		} else if (window.location.href.endsWith("arm64")) {
+		if (window.location.pathname.includes("arm64")) {
 			return ret.ARCH_ARM64;
-		} else if (window.location.href.endsWith("riscv")) {
+		} else if (window.location.pathname.includes("arm") || window.location.pathname.includes("arm32")) {
+			return ret.ARCH_ARM32;
+		} else if (window.location.pathname.includes("riscv")) {
 			return ret.ARCH_RISCV64;
-		} else if (window.location.href.endsWith("x86")) {
+		} else if (window.location.pathname.includes("x86")) {
 			return ret.ARCH_X86_64;
 		} else {
 			return ret.ARCH_ARM64;
@@ -129,6 +153,7 @@ const ret = {
 	currentBaseOffset: 0,
 	currentParseOption: 0,
 	currentOutputOption: 0,
+	useGodboltOnAssembler: false,
 
 	clearLog: function(str) {
 		document.querySelector("#log").value = "";
@@ -136,19 +161,24 @@ const ret = {
 	log: function(str) {
 		document.querySelector("#log").value += str + "\n";
 	},
+	switchArch: function(arch) {
+		
+	},
 
 	err_buf: null,
 	hex_buf: null,
 	str_buf: null,
+	mem_buf: null,
 
 	main: function() {
-		ret.re_log = Module.cwrap('re_log', 'void', ['number', 'string']);
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
 		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']);
+		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
 		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']);
 		ret.re_get_hex_buffer = Module.cwrap('re_get_hex_buffer', 'number', []);
 		ret.re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
+		ret.re_get_mem_buffer = Module.cwrap('re_get_mem_buffer', 'number', []);
 		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
 		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number']);
 
@@ -156,6 +186,7 @@ const ret = {
 		ret.err_buf = ret.re_get_err_buffer();
 		ret.hex_buf = ret.re_get_hex_buffer();
 		ret.str_buf = ret.re_get_str_buffer();
+		ret.mem_buf = ret.re_get_mem_buffer();
 
 		ret.clearLog();
 		ret.log("Ret v4");
@@ -206,6 +237,7 @@ let editor = CodeJar(document.querySelector(".editor"), highlight);
 
 setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
 setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
+setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"));
 
 createResizeBar(
 	document.querySelector("#panel1"),
@@ -213,10 +245,22 @@ createResizeBar(
 	document.querySelector("#hseparator")
 );
 
+document.querySelector("#switch-arm64").onclick = function() {
+	ret.switchArch(ret.ARCH_ARM64);
+}
+document.querySelector("#switch-arm32").onclick = function() {
+	ret.switchArch(ret.ARCH_ARM32);
+}
+document.querySelector("#switch-x86").onclick = function() {
+	ret.switchArch(ret.ARCH_X86);
+}
+
 // Change menu color depending on arch
 if (ret.currentArch == ret.ARCH_ARM64) {
+	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(23 55 81)";
 } else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
+	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(97 36 48)";
 }
 
@@ -228,13 +272,16 @@ document.querySelector("#assemble").onclick = function() {
 	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code);
 	var now = Date.now();
 	if (rc != 0) {
-		ret.log("Capstone error, validating code through Godbolt...");
-		(async function() {
-			var x = await ret.godbolt(ret.currentArch, code);
-			if (x != null) {
-				ret.log(x);
-			}
-		})();
+		if (ret.useGodboltOnAssembler) {
+			(async function() {
+				var x = await ret.godbolt(ret.currentArch, code);
+				if (x != null) {
+					ret.log(x);
+				}
+			})();
+		} else {
+			ret.log(ret.get_buffer_contents(ret.err_buf));
+		}
 	} else {
 		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
 		ret.log("Assembled in " + String(now - then) + "us");
@@ -244,7 +291,6 @@ document.querySelector("#assemble").onclick = function() {
 document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
-	var code = editor.toString();
 	var then = Date.now();
 	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value);
 	var now = Date.now();
@@ -253,6 +299,20 @@ document.querySelector("#disassemble").onclick = function() {
 	} else {
 		editor.updateCode(ret.get_buffer_contents(ret.str_buf));
 		ret.log("Disassembled in " + String(now - then) + "us");
+	}
+}
+
+document.querySelector("#run").onclick = function() {
+	if (ret.mem_buf == null || ret.err_buf == null || ret.str_buf == null) throw "NULL";	
+	ret.clearLog();
+	var code = editor.toString();
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.err_buf, code);
+	if (rc != 0) {
+		ret.log(ret.get_buffer_contents(ret.err_buf));
+	} else {
+		rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
+		ret.log(ret.get_buffer_contents(ret.str_buf));
+		ret.log("Ran code (" + String(rc) + ")");
 	}
 }
 
@@ -302,12 +362,12 @@ if (editor.toString() == "") {
 }
 
 // Try to get F9 to trigger assembler
-document.addEventListener("keydown",keyCapt,false); 
-document.addEventListener("keyup",keyCapt,false);
-document.addEventListener("keypress",keyCapt,false);
+document.addEventListener("keydown", keyCapt, false); 
+document.addEventListener("keyup", keyCapt, false);
+document.addEventListener("keypress", keyCapt, false);
 function keyCapt(e) {
-	if(typeof window.event!="undefined"){
-		e=window.event;	
+	if (typeof window.event != "undefined") {
+		e = window.event;	
 	}
 	if (e.type == "keydown" && (e.keyCode == 120)) {
 		document.querySelector("#assemble").click();

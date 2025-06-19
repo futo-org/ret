@@ -23,6 +23,7 @@ void re_init_globals(void) {
 struct OutBuffer *re_get_err_buffer(void) { return &re_buf_err; }
 struct OutBuffer *re_get_hex_buffer(void) { return &re_buf_hex; }
 struct OutBuffer *re_get_str_buffer(void) { return &re_buf_str; }
+struct OutBuffer *re_get_mem_buffer(void) { return &re_buf_mem; }
 
 int re_is_arch_supported(int arch) {
 #ifdef RET_SUPPORT_ARM64
@@ -35,13 +36,6 @@ int re_is_arch_supported(int arch) {
 	if (arch == ARCH_X86 || arch == ARCH_X86_64) return 1;
 #endif
 	return 0;
-}
-
-void re_log(struct ReTool *re, char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	vprintf(fmt, args);
-	va_end(args);
 }
 
 int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
