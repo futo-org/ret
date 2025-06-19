@@ -125,7 +125,6 @@ textarea, #asm {
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	cursor: auto;
 }
 
 .dropdown-content {
@@ -138,6 +137,7 @@ textarea, #asm {
 	flex-direction: column;
 	background: #292929;
 	border: 3px solid black;
+	cursor: auto;
 }
 
 .dropdown-content .btn {
