@@ -15,30 +15,29 @@
 #define FRAMEBUFFER_SIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4)
 
 struct EmulatorState {
-	enum Arch arch;
+	uc_arch arch;
+	struct OutBuffer *log;
+	char last_char;
 };
 
-uint8_t already_dumped = 0;
-void barf(uc_engine *uc) {
-	int reg;
-	uc_reg_read(uc, UC_ARM64_REG_PC, &reg);
-	printf("PC: %08X\n", reg);
-
-	for (int i = 0; i < 10; i++) {
-		uc_reg_read(uc, UC_ARM64_REG_X0 + i, &reg);
-		printf("r%d: 0x%X\n", i, reg);
+void pl011_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t value, void *user_data) {
+	struct EmulatorState *state = (struct EmulatorState *)user_data;
+	switch (offset) {
+	case 0x0: {
+		char str[2] = {'\0', '\0'};
+		str[0] = (char)value;
+		state->log->append(state->log, str, 0);
+	} return;
 	}
 }
 
-void pl011_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t value, void *user_data) {
-	printf("Write %x to %lu\n", (uint32_t)value, offset);
-}
-
 uint64_t pl011_mmio_reads(uc_engine *uc, uint64_t offset, unsigned size, void *user_data) {
+	struct EmulatorState *state = (struct EmulatorState *)user_data;
 	return 0x0;
 }
 
 void fb_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t value, void *user_data) {
+	struct EmulatorState *state = (struct EmulatorState *)user_data;
 }
 
 int start_vm(void) {
@@ -95,6 +94,12 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_bu
 		return -1;
 	}
 
+	struct EmulatorState state = {
+		.arch = _uc_arch,
+		.log = log,
+		.last_char = '\n',
+	};
+
 	err = uc_open(_uc_arch, _uc_mode, &uc);
 	if (err != UC_ERR_OK) {
 		log->append(log, "Failed to setup emulator", 0);
@@ -128,24 +133,38 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_bu
 //		return 1;
 //	}
 
-	err = uc_mmio_map(uc, 0x9000000, 0x1000, pl011_mmio_reads, NULL, pl011_mmio_writes, NULL);
+	err = uc_mmio_map(uc, 0x9000000, 0x1000, pl011_mmio_reads, &state, pl011_mmio_writes, &state);
 	if (err != UC_ERR_OK) {
 		log->append(log, "MMIO map error", 0);
 		return 1;
 	}
 
 	uc_hook trace;
-	err = uc_hook_add(uc, &trace, UC_HOOK_INTR, hook_intr, NULL, 1, 0, 0);
+	err = uc_hook_add(uc, &trace, UC_HOOK_INTR, (void *)hook_intr, &state, 1, 0, 0);
 
 	err = uc_emu_start(uc, MEMORY_BASE_ADDR, MEMORY_BASE_ADDR + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);
 	if (err) {
 		log->append(log, "Emulation failed", 0);
 		printf("Emulation failed: %u %s\n", err, uc_strerror(err));
-		barf(uc);
 	} else {
-		barf(uc);
-		log->append(log, "Emulation success", 0);
-		puts("Success");
+		log->append(log, "Emulation finished", 0);
+	}
+
+	if (state.last_char != '\n') {
+		log->append(log, "\n", 0);
+	}
+
+	{
+		int pc_reg = UC_ARM64_REG_PC;
+		int x0_reg = UC_ARM64_REG_X0;
+	
+		uc_reg_read(uc, pc_reg, &reg);
+		printf("PC: %08X\n", reg);
+	
+		for (int i = 0; i < 5; i++) {
+			uc_reg_read(uc, x0_reg + i, &reg);
+			printf("r%d: 0x%X\n", i, reg);
+		}
 	}
 	
 	uc_close(uc);

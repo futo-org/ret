@@ -1,6 +1,4 @@
-CMAKE ?= emscripten.cmake
-
-CMAKE := /home/daniel/Pulled/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+CMAKE ?= /home/daniel/Pulled/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
 	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DCMAKE_BUILD_TYPE=Release
@@ -9,7 +7,7 @@ cli_build:
 	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DUNICORN_SUPPORT=OFF
 
 serve:
-	python3 -m http.server 8000
+	python3 serve.py
 
 .PHONY: deploy
 deploy:

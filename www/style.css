@@ -110,12 +110,12 @@ textarea, #asm {
 	font-size: 10pt;
 }
 
-.btn span {
-	display: block;
-	margin: 0;
-	text-align: center;
-	width: 100%;
-}
+/* .btn span { */
+/* 	display: block; */
+/* 	margin: 0; */
+/* 	text-align: center; */
+/* 	width: 100%; */
+/* } */
 
 .btn:hover {
 	background: #3d3c3c;
