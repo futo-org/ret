@@ -9,22 +9,22 @@ cli_build:
 serve:
 	python3 serve.py
 
+define deploy
+	mkdir -p deploy/$(1)
+	cp -r www/* deploy/$(1)
+	rm -rf deploy/$(1)/build && mkdir deploy/$(1)/build
+	cp build_$(1)/ret.js deploy/$(1)/build/
+	cp build_$(1)/ret.wasm deploy/$(1)/build/
+endef
+
 .PHONY: deploy
 deploy:
 	mkdir -p deploy
 	rm -rf deploy/*
 
-	mkdir -p deploy/arm64
-	cp -r www/* deploy/arm64
-	rm -rf deploy/arm64/build && mkdir deploy/arm64/build
-	cp build_arm64/ret.js deploy/arm64/build/
-	cp build_arm64/ret.wasm deploy/arm64/build/
-
-	mkdir -p deploy/arm32
-	cp -r www/* deploy/arm32
-	rm -rf deploy/arm32/build && mkdir deploy/arm32/build
-	cp build_arm32/ret.js deploy/arm32/build/
-	cp build_arm32/ret.wasm deploy/arm32/build/
+	$(call deploy,arm64)
+	$(call deploy,arm32)
+	$(call deploy,x86)
 
 	cp www/landing.html deploy/index.html
 
