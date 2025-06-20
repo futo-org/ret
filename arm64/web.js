@@ -1,24 +1,23 @@
 const arm64_demo =
 `
-mov x0, #0x9000000
-str w0, [x0]
+ldr w2, UART_DR
+adr x1, string
+top:
+	ldrb w0, [x1]
+	cmp w0, #0x0
+	beq end
+	str w0, [x2]
+	add x1, x1, #0x1
+	b top
+end:
 
-//adr x1, string
-//top:
-//	ldrb w0, [x1]
-//	cmp w0, #0x0
-//	beq end
-//	svc #0x0
-//	add x1, x1, #0x1
-//	b top
-//end:
-//
-//b skip
-//string:
-//.ascii "Hello, World\\n"
-//.byte 0
-//.align 4
-//skip:
+b skip
+UART_DR: .int 0x9000000
+string:
+.ascii "Hello, World\\n"
+.byte 0
+.align 4
+skip:
 `;
 
 const arm32_demo = `
@@ -259,9 +258,11 @@ document.querySelector("#switch-x86").onclick = function() {
 if (ret.currentArch == ret.ARCH_ARM64) {
 	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(23 55 81)";
+	document.title = "Ret ARM64";
 } else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
 	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(97 36 48)";
+	document.title = "Ret x86";
 }
 
 document.querySelector("#assemble").onclick = function() {
@@ -312,7 +313,7 @@ document.querySelector("#run").onclick = function() {
 	} else {
 		rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
 		ret.log(ret.get_buffer_contents(ret.str_buf));
-		ret.log("Ran code (" + String(rc) + ")");
+		//ret.log("Ran code (" + String(rc) + ")");
 	}
 }
 
@@ -324,7 +325,15 @@ document.querySelector("#format-hex").onclick = function() {
 		ret.log("Failed to parse bytes");
 	} else {
 		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
-		ret.log("Formatted hex");
+		var output_as = "auto", parse_as = "";
+		if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
+		if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
+		if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
+		if (ret.currentParseOption & ret.PARSE_AS_SMART) parse_as = "auto";
+		if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
+		if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as = ", base10";
+
+		ret.log("Formatted hex (parse as '" + parse_as + "') (output as '" + output_as + "')");
 	}
 }
 
