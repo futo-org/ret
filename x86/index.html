@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Ret</title>
+	<link rel="icon" href="favicon.ico">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="sublime.css">
+</head>
+<body>
+<div class="container">
+	<div class="menu" id="menu">
+		<div class="btn" id="arch-select">
+			<span id="arch-select-text">ARM64</span><span>&#9660;</span>
+			<div class="dropdown-content" id="arch-dropdown-box">
+				<button class="btn" id="switch-arm64">ARM64</button>
+				<button class="btn" id="switch-arm32">ARM32</button>
+				<button class="btn" id="switch-x86">X86</button>
+			</div>
+		</div>
+		<div class="btn" id="assemble" >Assemble</div>
+		<div class="btn" id="disassemble">Disassemble</div>
+		<div class="btn" id="run">Assemble and Run</div>
+		<div class="btn" id="hex-dropdown">
+			<span>Bytes &#9660;</span>
+			<div class="dropdown-content" id="hex-dropdown-box">
+				<div>
+					<button class="btn" id="format-hex">Format hex</button>
+					Parse as:
+					<form>
+						<input type="radio" name="select_parse_as" id="smart" value="smart">
+						<label for="u32">smart</label>
+						<input type="radio" name="select_parse_as" id="u8" value="u8">
+						<label for="u8">u8</label>
+						<input type="radio" name="select_parse_as" id="u16" value="u16">
+						<label for="u16">u16</label>
+						<input type="radio" name="select_parse_as" id="u32" value="u32">
+						<label for="u32">u32</label>
+					</form>
+
+					Output as:
+					<form>
+						<input type="radio" name="select_output_as" id="u8" value="u8">
+						<label for="u8">u8</label>
+						<input type="radio" name="select_output_as" id="u32" value="u32">
+						<label for="u32">u32</label>
+						<input type="radio" name="select_output_as" id="c" value="c">
+						<label for="u32">C array</label>
+					</form>
+
+				</div>
+			</div>
+		</div>
+		<div class="right">
+			<div class="btn">Base address: <input type="text" id="base-address" value="0x0"></div>
+			<div class="btn" id="help-dropdown">
+				<img src="ret.png" width="30">
+				<div class="dropdown-content" id="help-dropdown-box">
+					<textarea readonly="true" spellcheck="false" id="help-textarea">
+______ _   _ _____ _____ 
+|  ___| | | |_   _|  _  |
+| |_  | | | | | | | | | |
+|  _| | | | | | | | | | |
+| |   | |_| | | | \ \_/ /
+\_|    \___/  \_/  \___/ 
+					</textarea>
+					<ul>
+						<li><a target="_blank" href="https://github.com/petabyt/ret">Source code</a></li>
+						<li><a target="_blank" href="https://futo.org/">FUTO website</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panels">
+		<div class="panel" id="panel1">
+			<div id="asm" class="editor language-c"></div>
+		</div>
+		<div class="panel" id="right-column">
+			<div id="hseparator"></div>
+			<div class="panel" id="panel2">
+				<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+			</div>
+			<div class="panel" id="panel3">
+				<textarea readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+<script src="highlight.js"></script>
+<script src="codejar.js"></script>
+<script src="lib.js"></script>
+<script>
+// emscripten js will merge with (?) this object
+var Module = {
+	onRuntimeInitialized: function() {
+		ret.main();
+	}
+};
+</script>
+<script src="build/ret.js"></script>
+<script src="web.js"></script>
+</html>
