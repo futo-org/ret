@@ -90,17 +90,25 @@ function createResizeBar(leftPanel, rightPanel, separator) {
 	separator.addEventListener('mousedown', resizePanel);
 }
 
-function setupDropDown(hoverButton, box) {
+function setupDropDown(hoverButton, box, hideOnMouseUp = false, onlyShowOnClick = false) {
 //box.style.display = "flex";
-	hoverButton.addEventListener("mouseenter", function() {
-		box.style.display = "flex";
-	})
+	if (onlyShowOnClick) {
+		hoverButton.addEventListener("click", function() {
+			box.style.display = "flex";
+		});
+	} else {
+		hoverButton.addEventListener("mouseenter", function() {
+			box.style.display = "flex";
+		});
+	}
 	hoverButton.addEventListener("mouseleave", function() {
 		box.style.display = "none";
-	})
-//	box.addEventListener("mouseup", function() {
-//		box.style.display = "none";
-//	})
+	});
+	if (hideOnMouseUp) {
+		box.addEventListener("mouseup", function() {
+			box.style.display = "none";
+		});
+	}
 }
 
 function setupRadio(elementName, initialOptionIndex, callback) {
@@ -144,7 +152,7 @@ const ret = {
 	PARSE_AS_U16: 1 << 1,
 	PARSE_AS_U32: 1 << 2,
 	PARSE_AS_U64: 1 << 3,
-	PARSE_AS_SMART: 1 << 4,
+	PARSE_AS_AUTO: 1 << 4,
 	SKIP_1_AT_START: 1 << 5,
 	SKIP_2_AT_START: 1 << 6,
 	PARSE_AS_BASE_10: 1 << 10,
@@ -160,7 +168,8 @@ const ret = {
 
 	init: function() {
 		this.currentArch = this.checkArch();
-		this.currentParseOption = this.PARSE_AS_SMART;
+		this.currentParseOption = this.PARSE_AS_AUTO;
+		this.currentOutputOption = this.OUTPUT_AS_AUTO;
 		this.log("Loading..");
 	},
 	checkArch: function() {
@@ -264,7 +273,7 @@ let editor = CodeJar(document.querySelector(".editor"), highlight);
 
 setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
 setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
-setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"));
+setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
 
 createResizeBar(
 	document.querySelector("#panel1"),
@@ -371,7 +380,7 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 			if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
 			if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
 			if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
-			if (ret.currentParseOption & ret.PARSE_AS_SMART) parse_as = "auto";
+			if (ret.currentParseOption & ret.PARSE_AS_AUTO) parse_as = "auto";
 			if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
 			if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as = ", base10";
 
@@ -389,7 +398,7 @@ document.querySelector("#base-address").onkeyup = function() {
 
 setupRadio("select_parse_as", 0, function(index, value, e) {
 	var option = 0;
-	if (index == 0) option = ret.PARSE_AS_SMART;
+	if (index == 0) option = ret.PARSE_AS_AUTO;
 	if (index == 1) option = ret.PARSE_AS_U8;
 	if (index == 2) option = ret.PARSE_AS_U16;
 	if (index == 3) option = ret.PARSE_AS_U32;
@@ -402,8 +411,7 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	if (index == 0) option = ret.OUTPUT_AS_AUTO;
 	if (index == 1) option = ret.OUTPUT_AS_U8;
 	if (index == 2) option = ret.OUTPUT_AS_U32;
-	if (index == 3) option = ret.OUTPUT_AS_C;
-//	ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
+	ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
 });
 
 // Try to get F9 to trigger assembler

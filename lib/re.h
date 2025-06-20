@@ -59,11 +59,11 @@ struct OutBuffer {
 
 int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input);
 
-struct OutBuffer create_mem_buffer(unsigned int size);
-struct OutBuffer create_mem_string_buffer(unsigned int size);
-struct OutBuffer create_mem_hex_buffer(unsigned int size);
-struct OutBuffer create_stdout_hex_buffer();
-struct OutBuffer create_stdout_buffer();
+struct OutBuffer create_mem_buffer(void);
+struct OutBuffer create_mem_string_buffer(void);
+struct OutBuffer create_mem_hex_buffer(void);
+struct OutBuffer create_stdout_hex_buffer(void);
+struct OutBuffer create_stdout_buffer(void);
 const void *get_buffer_contents(struct OutBuffer *buf);
 
 int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, int output_options);

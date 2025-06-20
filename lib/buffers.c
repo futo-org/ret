@@ -41,7 +41,7 @@ static void buf_append_hex(struct OutBuffer *buf, const void *in, unsigned int l
 		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
 	}
 
-	unsigned int data_type_size = 0;
+	unsigned int data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U8) data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U16) data_type_size = 2;
 	if (buf->output_options & OUTPUT_AS_U32) data_type_size = 4;
@@ -78,7 +78,7 @@ static void buf_append_string(struct OutBuffer *buf, const void *in, unsigned in
 	buf->offset += max_str_len - 1;
 }
 
-struct OutBuffer create_mem_buffer(unsigned int size) {
+struct OutBuffer create_mem_buffer(void) {
 	struct OutBuffer buf = {0};
 	buf.buffer = malloc(10000);
 	buf.length = 10000;
@@ -88,7 +88,7 @@ struct OutBuffer create_mem_buffer(unsigned int size) {
 	return buf;
 }
 
-struct OutBuffer create_mem_string_buffer(unsigned int size) {
+struct OutBuffer create_mem_string_buffer(void) {
 	struct OutBuffer buf = {0};
 	buf.buffer = malloc(10000);
 	buf.length = 10000;
@@ -98,7 +98,7 @@ struct OutBuffer create_mem_string_buffer(unsigned int size) {
 	return buf;
 }
 
-struct OutBuffer create_mem_hex_buffer(unsigned int size) {
+struct OutBuffer create_mem_hex_buffer(void) {
 	struct OutBuffer buf = {0};
 	buf.buffer = malloc(10000);
 	buf.length = 10000;

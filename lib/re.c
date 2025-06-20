@@ -13,10 +13,10 @@ static struct OutBuffer re_buf_mem;
 static struct OutBuffer re_buf_str;
 
 void re_init_globals(void) {
-	re_buf_hex = create_mem_hex_buffer(10000);
-	re_buf_mem = create_mem_buffer(10000);
-	re_buf_err = create_mem_string_buffer(10000);
-	re_buf_str = create_mem_string_buffer(10000);
+	re_buf_hex = create_mem_hex_buffer();
+	re_buf_mem = create_mem_buffer();
+	re_buf_err = create_mem_string_buffer();
+	re_buf_str = create_mem_string_buffer();
 }
 
 struct OutBuffer *re_get_err_buffer(void) { return &re_buf_err; }
@@ -150,7 +150,7 @@ int cli_asm_test(void) {
 }
 
 static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
-	struct OutBuffer buf = create_stdout_hex_buffer();
+	struct OutBuffer buf = create_mem_hex_buffer();
 	struct OutBuffer err = create_stdout_buffer();
 
 	FILE *f = fopen(filename, "rb");
@@ -180,8 +180,9 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 }
 
 int prettify(void) {
-	struct OutBuffer buf = create_mem_hex_buffer(0);
-	parser_to_buf("12 12345678 12345678", &buf, PARSE_AS_U32, OUTPUT_AS_AUTO);
+	struct OutBuffer buf = create_mem_hex_buffer();
+//	struct OutBuffer buf2 = create_mem_buffer();
+	parser_to_buf("1 2 3 4 5 6 7 8 9", &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
 	printf("%s\n", buf.buffer);	
 	return 0;
 }
