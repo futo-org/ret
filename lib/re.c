@@ -6,7 +6,6 @@
 #include <keystone/arm64.h>
 #include <capstone/capstone.h>
 #include "re.h"
-#include "parser.h"
 
 static struct OutBuffer re_buf_err;
 static struct OutBuffer re_buf_hex;
@@ -182,11 +181,8 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 
 int prettify(void) {
 	struct OutBuffer buf = create_mem_hex_buffer(0);
-
 	parser_to_buf("12 12345678 12345678", &buf, PARSE_AS_U32, OUTPUT_AS_AUTO);
-
-	printf("%s\n", buf.buffer);
-	
+	printf("%s\n", buf.buffer);	
 	return 0;
 }
 

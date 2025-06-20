@@ -216,7 +216,6 @@ int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, i
 			if (n.data_type_size == 4) buf->output_options = OUTPUT_AS_U32;
 			if (n.data_type_size == 2) buf->output_options = OUTPUT_AS_U16;
 			if (n.data_type_size == 1) buf->output_options = OUTPUT_AS_U8;
-			printf("Output type %d\n", n.data_type_size);
 		}
 		if (n.eof) break;
 		buf->append(buf, &n.n, n.data_type_size);
