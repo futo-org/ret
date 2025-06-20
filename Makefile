@@ -43,7 +43,7 @@ config_all: build_arm64 build_arm32 build_x86
 build_all:
 	cmake --build build_arm64
 	cmake --build build_arm32
-	#cmake --build build_x86
+	cmake --build build_x86
 
 clean:
 	rm -rf build_arm32 build_arm64 build_x86 build build_em deploy
