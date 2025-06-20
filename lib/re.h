@@ -12,6 +12,30 @@ enum Arch {
 	ARCH_ARM32_THUMB = 7,
 };
 
+enum ParseOptions {
+	PARSE_AS_U8 = 1 << 0,
+	PARSE_AS_U16 = 1 << 1,
+	PARSE_AS_U32 = 1 << 2,
+	PARSE_AS_U64 = 1 << 3,
+	PARSE_AS_AUTO = 1 << 4,
+
+	// Skip X numbers at the beginning of a line
+	SKIP_1_AT_START = 1 << 5,
+	SKIP_2_AT_START = 1 << 6,
+
+	PARSE_AS_BASE_10 = 1 << 10,
+};
+
+enum OutputOptions {
+	OUTPUT_AS_AUTO = 0,
+	OUTPUT_AS_U8 = 1 << 1,
+	OUTPUT_AS_U16 = 1 << 2,
+	OUTPUT_AS_U32 = 1 << 3,
+	OUTPUT_AS_U64 = 1 << 4,
+	OUTPUT_AS_C_ARRAY = 1 << 10,
+	OUTPUT_AS_RUST_ARRAY = 1 << 11,
+};
+
 struct ReTool {
 	enum Arch arch;
 };
@@ -25,6 +49,8 @@ struct OutBuffer {
 	unsigned int length;
 	// optional counter used for newline breaks
 	int counter;
+	// Output options used by some append functions
+	int output_options;
 	/// @brief Clear and reset buffer
 	void (*clear)(struct OutBuffer *);
 	/// @brief Append string or binary data. If string, len can be 0.
@@ -40,4 +66,4 @@ struct OutBuffer create_stdout_hex_buffer();
 struct OutBuffer create_stdout_buffer();
 const void *get_buffer_contents(struct OutBuffer *buf);
 
-int parser_to_buf(const char *input, struct OutBuffer *buf, int options);
+int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, int output_options);

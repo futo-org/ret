@@ -95,14 +95,8 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf
 	err_buf->clear(err_buf);
 
 	re_buf_mem.clear(&re_buf_mem);
-	struct HexPars p;
-	create_parser(&p, input, 0);
 
-	while (1) {
-		struct Number n = parser_next(&p);
-		if (n.eof) break;
-		re_buf_mem.append(&re_buf_mem, &n.n, n.data_type_size);
-	}
+	parser_to_buf(input, &re_buf_mem, PARSE_AS_U8, OUTPUT_AS_AUTO);
 
 	csh handle;
 	cs_insn *insn;
@@ -187,14 +181,11 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 }
 
 int prettify(void) {
-	struct HexPars p;
-	create_parser(&p, "123 123 123", PARSE_AS_SMART);
+	struct OutBuffer buf = create_mem_hex_buffer(0);
 
-	while (1) {
-		struct Number n = parser_next(&p);
-		if (n.eof) return 0;
-		printf("%x\n", (int)n.n);
-	}
+	parser_to_buf("12 12345678 12345678", &buf, PARSE_AS_U32, OUTPUT_AS_AUTO);
+
+	printf("%s\n", buf.buffer);
 	
 	return 0;
 }

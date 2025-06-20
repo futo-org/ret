@@ -1,7 +1,24 @@
 // A smart hex parser, should be able to parse hex text in as many weird formats as possible.
-//#include <stdio.h>
+#include <stdio.h>
 #include "re.h"
-#include "parser.h"
+
+struct HexPars {
+	uint32_t options;
+
+	const char *buf;
+	int of;
+
+	int parsing_long_hex;
+};
+
+
+struct Number {
+	uint64_t n;
+	int n_of_chars;
+	int data_type_size;
+	int too_long;
+	int eof;
+};
 
 /*
 Options
@@ -62,6 +79,8 @@ static int guess_data_type(int n_of_chars) {
 	case 4:
 		return 2;
 	case 8:
+		return 4;
+	case 16:
 		return 8;
 	// Otherwise, it's safe to consider it a u32.
 	default:
@@ -118,7 +137,7 @@ struct Number lex_number(struct HexPars *p) {
 		}
 	}
 
-	if (p->options & PARSE_AS_SMART) {
+	if (p->options & PARSE_AS_AUTO) {
 		n.data_type_size = guess_data_type(n_of_chars);
 	}
 
@@ -137,7 +156,7 @@ struct Number lex_number(struct HexPars *p) {
 //}
 
 void create_parser(struct HexPars *p, const char *in, int options) {
-	p->options = PARSE_AS_SMART;
+	p->options = PARSE_AS_AUTO;
 	p->buf = in;
 	p->parsing_long_hex = 0;
 	p->of = 0;
@@ -183,16 +202,27 @@ struct Number parser_next(struct HexPars *p) {
 	}
 }
 
-int parser_to_buf(const char *input, struct OutBuffer *buf, int options) {
+int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, int output_options) {
 	buf->clear(buf);
 	struct HexPars p;
-	create_parser(&p, input, options);
+	create_parser(&p, input, parse_options);
+
+	int old_opt = buf->output_options;
+	buf->output_options = output_options;
 
 	while (1) {
 		struct Number n = parser_next(&p);
+		if (buf->output_options == OUTPUT_AS_AUTO) {
+			if (n.data_type_size == 4) buf->output_options = OUTPUT_AS_U32;
+			if (n.data_type_size == 2) buf->output_options = OUTPUT_AS_U16;
+			if (n.data_type_size == 1) buf->output_options = OUTPUT_AS_U8;
+			printf("Output type %d\n", n.data_type_size);
+		}
 		if (n.eof) break;
 		buf->append(buf, &n.n, n.data_type_size);
 	}
+
+	buf->output_options = old_opt;
 
 	return 0;
 }
