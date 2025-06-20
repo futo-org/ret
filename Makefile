@@ -38,8 +38,7 @@ build_x86:
 	cmake -G Ninja -B build_x86 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_X86=ON
 
 # emscripten is very slow. run config in parallel.
-config_all: build_arm64 build_arm32
-# build_x86
+config_all: build_arm64 build_arm32 build_x86
 
 build_all:
 	cmake --build build_arm64
