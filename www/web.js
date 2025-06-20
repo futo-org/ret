@@ -22,26 +22,29 @@ skip:
 
 const arm32_demo = `
 adr r1, string
+ldr r2, UART_DR
 top:
 	ldrb r0, [r1]
 	cmp r0, #0x0
 	beq end
-	svc #0x0
+	str r0, [r2]
 	add r1, r1, #0x1
 	b top
 end:
 
 b skip
+UART_DR: .int 0x9000000
 string:
 .ascii "Hello, World\\n"
 .byte 0
 .align 4
 skip:
-
 `;
 const x86_64_demo =
 `
-mov eax, 10h
+mov eax, 0x9000000 // UART_DR
+mov dword ptr [eax], 'X'
+mov dword ptr [eax], '\\n'
 `;
 
 // Prevent selection while dragging
@@ -263,6 +266,19 @@ if (ret.currentArch == ret.ARCH_ARM64) {
 	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(97 36 48)";
 	document.title = "Ret x86";
+} else if (ret.currentArch == ret.ARCH_ARM32) {
+	document.querySelector("#arch-select-text").innerText = "ARM32";
+	document.querySelector("#menu").style.background = "rgb(19 73 64)";
+	document.title = "Ret ARM32";
+}
+
+// Set editor text if empty (will not be if window was duplicated)
+if (editor.toString() == "") {
+	switch (ret.currentArch) {
+		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
+		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
+		case ret.ARCH_ARM32: editor.updateCode(arm32_demo.trim()); break;
+	}
 }
 
 document.querySelector("#assemble").onclick = function() {
@@ -361,14 +377,6 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	if (value == "u32") option = ret.PARSE_AS_U32;
 //	ret.currentParseOption = (ret.currentParseOption ^ ret.PARSE_AS_MASK) | option;
 });
-
-// Set editor text if empty (will not be if window was duplicated)
-if (editor.toString() == "") {
-	switch (ret.currentArch) {
-		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
-		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
-	}
-}
 
 // Try to get F9 to trigger assembler
 document.addEventListener("keydown", keyCapt, false); 

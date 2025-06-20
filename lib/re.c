@@ -40,6 +40,7 @@ int re_is_arch_supported(int arch) {
 
 int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
 	buf->clear(buf);
+	buf->clear(err_buf);
 	ks_engine *ks;
 	ks_err err;
 
@@ -50,6 +51,15 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
 		_ks_mode |= KS_MODE_64;
 	} else if (arch == ARCH_ARM64) {
 		_ks_arch = KS_ARCH_ARM64;
+	} else if (arch == ARCH_ARM32) {
+		_ks_arch = KS_ARCH_ARM;
+		_ks_mode |= KS_MODE_ARM;
+	} else if (arch == ARCH_RISCV32) {
+		_ks_arch = KS_ARCH_RISCV;
+		_ks_mode |= KS_MODE_RISCV32;
+	} else if (arch == ARCH_RISCV64) {
+		_ks_arch = KS_ARCH_RISCV;
+		_ks_mode |= KS_MODE_RISCV64;
 	} else {
 		printf("Unknown architecture %d\n", arch);
 		return -1;

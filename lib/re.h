@@ -9,6 +9,7 @@ enum Arch {
 	ARCH_RISCV32 = 4,
 	ARCH_RISCV64 = 5,
 	ARCH_WASM = 6,
+	ARCH_ARM32_THUMB = 7,
 };
 
 struct ReTool {

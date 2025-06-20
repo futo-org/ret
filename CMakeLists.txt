@@ -63,7 +63,17 @@ set(CMAKE_CROSSCOMPILING OFF) # Fix weird issue where keystone tries to configur
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/keystone ${CMAKE_CURRENT_BINARY_DIR}/keystone)
 
 if(UNICORN_SUPPORT)
-	set(UNICORN_ARCH "aarch64" CACHE STRING "Supported architectures")
+	set(temp_targets "")
+	if(SUPPORT_ARM64)
+		set(temp_targets "${temp_targets} AArch64")
+	endif()
+	if(SUPPORT_ARM32)
+		set(temp_targets "${temp_targets} ARM")
+	endif()
+	if(SUPPORT_X86)
+		set(temp_targets "${temp_targets} X86")
+	endif()
+	set(UNICORN_ARCH ${temp_targets} CACHE STRING "Supported architectures")
 	option(BUILD_SHARED_LIBS "" OFF)
 	option(UNICORN_BUILD_SAMPLES "" OFF)
 	option(UNICORN_INSTALL "" OFF)
@@ -78,7 +88,7 @@ add_executable(ret
 	$<$<BOOL:${UNICORN_SUPPORT}>:lib/unicorn.c>
 )
 
-set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_re_emulator,_parser_to_buf,_start_vm)
+set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_re_emulator,_parser_to_buf)
 
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
 target_compile_definitions(ret PRIVATE ${RET_DEFINES})

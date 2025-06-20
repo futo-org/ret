@@ -40,34 +40,6 @@ void fb_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t valu
 	struct EmulatorState *state = (struct EmulatorState *)user_data;
 }
 
-int start_vm(void) {
-	uc_engine *uc;
-	uc_err err;
-
-	char export[] = {0x60, 0x24, 0x80, 0xd2, };
-
-	err = uc_open(UC_ARCH_ARM64, UC_MODE_ARM, &uc);
-	//uc_ctl_tlb_mode(uc, UC_TLB_VIRTUAL);
-    if (err) {
-        printf("Failed on uc_open() with error returned: %u (%s)\n", err,
-               uc_strerror(err));
-        return -1;
-    }
-
-	uc_mem_map(uc, 0x0, 0x30000, UC_PROT_ALL);
-	uc_mem_write(uc, 0x0, export, sizeof(export));
-
-    err = uc_emu_start(uc, 0x0, 0x0 + 4, 0, 0);
-    if (err) {
-        printf("Failed on uc_emu_start() with error returned: %u\n", err);
-    }
-
-    uint64_t x0 = 0;
-    uc_reg_read(uc, UC_ARM64_REG_X0, &x0);
-    printf("x0: %lx\n", x0);
-	return 0;
-}
-
 static void hook_intr(uc_engine *uc, uint32_t intno, void *user_data) {
 	printf("Interrupt\n");
 }
@@ -86,8 +58,8 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_bu
 		_uc_arch = UC_ARCH_ARM64;
 		_uc_mode |= UC_MODE_ARM;
 	} else if (arch == ARCH_ARM32) {
-		_uc_arch = UC_ARCH_ARM64;
-		_uc_mode |= UC_MODE_32 | UC_MODE_ARM;
+		_uc_arch = UC_ARCH_ARM;
+		_uc_mode |= UC_MODE_ARM;
 	} else {
 		log->append(log, "Unknown architecture", 0);
 		//printf("Unknown architecture %d\n", arch);
@@ -154,7 +126,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_bu
 		log->append(log, "\n", 0);
 	}
 
-	{
+	if (_uc_arch == UC_ARCH_ARM64){
 		int pc_reg = UC_ARM64_REG_PC;
 		int x0_reg = UC_ARM64_REG_X0;
 	
@@ -164,6 +136,14 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_bu
 		for (int i = 0; i < 5; i++) {
 			uc_reg_read(uc, x0_reg + i, &reg);
 			printf("r%d: 0x%X\n", i, reg);
+		}
+	} else if (_uc_arch == UC_ARCH_X86){
+		const char *reg_names[] = {"eax", "ebx", "ecx", "esp", "ebp"};
+		int regs[] = {UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
+
+		for (int i = 0; i < 5; i++) {
+			uc_reg_read(uc, regs[i], &reg);
+			printf("%s: 0x%X\n", reg_names[i], reg);
 		}
 	}
 	
