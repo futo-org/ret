@@ -98,17 +98,32 @@ function setupDropDown(hoverButton, box) {
 	hoverButton.addEventListener("mouseleave", function() {
 		box.style.display = "none";
 	})
-	box.addEventListener("mouseup", function() {
-		box.style.display = "none";
-	})
+//	box.addEventListener("mouseup", function() {
+//		box.style.display = "none";
+//	})
 }
 
 function setupRadio(elementName, initialOptionIndex, callback) {
 	var names = document.getElementsByName(elementName);
 	for (var i = 0; i < names.length; i++) {
-		if (i == initialOptionIndex) names[i].checked = true;
+		if (i == initialOptionIndex) {
+			names[i].checked = true;
+			names[i].classList.add("radio-checked");
+		} else {
+			names[i].checked = false;
+		}
 		names[i].index = i;
-		names[i].onchange = function() {
+		names[i].onmousedown = function() {
+			if (!this.checked) {
+				this.checked = true;
+				this.classList.add("radio-checked");
+			}
+			for (var x = 0; x < names.length; x++) {
+				if (x != this.index) {
+					names[x].checked = false;
+					names[x].classList.remove("radio-checked");
+				}
+			}
 			callback(this.index, this.value, this);
 		}
 	}
@@ -123,6 +138,7 @@ const ret = {
 	ARCH_RISCV64: 5,
 	ARCH_WASM: 6,
 
+	// Hex parser options
 	PARSE_AS_MASK: 0x1f,
 	PARSE_AS_U8: 1 << 0,
 	PARSE_AS_U16: 1 << 1,
@@ -132,6 +148,15 @@ const ret = {
 	SKIP_1_AT_START: 1 << 5,
 	SKIP_2_AT_START: 1 << 6,
 	PARSE_AS_BASE_10: 1 << 10,
+
+	// Buffer output options
+	OUTPUT_AS_AUTO: 0,
+	OUTPUT_AS_U8: 1 << 1,
+	OUTPUT_AS_U16: 1 << 2,
+	OUTPUT_AS_U32: 1 << 3,
+	OUTPUT_AS_U64: 1 << 4,
+	OUTPUT_AS_C_ARRAY: 1 << 10,
+	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 
 	init: function() {
 		this.currentArch = this.checkArch();
@@ -182,7 +207,7 @@ const ret = {
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
 		ret.re_get_mem_buffer = Module.cwrap('re_get_mem_buffer', 'number', []);
 		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
-		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number']);
+		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number', 'number']);
 
 		ret.re_init_globals();
 		ret.err_buf = ret.re_get_err_buffer();
@@ -333,23 +358,25 @@ document.querySelector("#run").onclick = function() {
 	}
 }
 
-document.querySelector("#format-hex").onclick = function() {
-	if (ret.hex_buf == null) throw "NULL";	
-	ret.clearLog();
-	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.currentParseOption);
-	if (rc != 0) {
-		ret.log("Failed to parse bytes");
-	} else {
-		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
-		var output_as = "auto", parse_as = "";
-		if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
-		if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
-		if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
-		if (ret.currentParseOption & ret.PARSE_AS_SMART) parse_as = "auto";
-		if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
-		if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as = ", base10";
+document.querySelector("#hex-dropdown").onclick = function(e) {
+	if (!document.querySelector("#hex-dropdown-box").contains(e.target)) {
+		if (ret.hex_buf == null) throw "NULL";	
+		ret.clearLog();
+		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.currentParseOption, ret.currentOutputOption);
+		if (rc != 0) {
+			ret.log("Failed to parse bytes");
+		} else {
+			document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+			var output_as = "auto", parse_as = "";
+			if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
+			if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
+			if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
+			if (ret.currentParseOption & ret.PARSE_AS_SMART) parse_as = "auto";
+			if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
+			if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as = ", base10";
 
-		ret.log("Formatted hex (parse as '" + parse_as + "') (output as '" + output_as + "')");
+			ret.log("Formatted hex (parse as '" + parse_as + "') (output as '" + output_as + "')");
+		}
 	}
 }
 
@@ -362,20 +389,21 @@ document.querySelector("#base-address").onkeyup = function() {
 
 setupRadio("select_parse_as", 0, function(index, value, e) {
 	var option = 0;
-	if (value == "smart") option = ret.PARSE_AS_SMART;
-	if (value == "u8") option = ret.PARSE_AS_U8;
-	if (value == "u16") option = ret.PARSE_AS_U16;
-	if (value == "u32") option = ret.PARSE_AS_U32;
-	ret.currentParseOption = (ret.currentParseOption ^ ret.PARSE_AS_MASK) | option;
+	if (index == 0) option = ret.PARSE_AS_SMART;
+	if (index == 1) option = ret.PARSE_AS_U8;
+	if (index == 2) option = ret.PARSE_AS_U16;
+	if (index == 3) option = ret.PARSE_AS_U32;
+	ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
 });
 
 
 setupRadio("select_output_as", 0, function(index, value, e) {
 	var option = 0;
-	if (value == "u8") option = ret.PARSE_AS_U8;
-	if (value == "c") option = ret.PARSE_AS_U16;
-	if (value == "u32") option = ret.PARSE_AS_U32;
-//	ret.currentParseOption = (ret.currentParseOption ^ ret.PARSE_AS_MASK) | option;
+	if (index == 0) option = ret.OUTPUT_AS_AUTO;
+	if (index == 1) option = ret.OUTPUT_AS_U8;
+	if (index == 2) option = ret.OUTPUT_AS_U32;
+	if (index == 3) option = ret.OUTPUT_AS_C;
+//	ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
 });
 
 // Try to get F9 to trigger assembler

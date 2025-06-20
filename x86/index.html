@@ -22,33 +22,25 @@
 		<div class="btn" id="disassemble">Disassemble</div>
 		<div class="btn" id="run">Assemble and Run</div>
 		<div class="btn" id="hex-dropdown">
-			<span>Bytes &#9660;</span>
+			<span>Format Hex</span>
 			<div class="dropdown-content" id="hex-dropdown-box">
-				<div>
-					<button class="btn" id="format-hex">Format hex</button>
-					Parse as:
-					<form>
-						<input type="radio" name="select_parse_as" id="smart" value="smart">
-						<label for="u32">smart</label>
-						<input type="radio" name="select_parse_as" id="u8" value="u8">
-						<label for="u8">u8</label>
-						<input type="radio" name="select_parse_as" id="u16" value="u16">
-						<label for="u16">u16</label>
-						<input type="radio" name="select_parse_as" id="u32" value="u32">
-						<label for="u32">u32</label>
-					</form>
+				<!-- <button class="btn" id="format-hex">Format hex</button> -->
+				<span class="dropdown-text">Parse as:</span>
+				<div class="radio-button" name="select_parse_as">smart</div>
+				<div class="radio-button" name="select_parse_as">u8</div>
+				<div class="radio-button" name="select_parse_as">u16</div>
+				<div class="radio-button" name="select_parse_as">u32</div>
 
-					Output as:
-					<form>
-						<input type="radio" name="select_output_as" id="u8" value="u8">
-						<label for="u8">u8</label>
-						<input type="radio" name="select_output_as" id="u32" value="u32">
-						<label for="u32">u32</label>
-						<input type="radio" name="select_output_as" id="c" value="c">
-						<label for="u32">C array</label>
-					</form>
+				<span class="dropdown-text">Output as:</span>
+				<div class="radio-button" name="select_output_as">auto</div>
+				<div class="radio-button" name="select_output_as">u8</div>
+				<div class="radio-button" name="select_output_as">u32</div>
+				<div class="radio-button" name="select_output_as">C array</div>
 
-				</div>
+				<!-- <div style="padding: 10px;"> -->
+				<!-- 	<input type="checkbox" id="usebase10" name="usebase10" /> -->
+				<!-- 	<label for="usebase10">Use Base 10?</label> -->
+				<!-- </div> -->
 			</div>
 		</div>
 		<div class="right">

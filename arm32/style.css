@@ -108,7 +108,38 @@ textarea, #asm {
 	white-space: nowrap;
 	font-family: Sans-Serif;
 	font-size: 10pt;
+	
 }
+
+.radio-button {
+	user-select: none;
+	height: 40px;
+	margin: 0px;
+	border: none;
+	padding: 1px 50px;
+	background: #4a4a4a;
+	color: white;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	white-space: nowrap;
+	font-family: Sans-Serif;
+	font-size: 10pt;
+	box-sizing: border-box;
+}
+
+.radio-checked {
+	background: #323232;
+	border: 2px solid black;
+}
+
+.dropdown-text {
+	display: block;
+	padding: 10px;
+}
+
 
 /* .btn span { */
 /* 	display: block; */
@@ -140,7 +171,9 @@ textarea, #asm {
 }
 
 .dropdown-content .btn {
-	display: block;
+	width: 100%;
+}
+.dropdown-content .radio-button {
 	width: 100%;
 }
 
