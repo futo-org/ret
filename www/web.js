@@ -42,7 +42,7 @@ skip:
 `;
 const x86_64_demo =
 `
-mov eax, 0x9000000 ; UART_DR
+mov eax, 0x9000000 // UART_DR
 mov dword ptr [eax], 'X'
 mov dword ptr [eax], '\\n'
 `;
