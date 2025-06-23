@@ -289,16 +289,17 @@ if (ret.currentArch == ret.ARCH_ARM64) {
 	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(23 55 81)";
 	document.title = "Ret ARM64";
-	document.querySelector(".editor").classList.add("language-armasm")
+	document.querySelector(".editor").classList.add("language-armasm");
 } else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
 	document.querySelector("#arch-select-text").innerText = "ARM64";
 	document.querySelector("#menu").style.background = "rgb(97 36 48)";
 	document.title = "Ret x86";
-	document.querySelector(".editor").classList.add("language-x86asm")
+	document.querySelector(".editor").classList.add("language-x86asm");
 } else if (ret.currentArch == ret.ARCH_ARM32) {
 	document.querySelector("#arch-select-text").innerText = "ARM32";
 	document.querySelector("#menu").style.background = "rgb(19 73 64)";
 	document.title = "Ret ARM32";
+	document.querySelector(".editor").classList.add("language-armasm");
 }
 
 function escape_html(s) {
@@ -313,7 +314,7 @@ const highlight = editor => {
 	hljs.highlightElement(editor);
 };
 
-let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\\t'});
+let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\t'});
 
 // Set editor text if empty (will not be if window was duplicated)
 if (editor.toString() == "") {
