@@ -45,7 +45,7 @@ static void buf_append_hex(struct OutBuffer *buf, const void *in, unsigned int l
 	if (buf->output_options & OUTPUT_AS_U8) data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U16) data_type_size = 2;
 	if (buf->output_options & OUTPUT_AS_U32) data_type_size = 4;
-	
+
 	for (unsigned int i = 0; i < len; i += data_type_size) {
 		if (data_type_size == 1) {
 			char ch = ' ';
@@ -57,13 +57,20 @@ static void buf_append_hex(struct OutBuffer *buf, const void *in, unsigned int l
 			read_u8((const uint8_t *)in + i, &b);
 			buf->offset += sprintf(buf->buffer + buf->offset, "%02x%c", b, ch);
 		} else if (data_type_size == 2) {
+			if (i + 2 >= len + 1) break;
 			uint16_t b;
 			read_u16((const uint8_t *)in + i, &b);
 			buf->offset += sprintf(buf->buffer + buf->offset, "%04x%c", b, '\n');
 		} else if (data_type_size == 4) {
-			uint32_t b;
-			read_u32((const uint8_t *)in + i, &b);
-			buf->offset += sprintf(buf->buffer + buf->offset, "%08x%c", b, '\n');
+			// u32/u16 be read incrementally to avoid overflowing
+			const uint8_t *b = (const uint8_t *)in + i;
+			uint32_t out = 0;
+			if (i + 1 < len + 1) out |= (uint32_t)b[0];
+			if (i + 2 < len + 1) out |= ((uint32_t)b[1] << 8);
+			if (i + 3 < len + 1) out |= ((uint32_t)b[2] << 16);
+			if (i + 4 < len + 1) out |= ((uint32_t)b[3] << 24);
+
+			buf->offset += sprintf(buf->buffer + buf->offset, "%08x%c", out, '\n');
 		}
 		buf->counter++;
 	}
@@ -127,8 +134,14 @@ static void stdio_append(struct OutBuffer *buf, const void *in, unsigned int len
 	printf("%s", (const char *)in);
 	fflush(stdout);
 }
+
 const void *get_buffer_contents(struct OutBuffer *buf) {
 	return buf->buffer;
+}
+
+void buffer_to_buffer(struct OutBuffer *buf_in, struct OutBuffer *buf_out, int output_options) {
+	buf_out->clear(buf_out);
+	buf_out->append(buf_out, buf_in->buffer, buf_in->offset);
 }
 
 struct OutBuffer create_stdout_hex_buffer(void) {

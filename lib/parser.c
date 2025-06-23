@@ -21,27 +21,9 @@ struct Number {
 };
 
 /*
-Options
-- Parse as a sequence of:
-  - U8
-  - U16
-  - U32
-  - U64
-  - Clever (mixed)
-- Parse as base10?
-
-Parse sequence of 3 bytes as u8:
-03f 0df -> 3f df
-
-Parse sequence of 4 bytes as u16: 
-00f1 66 -> f1 00 66
-
-Parse sequence of any longer as u32:
-00001 12345678 -> 01 00 00 00 78 56 34 12
-
-If '0x' is found, parse as hex always:
-0x123 0x123 0x123 -> 7b 7b 7b
-
+TODO: How to parse this?
+- Parse as u16
+- Skip first number on each line
 0000000 2023 7243 736f 2d73 6f63 706d 6c69 7461
 0000010 6f69 206e 7473 6275 2073 6f66 2072 4e47
 0000020 2055 616d 656b 230a 7720 203a 6957 646e
@@ -70,7 +52,7 @@ static int is_hexa(char c) {
 
 static int guess_data_type(int n_of_chars) {
 	switch (n_of_chars) {
-	// Handle single digits, double, and triple (0ab, 021)
+	// Handle single digits, double, and triple (0ab, 021, and 0xff since 'x' gets skipped)
 	case 1:
 	case 2:
 		return 1;
@@ -130,6 +112,7 @@ struct Number lex_number(struct HexPars *p) {
 			n.data_type_size = 8;
 			break;
 		} else if (n_of_chars > 16) {
+			// In this case, we are PARSE_AS_AUTO
 			// Reset to let caller handle longer sequences
 			p->parsing_long_hex = 1;
 			p->of = starting_of;
@@ -147,14 +130,6 @@ struct Number lex_number(struct HexPars *p) {
 	return n;
 }
 
-//static int parse_as_to_size(uint32_t option) {
-//	if (option & PARSE_AS_U8) return 1;
-//	if (option & PARSE_AS_U16) return 2;
-//	if (option & PARSE_AS_U32) return 4;
-//	if (option & PARSE_AS_U64) return 8;
-//	return 1;
-//}
-
 void create_parser(struct HexPars *p, const char *in, int options) {
 	p->options = PARSE_AS_AUTO;
 	p->buf = in;
@@ -167,17 +142,6 @@ struct Number parser_next(struct HexPars *p) {
 
 	struct Number eof = {0};
 	eof.eof = 1;
-
-	parsing_long_hex:;
-	if (p->parsing_long_hex) {
-		if (in[p->of] == '\0') return eof;
-		if (is_digit(in[p->of]) || is_hexa(in[p->of])) {
-			struct Number n = lex_number(p);
-			return n;
-		} else {
-			p->parsing_long_hex = 0;
-		}
-	}
 
 	while (1) {
 		if (in[p->of] == '\0') {
@@ -192,8 +156,11 @@ struct Number parser_next(struct HexPars *p) {
 		}
 		if (is_digit(in[p->of]) || is_hexa(in[p->of])) {
 			struct Number n = lex_number(p);
+			// Assume long sequences are a u8 stream
 			if (p->parsing_long_hex) {
-				goto parsing_long_hex;
+				p->options |= PARSE_AS_U8;
+				p->parsing_long_hex = 0;
+				continue;
 			}
 			return n;
 		} else {
@@ -210,6 +177,10 @@ int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, i
 	int old_opt = buf->output_options;
 	buf->output_options = output_options;
 
+	// Write numbers into buffer first before outputting in the case that u8
+	// needs to be transformed into u32 or u64
+	uint8_t buffer[64];
+	unsigned int of = 0;
 	while (1) {
 		struct Number n = parser_next(&p);
 		if (buf->output_options == OUTPUT_AS_AUTO) {
@@ -217,8 +188,21 @@ int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, i
 			if (n.data_type_size == 2) buf->output_options = OUTPUT_AS_U16;
 			if (n.data_type_size == 1) buf->output_options = OUTPUT_AS_U8;
 		}
-		if (n.eof) break;
-		buf->append(buf, &n.n, n.data_type_size);
+		if (of + 4 >= sizeof(buffer)) {
+			buf->append(buf, buffer, of);
+			of = 0;
+		}
+		if (!n.eof) {
+			if (n.data_type_size == 4) of += write_u32(buffer + of, n.n);
+			if (n.data_type_size == 2) of += write_u16(buffer + of, n.n);
+			if (n.data_type_size == 1) of += write_u8(buffer + of, n.n);
+		} else {
+			break;
+		}
+	}
+
+	if (of > 0) {
+		buf->append(buf, buffer, of);
 	}
 
 	buf->output_options = old_opt;

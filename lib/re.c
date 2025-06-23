@@ -149,7 +149,7 @@ int cli_asm_test(void) {
 	return rc;
 }
 
-static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
+static int cli_asm(enum Arch arch, const char *filename) {
 	struct OutBuffer buf = create_mem_hex_buffer();
 	struct OutBuffer err = create_stdout_buffer();
 
@@ -174,15 +174,14 @@ static int cli_asm(struct ReTool *re, enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(re->arch, 0, &buf, &err, input);
+	int rc = re_assemble(arch, 0, &buf, &err, input);
 	printf("\n");
 	return rc;
 }
 
 int prettify(void) {
 	struct OutBuffer buf = create_mem_hex_buffer();
-//	struct OutBuffer buf2 = create_mem_buffer();
-	parser_to_buf("1 2 3 4 5 6 7 8 9", &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
+	parser_to_buf("12 34 56 78 12 34 56 78 91", &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
 	printf("%s\n", buf.buffer);	
 	return 0;
 }
@@ -194,15 +193,12 @@ static int help(void) {
 }
 
 int main(int argc, char **argv) {
-	struct ReTool re;
-	re.arch = ARCH_ARM64;
-
 	enum Arch arch = ARCH_ARM64;
 	for (int i = 0; i < argc; i++) {
 		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86_64;
 		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
-		if (!strcmp(argv[i], "--asm")) return cli_asm(&re, arch, argv[i + 1]);
+		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--hex")) return prettify();
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();
 	}

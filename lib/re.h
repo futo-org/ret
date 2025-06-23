@@ -24,6 +24,7 @@ enum ParseOptions {
 	SKIP_2_AT_START = 1 << 6,
 
 	PARSE_AS_BASE_10 = 1 << 10,
+	PARSE_AS_BIG_ENDIAN = 1 << 11,
 };
 
 enum OutputOptions {
@@ -34,6 +35,7 @@ enum OutputOptions {
 	OUTPUT_AS_U64 = 1 << 4,
 	OUTPUT_AS_C_ARRAY = 1 << 10,
 	OUTPUT_AS_RUST_ARRAY = 1 << 11,
+	OUTPUT_AS_BIG_ENDIAN = 1 << 12,
 };
 
 struct ReTool {
@@ -67,3 +69,22 @@ struct OutBuffer create_stdout_buffer(void);
 const void *get_buffer_contents(struct OutBuffer *buf);
 
 int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, int output_options);
+
+inline static int write_u8(void *buf, uint8_t out) {
+	((uint8_t *)buf)[0] = out;
+	return 1;
+}
+inline static int write_u16(void *buf, uint16_t out) {
+	uint8_t *b = (uint8_t *)buf;
+	b[0] = out & 0xFF;
+	b[1] = (out >> 8) & 0xFF;
+	return 2;
+}
+inline static int write_u32(void *buf, uint32_t out) {
+	uint8_t *b = (uint8_t *)buf;
+	b[0] = out & 0xFF;
+	b[1] = (out >> 8) & 0xFF;
+	b[2] = (out >> 16) & 0xFF;
+	b[3] = (out >> 24) & 0xFF;
+	return 4;
+}
