@@ -26,6 +26,9 @@ if(EMSCRIPTEN AND SUPPORT_MULTITHREADING)
 endif()
 
 set(RET_DEFINES "")
+if(UNICORN_SUPPORT)
+	set(RET_DEFINES ${RET_DEFINES} -DRET_SUPPORT_UNICORN=1)
+endif()
 
 # Import capstone disassembly framework
 option(BUILD_LIBS_ONLY "" ON)

@@ -37,6 +37,14 @@ int re_is_arch_supported(int arch) {
 	return 0;
 }
 
+int re_is_unicorn_supported(void) {
+#ifdef RET_SUPPORT_UNICORN
+	return 1;
+#else
+	return 0;
+#endif
+}
+
 int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
 	buf->clear(buf);
 	buf->clear(err_buf);

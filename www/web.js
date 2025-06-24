@@ -112,10 +112,10 @@ function setupDropDown(hoverButton, box, hideOnMouseUp = false, onlyShowOnClick 
 		hoverButton.addEventListener("mouseenter", function() {
 			box.style.display = "flex";
 		});
+		hoverButton.addEventListener("mouseleave", function() {
+			box.style.display = "none";
+		});
 	}
-	hoverButton.addEventListener("mouseleave", function() {
-		box.style.display = "none";
-	});
 	if (hideOnMouseUp) {
 		box.addEventListener("mouseup", function() {
 			box.style.display = "none";
@@ -244,6 +244,8 @@ const ret = {
 
 	main: function() {
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
+		ret.re_is_arch_supported = Module.cwrap('re_is_arch_supported', 'number', []);
+		ret.re_is_unicorn_supported = Module.cwrap('re_is_unicorn_supported', 'number', []);
 		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']);
 		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
 		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']);
@@ -453,6 +455,9 @@ document.querySelector("#disassemble").onclick = function() {
 }
 
 document.querySelector("#run").onclick = function() {
+	if (ret.re_is_unicorn_supported() != 0) {
+		ret.log("This target doesn't have Unicorn VM support.");
+	}
 	if (ret.mem_buf == null || ret.err_buf == null || ret.str_buf == null) throw "NULL";	
 	ret.clearLog();
 	var code = editor.toString();
