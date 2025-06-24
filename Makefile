@@ -40,7 +40,7 @@ build_x86:
 	cmake -G Ninja -B build_x86 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_X86=ON
 
 build_riscv:
-	cmake -G Ninja -B build_riscv -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_RISCV=ON
+	cmake -G Ninja -B build_riscv -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
 
 # emscripten is very slow. run config in parallel.
 config_all: build_arm64 build_arm32 build_x86 build_riscv
