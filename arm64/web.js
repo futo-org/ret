@@ -246,7 +246,7 @@ const ret = {
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
 		ret.re_is_arch_supported = Module.cwrap('re_is_arch_supported', 'number', []);
 		ret.re_is_unicorn_supported = Module.cwrap('re_is_unicorn_supported', 'number', []);
-		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']);
+		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string', 'number']);
 		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
 		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']);
 		ret.re_get_hex_buffer = Module.cwrap('re_get_hex_buffer', 'number', []);
@@ -401,7 +401,7 @@ if (editor.toString() == "") {
 
 function finishAssembler(code) {
 	var then = Date.now();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code);
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code, ret.currentOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -455,14 +455,14 @@ document.querySelector("#disassemble").onclick = function() {
 }
 
 document.querySelector("#run").onclick = function() {
+	if (ret.mem_buf == null || ret.err_buf == null || ret.str_buf == null) throw "NULL";	
+	ret.clearLog();
 	if (ret.re_is_unicorn_supported() == 0) {
 		ret.log("This target doesn't have Unicorn VM support.");
 		return;
 	}
-	if (ret.mem_buf == null || ret.err_buf == null || ret.str_buf == null) throw "NULL";	
-	ret.clearLog();
 	var code = editor.toString();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.err_buf, code);
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.err_buf, code, ret.currentOutputOption);
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
