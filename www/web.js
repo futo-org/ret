@@ -277,6 +277,10 @@ const ret = {
 			arguments += "-mthumb ";
 		} else if (arch == ret.ARCH_X86_64) {
 			compiler = "gnuassnapshot";
+		} else if (arch == ret.ARCH_RISCV64) {
+			compiler = "gnuasriscv64g1510";
+		} else if (arch == ret.ARCH_RISCV32) {
+			compiler = "gnuasriscv32g1510";
 		} else {
 			throw "Error";
 		}
@@ -291,14 +295,13 @@ const ret = {
 					userArguments: arguments,
 					filters: {
 						intel: false,
-						comments: true,
+						comments: false,
 						labels: true,
 						directives: true
 					}
 				}
 			})
 		});
-		
 		return await res.text();
 	}
 };
@@ -394,27 +397,44 @@ if (editor.toString() == "") {
 	}
 }
 
-document.querySelector("#assemble").onclick = function() {
-	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
-	ret.clearLog();
-	var code = editor.toString();
+function finishAssembler(code) {
 	var then = Date.now();
 	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code);
 	var now = Date.now();
 	if (rc != 0) {
-		if (ret.useGodboltOnAssembler) {
-			(async function() {
-				var x = await ret.godbolt(ret.currentArch, code);
-				if (x != null) {
-					ret.log(x);
-				}
-			})();
-		} else {
-			ret.log(ret.get_buffer_contents(ret.err_buf));
-		}
+		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
 		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
 		ret.log("Assembled in " + String(now - then) + "us");
+	}
+}
+
+document.querySelector("#assemble").onclick = function() {
+	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
+	ret.clearLog();
+	var code = editor.toString();
+	if (!code.endsWith("\n")) {
+		// make file valid
+		code += "\n";
+	}
+	if (ret.useGodboltOnAssembler) {
+		(async function() {
+			var x = await ret.godbolt(ret.currentArch, code);
+			if (x != null) {
+				var split = x.split("\nStandard error:\n");
+				if (split.length == 1) {
+					ret.log("No errors from Godbolt API.");
+					finishAssembler(code);
+				} else {
+					ret.log("Error message from Godbolt API:");
+					ret.log(split[1]);
+				}
+			} else {
+				// Request error
+			}
+		})();
+	} else {
+		finishAssembler(code);
 	}
 }
 
