@@ -455,8 +455,9 @@ document.querySelector("#disassemble").onclick = function() {
 }
 
 document.querySelector("#run").onclick = function() {
-	if (ret.re_is_unicorn_supported() != 0) {
+	if (ret.re_is_unicorn_supported() == 0) {
 		ret.log("This target doesn't have Unicorn VM support.");
+		return;
 	}
 	if (ret.mem_buf == null || ret.err_buf == null || ret.str_buf == null) throw "NULL";	
 	ret.clearLog();
