@@ -50,6 +50,10 @@ mov eax, 0x9000000 // UART_DR
 mov dword ptr [eax], 'X'
 mov dword ptr [eax], '\\n'
 `;
+const riscv64_demo =
+`
+addi x0, x0, 0x12
+`;
 
 // Prevent selection while dragging
 function pauseEvent(e){
@@ -108,10 +112,10 @@ function setupDropDown(hoverButton, box, hideOnMouseUp = false, onlyShowOnClick 
 		hoverButton.addEventListener("mouseenter", function() {
 			box.style.display = "flex";
 		});
+		hoverButton.addEventListener("mouseleave", function() {
+			box.style.display = "none";
+		});
 	}
-	hoverButton.addEventListener("mouseleave", function() {
-		box.style.display = "none";
-	});
 	if (hideOnMouseUp) {
 		box.addEventListener("mouseup", function() {
 			box.style.display = "none";
@@ -191,7 +195,12 @@ const ret = {
 			} else {
 				return ret.ARCH_ARM32;
 			}
-		} else if (window.location.pathname.includes("rv64")) {
+		} else if (window.location.pathname.includes("riscv")) {
+			if (ret.urlOptions.hasOwnProperty("rv32")) {
+				return ret.ARCH_RISCV32;
+			} else {
+				return ret.ARCH_RISCV64;
+			}
 			return ret.ARCH_RISCV64;
 		} else if (window.location.pathname.includes("x86")) {
 			return ret.ARCH_X86_64;
@@ -222,9 +231,9 @@ const ret = {
 		} else if (arch == ret.ARCH_ARM32_THUMB) {
 			window.location.href = "../arm32/?thumb";
 		} else if (arch == ret.ARCH_RISCV64) {
-			window.location.href = "../rv64/";
+			window.location.href = "../riscv/";
 		} else if (arch == ret.ARCH_RISCV32) {
-			window.location.href = "../rv32/";
+			window.location.href = "../riscv/?rv32";
 		}
 	},
 
@@ -235,6 +244,8 @@ const ret = {
 
 	main: function() {
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
+		ret.re_is_arch_supported = Module.cwrap('re_is_arch_supported', 'number', []);
+		ret.re_is_unicorn_supported = Module.cwrap('re_is_unicorn_supported', 'number', []);
 		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string']);
 		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
 		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']);
@@ -268,6 +279,10 @@ const ret = {
 			arguments += "-mthumb ";
 		} else if (arch == ret.ARCH_X86_64) {
 			compiler = "gnuassnapshot";
+		} else if (arch == ret.ARCH_RISCV64) {
+			compiler = "gnuasriscv64g1510";
+		} else if (arch == ret.ARCH_RISCV32) {
+			compiler = "gnuasriscv32g1510";
 		} else {
 			throw "Error";
 		}
@@ -282,14 +297,13 @@ const ret = {
 					userArguments: arguments,
 					filters: {
 						intel: false,
-						comments: true,
+						comments: false,
 						labels: true,
 						directives: true
 					}
 				}
 			})
 		});
-		
 		return await res.text();
 	}
 };
@@ -317,6 +331,12 @@ document.querySelector("#switch-arm32thumb").onclick = function() {
 document.querySelector("#switch-x86").onclick = function() {
 	ret.switchArch(ret.ARCH_X86);
 }
+document.querySelector("#switch-riscv").onclick = function() {
+	ret.switchArch(ret.ARCH_RISCV64);
+}
+document.querySelector("#switch-riscv32").onclick = function() {
+	ret.switchArch(ret.ARCH_RISCV32);
+}
 
 function updatePageArch() {
 	// Change menu color depending on arch
@@ -339,6 +359,16 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
 		document.querySelector("#menu").style.background = "rgb(24 91 83)";
 		document.title = "Ret Arm32 Thumb";
+		document.querySelector(".editor").classList.add("language-armasm");
+	} else if (ret.currentArch == ret.ARCH_RISCV64) {
+		document.querySelector("#arch-select-text").innerText = "RISC-V";
+		document.querySelector("#menu").style.background = "rgb(170 65 18)";
+		document.title = "Ret RISC-V";
+		document.querySelector(".editor").classList.add("language-armasm");
+	} else if (ret.currentArch == ret.ARCH_RISCV32) {
+		document.querySelector("#arch-select-text").innerText = "RISC-V 32";
+		document.querySelector("#menu").style.background = "rgb(165 99 70)";
+		document.title = "Ret RISC-V 32";
 		document.querySelector(".editor").classList.add("language-armasm");
 	}
 }
@@ -365,6 +395,19 @@ if (editor.toString() == "") {
 		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 		case ret.ARCH_ARM32: editor.updateCode(arm32_demo.trim()); break;
 		case ret.ARCH_ARM32_THUMB: editor.updateCode(arm32thumb_demo.trim()); break;
+		case ret.ARCH_RISCV64: editor.updateCode(riscv64_demo.trim()); break;
+	}
+}
+
+function finishAssembler(code) {
+	var then = Date.now();
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code);
+	var now = Date.now();
+	if (rc != 0) {
+		ret.log(ret.get_buffer_contents(ret.err_buf));
+	} else {
+		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+		ret.log("Assembled in " + String(now - then) + "us");
 	}
 }
 
@@ -372,23 +415,28 @@ document.querySelector("#assemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
 	ret.clearLog();
 	var code = editor.toString();
-	var then = Date.now();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code);
-	var now = Date.now();
-	if (rc != 0) {
-		if (ret.useGodboltOnAssembler) {
-			(async function() {
-				var x = await ret.godbolt(ret.currentArch, code);
-				if (x != null) {
-					ret.log(x);
+	if (!code.endsWith("\n")) {
+		// make file valid
+		code += "\n";
+	}
+	if (ret.useGodboltOnAssembler) {
+		(async function() {
+			var x = await ret.godbolt(ret.currentArch, code);
+			if (x != null) {
+				var split = x.split("\nStandard error:\n");
+				if (split.length == 1) {
+					ret.log("No errors from Godbolt API.");
+					finishAssembler(code);
+				} else {
+					ret.log("Error message from Godbolt API:");
+					ret.log(split[1]);
 				}
-			})();
-		} else {
-			ret.log(ret.get_buffer_contents(ret.err_buf));
-		}
+			} else {
+				// Request error
+			}
+		})();
 	} else {
-		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
-		ret.log("Assembled in " + String(now - then) + "us");
+		finishAssembler(code);
 	}
 }
 
@@ -407,6 +455,9 @@ document.querySelector("#disassemble").onclick = function() {
 }
 
 document.querySelector("#run").onclick = function() {
+	if (ret.re_is_unicorn_supported() != 0) {
+		ret.log("This target doesn't have Unicorn VM support.");
+	}
 	if (ret.mem_buf == null || ret.err_buf == null || ret.str_buf == null) throw "NULL";	
 	ret.clearLog();
 	var code = editor.toString();
