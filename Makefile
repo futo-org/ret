@@ -1,7 +1,7 @@
 CMAKE ?= /home/daniel/Pulled/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DCMAKE_BUILD_TYPE=Release
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DCMAKE_BUILD_TYPE=Release
 
 cli_build:
 	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DUNICORN_SUPPORT=OFF
@@ -25,6 +25,7 @@ deploy:
 	$(call deploy,arm64)
 	$(call deploy,arm32)
 	$(call deploy,x86)
+	$(call deploy,riscv)
 
 	cp www/landing.html deploy/index.html
 	cp www/favicon.ico deploy/favicon.ico
@@ -38,13 +39,17 @@ build_arm32:
 build_x86:
 	cmake -G Ninja -B build_x86 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_X86=ON
 
+build_riscv:
+	cmake -G Ninja -B build_riscv -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_RISCV=ON
+
 # emscripten is very slow. run config in parallel.
-config_all: build_arm64 build_arm32 build_x86
+config_all: build_arm64 build_arm32 build_x86 build_riscv
 
 build_all:
 	cmake --build build_arm64
 	cmake --build build_arm32
 	cmake --build build_x86
+	cmake --build build_riscv
 
 clean:
 	rm -rf build_arm32 build_arm64 build_x86 build build_em deploy

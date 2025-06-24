@@ -50,6 +50,10 @@ mov eax, 0x9000000 // UART_DR
 mov dword ptr [eax], 'X'
 mov dword ptr [eax], '\\n'
 `;
+const riscv64_demo =
+`
+addi x0, x0, 0x12
+`;
 
 // Prevent selection while dragging
 function pauseEvent(e){
@@ -191,7 +195,12 @@ const ret = {
 			} else {
 				return ret.ARCH_ARM32;
 			}
-		} else if (window.location.pathname.includes("rv64")) {
+		} else if (window.location.pathname.includes("riscv")) {
+			if (ret.urlOptions.hasOwnProperty("rv32")) {
+				return ret.ARCH_RISCV32;
+			} else {
+				return ret.ARCH_RISCV64;
+			}
 			return ret.ARCH_RISCV64;
 		} else if (window.location.pathname.includes("x86")) {
 			return ret.ARCH_X86_64;
@@ -222,9 +231,9 @@ const ret = {
 		} else if (arch == ret.ARCH_ARM32_THUMB) {
 			window.location.href = "../arm32/?thumb";
 		} else if (arch == ret.ARCH_RISCV64) {
-			window.location.href = "../rv64/";
+			window.location.href = "../riscv/";
 		} else if (arch == ret.ARCH_RISCV32) {
-			window.location.href = "../rv32/";
+			window.location.href = "../riscv/?rv32";
 		}
 	},
 
@@ -340,6 +349,16 @@ function updatePageArch() {
 		document.querySelector("#menu").style.background = "rgb(24 91 83)";
 		document.title = "Ret Arm32 Thumb";
 		document.querySelector(".editor").classList.add("language-armasm");
+	} else if (ret.currentArch == ret.ARCH_RISCV64) {
+		document.querySelector("#arch-select-text").innerText = "RISC-V";
+		document.querySelector("#menu").style.background = "rgb(170 65 18)";
+		document.title = "Ret RISC-V";
+		document.querySelector(".editor").classList.add("language-armasm");
+	} else if (ret.currentArch == ret.ARCH_RISCV32) {
+		document.querySelector("#arch-select-text").innerText = "RISC-V 32";
+		document.querySelector("#menu").style.background = "rgb(165 99 70)";
+		document.title = "Ret RISC-V 32";
+		document.querySelector(".editor").classList.add("language-armasm");
 	}
 }
 
@@ -365,6 +384,7 @@ if (editor.toString() == "") {
 		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 		case ret.ARCH_ARM32: editor.updateCode(arm32_demo.trim()); break;
 		case ret.ARCH_ARM32_THUMB: editor.updateCode(arm32thumb_demo.trim()); break;
+		case ret.ARCH_RISCV64: editor.updateCode(riscv64_demo.trim()); break;
 	}
 }
 

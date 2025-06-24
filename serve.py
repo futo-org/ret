@@ -16,7 +16,7 @@ class CORSHandler(SimpleHTTPRequestHandler):
 			return os.path.join(root, 'landing.html')
 		if parsed_path in ('/', '/favicon.ico'):
 			return os.path.join(root, 'favicon.ico')
-		if parsed_path.startswith(('/arm64', '/arm32', '/x86', '/riscv64', '/riscv32')):
+		if parsed_path.startswith(('/arm64', '/arm32', '/x86', '/riscv')):
 			parts = parsed_path.strip('/').split('/', 1)
 			subpath = parts[1] if len(parts) > 1 else ''
 			return os.path.join(root, subpath)
