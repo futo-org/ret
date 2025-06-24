@@ -92,10 +92,13 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, s
 		printf("%s\n", buffer);
 		err_buf->append(err_buf, buffer, 0);
 		return -1;
-	} else {
-		buffer_append_mode(buf, encode, size, output_options);
-		ks_free(encode);
+	} else if (size == 0) {
+		err_buf->append(err_buf, "ERROR: Assembler returned 0 bytes", 0);
+		return -1;
 	}
+
+	buffer_append_mode(buf, encode, size, output_options);
+	ks_free(encode);
 
 	return 0;
 }
@@ -223,6 +226,8 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86_64;
 		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
+		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV64;
+		
 		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--hex")) return prettify();
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();

@@ -39,11 +39,6 @@ string:
 .align 4
 skip:
 `;
-const arm32thumb_demo = `
-mov r0, #0x9000000
-mov r1, 'X'
-str r1, [r0]
-`;
 const x86_64_demo =
 `
 mov eax, 0x9000000 // UART_DR
@@ -395,8 +390,16 @@ if (editor.toString() == "") {
 		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
 		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 		case ret.ARCH_ARM32: editor.updateCode(arm32_demo.trim()); break;
-		case ret.ARCH_ARM32_THUMB: editor.updateCode(arm32thumb_demo.trim()); break;
+		case ret.ARCH_ARM32_THUMB: editor.updateCode(arm32_demo.trim()); break;
 		case ret.ARCH_RISCV64: editor.updateCode(riscv64_demo.trim()); break;
+	}
+}
+
+function setBytes(hex_buf) {
+	if (ret.currentOutputOption & ret.OUTPUT_AS_C_ARRAY) {
+		document.querySelector("#bytes").value = "{" + ret.get_buffer_contents(hex_buf) + "}";
+	} else {
+		document.querySelector("#bytes").value = ret.get_buffer_contents(hex_buf);
 	}
 }
 
@@ -407,7 +410,7 @@ function finishAssembler(code) {
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
-		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+		setBytes(ret.hex_buf);
 		ret.log("Assembled in " + String(now - then) + "us");
 	}
 }
@@ -468,7 +471,7 @@ document.querySelector("#run").onclick = function() {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
 		ret.buffer_to_buffer(ret.hex_buf, ret.mem_buf, ret.currentOutputOption);
-		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+		setBytes(ret.hex_buf);
 
 		rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
 		ret.log(ret.get_buffer_contents(ret.str_buf));
@@ -483,7 +486,7 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 		if (rc != 0) {
 			ret.log("Failed to parse bytes");
 		} else {
-			document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+			setBytes(ret.hex_buf);
 			var output_as = "auto", parse_as = "";
 			if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
 			if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
@@ -519,7 +522,9 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	if (index == 0) option = ret.OUTPUT_AS_AUTO;
 	if (index == 1) option = ret.OUTPUT_AS_U8;
 	if (index == 2) option = ret.OUTPUT_AS_U32;
-	ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
+	if (index == 3) option = ret.OUTPUT_AS_C_ARRAY;
+	ret.currentOutputOption = option; // currently only one option is allowed
+	//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
 });
 
 // Try to get F9 to trigger assembler

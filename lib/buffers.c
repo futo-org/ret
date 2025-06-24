@@ -46,6 +46,7 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 	if (buf->output_options & OUTPUT_AS_U8) data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U16) data_type_size = 2;
 	if (buf->output_options & OUTPUT_AS_U32) data_type_size = 4;
+	if (buf->output_options & OUTPUT_AS_C_ARRAY) data_type_size = 1;
 
 	for (unsigned int i = 0; i < len; i += data_type_size) {
 		if (data_type_size == 1) {
@@ -56,7 +57,11 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 
 			uint8_t b;
 			read_u8((const uint8_t *)in + i, &b);
-			buf->offset += sprintf(buf->buffer + buf->offset, "%02x%c", b, ch);
+			if (buf->output_options & OUTPUT_AS_C_ARRAY) {
+				buf->offset += sprintf(buf->buffer + buf->offset, "0x%02x, ", b);
+			} else {
+				buf->offset += sprintf(buf->buffer + buf->offset, "%02x%c", b, ch);				
+			}
 		} else if (data_type_size == 2) {
 			if (i + 2 >= len + 1) break;
 			uint16_t b;
