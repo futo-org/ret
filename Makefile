@@ -1,10 +1,10 @@
 CMAKE ?= /home/daniel/Pulled/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DCMAKE_BUILD_TYPE=Release
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DCMAKE_BUILD_TYPE=Release
 
 cli_build:
-	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DUNICORN_SUPPORT=OFF
+	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DUNICORN_SUPPORT=OFF
 
 serve:
 	python3 serve.py
@@ -27,6 +27,7 @@ deploy:
 	$(call deploy,x86)
 
 	cp www/landing.html deploy/index.html
+	cp www/favicon.ico deploy/favicon.ico
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON

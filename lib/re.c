@@ -53,6 +53,9 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
 	} else if (arch == ARCH_ARM32) {
 		_ks_arch = KS_ARCH_ARM;
 		_ks_mode |= KS_MODE_ARM;
+	} else if (arch == ARCH_ARM32_THUMB) {
+		_ks_arch = KS_ARCH_ARM;
+		_ks_mode |= KS_MODE_THUMB;
 	} else if (arch == ARCH_RISCV32) {
 		_ks_arch = KS_ARCH_RISCV;
 		_ks_mode |= KS_MODE_RISCV32;
@@ -60,13 +63,13 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
 		_ks_arch = KS_ARCH_RISCV;
 		_ks_mode |= KS_MODE_RISCV64;
 	} else {
-		printf("Unknown architecture %d\n", arch);
+		err_buf->append(err_buf, "Unsupported architecture", 0);
 		return -1;
 	}
 
 	err = ks_open(_ks_arch, _ks_mode, &ks);
     if (err != KS_ERR_OK) {
-        printf("ERROR: failed on ks_open(), %d\n", err);
+	    buffer_appendf(err_buf, "ks_open failed (%s)\n", ks_strerror(err));
         return -1;
     }
 
@@ -110,13 +113,21 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf
 		_cs_arch = CS_ARCH_AARCH64;
 	} else if (arch == ARCH_ARM32) {
 		_cs_arch = CS_ARCH_ARM;
+	} else if (arch == ARCH_ARM32_THUMB) {
+		_cs_arch = CS_ARCH_ARM;
+		_cs_mode |= CS_MODE_THUMB;
 	} else {
-		printf("Unknown architecture %d\n", arch);
+		err_buf->append(err_buf, "Unsupported architecture", 0);
 		return -1;
 	}
 
 	if (cs_open(_cs_arch, _cs_mode, &handle) != CS_ERR_OK) {
-		printf("cs_open failed\n");
+		err_buf->append(err_buf, "cs_open failed", 0);
+		return -1;
+	}
+
+	if (re_buf_mem.offset == 0) {
+		err_buf->append(err_buf, "ERROR: No bytes to disassemble!", 0);
 		return -1;
 	}
 

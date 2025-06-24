@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include "re.h"
 
 inline static int read_u8(const void *buf, uint8_t *out) {
@@ -142,6 +143,15 @@ const void *get_buffer_contents(struct OutBuffer *buf) {
 void buffer_to_buffer(struct OutBuffer *buf_in, struct OutBuffer *buf_out, int output_options) {
 	buf_out->clear(buf_out);
 	buf_out->append(buf_out, buf_in->buffer, buf_in->offset);
+}
+
+void buffer_appendf(struct OutBuffer *buf, const char *fmt, ...) {
+	char buffer[512] = {0};
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, args);
+	va_end(args);
+	buf->append(buf, buffer, 0);
 }
 
 struct OutBuffer create_stdout_hex_buffer(void) {

@@ -1,5 +1,6 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import os
+from urllib.parse import urlparse
 
 class CORSHandler(SimpleHTTPRequestHandler):
 	def end_headers(self):
@@ -9,12 +10,17 @@ class CORSHandler(SimpleHTTPRequestHandler):
 
 	def translate_path(self, path):
 		root = os.path.abspath('www')
-		if path in ('/', '/index.html'):
+		parsed_path = urlparse(path).path
+
+		if parsed_path in ('/', '/index.html'):
 			return os.path.join(root, 'landing.html')
-		if path.startswith(('/arm64', '/arm32', '/x86', '/riscv64', 'riscv32')):
-			path = path.split('/', 2)[-1] if '/' in path[1:] else ''
-			return os.path.join(root, path)
-		return os.path.join(root, path.lstrip('/'))
+		if parsed_path in ('/', '/favicon.ico'):
+			return os.path.join(root, 'favicon.ico')
+		if parsed_path.startswith(('/arm64', '/arm32', '/x86', '/riscv64', '/riscv32')):
+			parts = parsed_path.strip('/').split('/', 1)
+			subpath = parts[1] if len(parts) > 1 else ''
+			return os.path.join(root, subpath)
+		return os.path.join(root, parsed_path.lstrip('/'))
 
 print("http://localhost:8000/")
 HTTPServer(('localhost', 8000), CORSHandler).serve_forever()

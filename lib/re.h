@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stdarg.h>
 
 enum Arch {
 	ARCH_ARM64 = 0,
@@ -67,6 +68,8 @@ struct OutBuffer create_mem_hex_buffer(void);
 struct OutBuffer create_stdout_hex_buffer(void);
 struct OutBuffer create_stdout_buffer(void);
 const void *get_buffer_contents(struct OutBuffer *buf);
+
+void buffer_appendf(struct OutBuffer *buf, const char *fmt, ...);
 
 int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, int output_options);
 
