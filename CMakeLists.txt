@@ -4,10 +4,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(fudge)
 
-option(SUPPORT_ARM64 "" OFF)
-option(SUPPORT_ARM32 "" OFF)
-option(SUPPORT_X86 "" OFF)
-option(SUPPORT_RISCV "" OFF)
+option(SUPPORT_ARM64 "arm v8+" OFF)
+option(SUPPORT_ARM32 "arm and arm thumb" OFF)
+option(SUPPORT_X86 "x86 and x86_64" OFF)
+option(SUPPORT_RISCV "rv64 and rv32" OFF)
 if(EMSCRIPTEN)
 	option(UNICORN_SUPPORT "Compile Unicorn-wasm" ON)
 	option(SUPPORT_MULTITHREADING "Support emscripten multithreading" OFF)
@@ -106,7 +106,10 @@ add_executable(ret
 	$<$<BOOL:${UNICORN_SUPPORT}>:lib/unicorn.c>
 )
 
-set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_re_emulator,_parser_to_buf)
+set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_parser_to_buf)
+if(UNICORN_SUPPORT)
+	set(EXPORT_FUNCS ${EXPORT_FUNCS},_re_emulator)
+endif()
 
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
 target_compile_definitions(ret PRIVATE ${RET_DEFINES})
