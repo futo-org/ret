@@ -140,10 +140,12 @@ const void *get_buffer_contents(struct RetBuffer *buf) {
 	return buf->buffer;
 }
 
-void buffer_to_buffer(struct RetBuffer *buf_in, struct RetBuffer *buf_out, int output_options) {
+void buffer_to_buffer(struct RetBuffer *buf_out, struct RetBuffer *buf_in, int output_options) {
+	int option = buf_out->output_options;
 	buf_out->output_options = output_options;
 	buf_out->clear(buf_out);
 	buf_out->append(buf_out, buf_in->buffer, buf_in->offset);
+	buf_out->output_options = option;
 }
 
 void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...) {

@@ -255,6 +255,7 @@ const ret = {
 		ret.re_get_mem_buffer = Module.cwrap('re_get_mem_buffer', 'number', []);
 		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
 		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number', 'number']);
+		ret.buffer_to_buffer = Module.cwrap('buffer_to_buffer', 'void', ['number', 'number', 'number']);
 
 		ret.re_init_globals();
 		ret.err_buf = ret.re_get_err_buffer();
@@ -466,6 +467,9 @@ document.querySelector("#run").onclick = function() {
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
+		ret.buffer_to_buffer(ret.hex_buf, ret.mem_buf, ret.currentOutputOption);
+		document.querySelector("#bytes").value = ret.get_buffer_contents(ret.hex_buf);
+
 		rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
 		ret.log(ret.get_buffer_contents(ret.str_buf));
 	}
