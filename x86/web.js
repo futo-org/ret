@@ -19,7 +19,6 @@ string:
 .align 4
 skip:
 `;
-
 const arm32_demo = `
 adr r1, string
 ldr r2, UART_DR
@@ -39,6 +38,11 @@ string:
 .byte 0
 .align 4
 skip:
+`;
+const arm32thumb_demo = `
+mov r0, #0x9000000
+mov r1, 'X'
+str r1, [r0]
 `;
 const x86_64_demo =
 `
@@ -94,7 +98,11 @@ function setupDropDown(hoverButton, box, hideOnMouseUp = false, onlyShowOnClick 
 //box.style.display = "flex";
 	if (onlyShowOnClick) {
 		hoverButton.addEventListener("click", function() {
-			box.style.display = "flex";
+			if (box.style.display == "flex") {
+				box.style.display = "none";
+			} else {
+				box.style.display = "flex";
+			}
 		});
 	} else {
 		hoverButton.addEventListener("mouseenter", function() {
@@ -145,6 +153,7 @@ const ret = {
 	ARCH_RISCV32: 4,
 	ARCH_RISCV64: 5,
 	ARCH_WASM: 6,
+	ARCH_ARM32_THUMB: 7,
 
 	// Hex parser options
 	PARSE_AS_MASK: 0x1f,
@@ -167,6 +176,7 @@ const ret = {
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 
 	init: function() {
+		this.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 		this.currentArch = this.checkArch();
 		this.currentParseOption = this.PARSE_AS_AUTO;
 		this.currentOutputOption = this.OUTPUT_AS_AUTO;
@@ -176,8 +186,12 @@ const ret = {
 		if (window.location.pathname.includes("arm64")) {
 			return ret.ARCH_ARM64;
 		} else if (window.location.pathname.includes("arm") || window.location.pathname.includes("arm32")) {
-			return ret.ARCH_ARM32;
-		} else if (window.location.pathname.includes("riscv")) {
+			if (ret.urlOptions.hasOwnProperty("thumb")) {
+				return ret.ARCH_ARM32_THUMB;
+			} else {
+				return ret.ARCH_ARM32;
+			}
+		} else if (window.location.pathname.includes("rv64")) {
 			return ret.ARCH_RISCV64;
 		} else if (window.location.pathname.includes("x86")) {
 			return ret.ARCH_X86_64;
@@ -185,6 +199,7 @@ const ret = {
 			return ret.ARCH_ARM64;
 		}
 	},
+	urlOptions: null,
 	currentArch: 0,
 	currentBaseOffset: 0,
 	currentParseOption: 0,
@@ -198,7 +213,19 @@ const ret = {
 		document.querySelector("#log").value += str + "\n";
 	},
 	switchArch: function(arch) {
-		
+		if (arch == ret.ARCH_ARM64) {
+			window.location.href = "../arm64/";
+		} else if (arch == ret.ARCH_X86) {
+			window.location.href = "../x86/";
+		} else if (arch == ret.ARCH_ARM32) {
+			window.location.href = "../arm32/";
+		} else if (arch == ret.ARCH_ARM32_THUMB) {
+			window.location.href = "../arm32/?thumb";
+		} else if (arch == ret.ARCH_RISCV64) {
+			window.location.href = "../rv64/";
+		} else if (arch == ret.ARCH_RISCV32) {
+			window.location.href = "../rv32/";
+		}
 	},
 
 	err_buf: null,
@@ -231,10 +258,14 @@ const ret = {
 
 	godbolt: async function(arch, assemblyCode) {
 		var compiler = "";
+		var arguments = "";
 		if (arch == ret.ARCH_ARM64) {
 			compiler = "gnuasarm64g1510";
 		} else if (arch == ret.ARCH_ARM32) {
 			compiler = "gnuasarmhfg54";
+		} else if (arch == ret.ARCH_ARM32_THUMB) {
+			compiler = "gnuasarmhfg54";
+			arguments += "-mthumb ";
 		} else if (arch == ret.ARCH_X86_64) {
 			compiler = "gnuassnapshot";
 		} else {
@@ -248,7 +279,7 @@ const ret = {
 			body: JSON.stringify({
 				source: assemblyCode,
 				options: {
-					userArguments: '',
+					userArguments: arguments,
 					filters: {
 						intel: false,
 						comments: true,
@@ -280,28 +311,39 @@ document.querySelector("#switch-arm64").onclick = function() {
 document.querySelector("#switch-arm32").onclick = function() {
 	ret.switchArch(ret.ARCH_ARM32);
 }
+document.querySelector("#switch-arm32thumb").onclick = function() {
+	ret.switchArch(ret.ARCH_ARM32_THUMB);
+}
 document.querySelector("#switch-x86").onclick = function() {
 	ret.switchArch(ret.ARCH_X86);
 }
 
-// Change menu color depending on arch
-if (ret.currentArch == ret.ARCH_ARM64) {
-	document.querySelector("#arch-select-text").innerText = "ARM64";
-	document.querySelector("#menu").style.background = "rgb(23 55 81)";
-	document.title = "Ret ARM64";
-	document.querySelector(".editor").classList.add("language-armasm");
-} else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
-	document.querySelector("#arch-select-text").innerText = "ARM64";
-	document.querySelector("#menu").style.background = "rgb(97 36 48)";
-	document.title = "Ret x86";
-	document.querySelector(".editor").classList.add("language-x86asm");
-} else if (ret.currentArch == ret.ARCH_ARM32) {
-	document.querySelector("#arch-select-text").innerText = "ARM32";
-	document.querySelector("#menu").style.background = "rgb(19 73 64)";
-	document.title = "Ret ARM32";
-	document.querySelector(".editor").classList.add("language-armasm");
+function updatePageArch() {
+	// Change menu color depending on arch
+	if (ret.currentArch == ret.ARCH_ARM64) {
+		document.querySelector("#arch-select-text").innerText = "Arm64";
+		document.querySelector("#menu").style.background = "rgb(23 55 81)";
+		document.title = "Ret Arm64";
+		document.querySelector(".editor").classList.add("language-armasm");
+	} else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
+		document.querySelector("#arch-select-text").innerText = "x86";
+		document.querySelector("#menu").style.background = "rgb(97 36 48)";
+		document.title = "Ret x86";
+		document.querySelector(".editor").classList.add("language-x86asm2");
+	} else if (ret.currentArch == ret.ARCH_ARM32) {
+		document.querySelector("#arch-select-text").innerText = "Arm32";
+		document.querySelector("#menu").style.background = "rgb(19 73 64)";
+		document.title = "Ret Arm32";
+		document.querySelector(".editor").classList.add("language-armasm");
+	} else if (ret.currentArch == ret.ARCH_ARM32_THUMB) {
+		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
+		document.querySelector("#menu").style.background = "rgb(24 91 83)";
+		document.title = "Ret Arm32 Thumb";
+		document.querySelector(".editor").classList.add("language-armasm");
+	}
 }
 
+updatePageArch();
 function escape_html(s) {
 	return s.replace(/&/g, '&amp;')
 	        .replace(/</g, '&lt;')
@@ -322,6 +364,7 @@ if (editor.toString() == "") {
 		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
 		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
 		case ret.ARCH_ARM32: editor.updateCode(arm32_demo.trim()); break;
+		case ret.ARCH_ARM32_THUMB: editor.updateCode(arm32thumb_demo.trim()); break;
 	}
 }
 
@@ -373,7 +416,6 @@ document.querySelector("#run").onclick = function() {
 	} else {
 		rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
 		ret.log(ret.get_buffer_contents(ret.str_buf));
-		//ret.log("Ran code (" + String(rc) + ")");
 	}
 }
 
