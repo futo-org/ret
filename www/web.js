@@ -326,6 +326,12 @@ document.querySelector("#switch-arm32thumb").onclick = function() {
 document.querySelector("#switch-x86").onclick = function() {
 	ret.switchArch(ret.ARCH_X86);
 }
+document.querySelector("#switch-riscv").onclick = function() {
+	ret.switchArch(ret.ARCH_RISCV64);
+}
+document.querySelector("#switch-riscv32").onclick = function() {
+	ret.switchArch(ret.ARCH_RISCV32);
+}
 
 function updatePageArch() {
 	// Change menu color depending on arch
