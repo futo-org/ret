@@ -39,39 +39,43 @@ enum OutputOptions {
 	OUTPUT_AS_BIG_ENDIAN = 1 << 12,
 };
 
-struct ReTool {
-	enum Arch arch;
-};
-
-struct OutBuffer {
+struct RetBuffer {
 	/// @brief Growable buffer that holds string or binary data
 	char *buffer;
 	/// @brief Current length of valid data in the buffer
 	unsigned int offset;
 	/// @brief Size of allocated buffer
 	unsigned int length;
-	// optional counter used for newline breaks
+	/// @brief optional counter used for newline breaks
 	int counter;
-	// Output options used by some append functions
+	/// @brief Output options used by some append functions, OUTPUT_AS_AUTO by default
 	int output_options;
 	/// @brief Clear and reset buffer
-	void (*clear)(struct OutBuffer *);
+	void (*clear)(struct RetBuffer *);
 	/// @brief Append string or binary data. If string, len can be 0.
-	void (*append)(struct OutBuffer *, const void *buf, unsigned int len);
+	void (*append)(struct RetBuffer *, const void *buf, unsigned int len);
 };
 
-int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input);
+/// @brief Buffer that writes into memory buffer
+struct RetBuffer create_mem_buffer(void);
+/// @brief Buffer that prints into a string buffer
+struct RetBuffer create_mem_string_buffer(void);
+/// @brief Buffer that prints raw data into a hex stream
+struct RetBuffer create_mem_hex_buffer(void);
+/// @brief Buffer that prints hex characters to stdout
+struct RetBuffer create_stdout_hex_buffer(void);
+/// @brief Buffer that prints directly to stdout
+struct RetBuffer create_stdout_buffer(void);
 
-struct OutBuffer create_mem_buffer(void);
-struct OutBuffer create_mem_string_buffer(void);
-struct OutBuffer create_mem_hex_buffer(void);
-struct OutBuffer create_stdout_hex_buffer(void);
-struct OutBuffer create_stdout_buffer(void);
-const void *get_buffer_contents(struct OutBuffer *buf);
+/// @brief Get pointer to buffer contents
+const void *get_buffer_contents(struct RetBuffer *buf);
+/// @brief Appends string to buffer (passes length 0)
+void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...);
+/// @brief Append data to the buffer with a specific output mode
+void buffer_append_mode(struct RetBuffer *buf, void *data, unsigned int length, int output_options);
 
-void buffer_appendf(struct OutBuffer *buf, const char *fmt, ...);
-
-int parser_to_buf(const char *input, struct OutBuffer *buf, int parse_options, int output_options);
+/// @brief Run the hex parser and output into a buffer
+int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, int output_options);
 
 inline static int write_u8(void *buf, uint8_t out) {
 	((uint8_t *)buf)[0] = out;

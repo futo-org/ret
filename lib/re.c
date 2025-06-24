@@ -7,10 +7,10 @@
 #include <capstone/capstone.h>
 #include "re.h"
 
-static struct OutBuffer re_buf_err;
-static struct OutBuffer re_buf_hex;
-static struct OutBuffer re_buf_mem;
-static struct OutBuffer re_buf_str;
+static struct RetBuffer re_buf_err;
+static struct RetBuffer re_buf_hex;
+static struct RetBuffer re_buf_mem;
+static struct RetBuffer re_buf_str;
 
 void re_init_globals(void) {
 	re_buf_hex = create_mem_hex_buffer();
@@ -19,10 +19,10 @@ void re_init_globals(void) {
 	re_buf_str = create_mem_string_buffer();
 }
 
-struct OutBuffer *re_get_err_buffer(void) { return &re_buf_err; }
-struct OutBuffer *re_get_hex_buffer(void) { return &re_buf_hex; }
-struct OutBuffer *re_get_str_buffer(void) { return &re_buf_str; }
-struct OutBuffer *re_get_mem_buffer(void) { return &re_buf_mem; }
+struct RetBuffer *re_get_err_buffer(void) { return &re_buf_err; }
+struct RetBuffer *re_get_hex_buffer(void) { return &re_buf_hex; }
+struct RetBuffer *re_get_str_buffer(void) { return &re_buf_str; }
+struct RetBuffer *re_get_mem_buffer(void) { return &re_buf_mem; }
 
 int re_is_arch_supported(int arch) {
 #ifdef RET_SUPPORT_ARM64
@@ -45,7 +45,7 @@ int re_is_unicorn_supported(void) {
 #endif
 }
 
-int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
+int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
 	buf->clear(buf);
 	buf->clear(err_buf);
 	ks_engine *ks;
@@ -93,20 +93,20 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, s
 		err_buf->append(err_buf, buffer, 0);
 		return -1;
 	} else {
-		buf->append(buf, encode, (int)size);
+		buffer_append_mode(buf, encode, size, output_options);
 		ks_free(encode);
 	}
 
 	return 0;
 }
 
-int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf, struct OutBuffer *err_buf, const char *input) {
+int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input) {
 	buf->clear(buf);
 	err_buf->clear(err_buf);
 
 	re_buf_mem.clear(&re_buf_mem);
 
-	parser_to_buf(input, &re_buf_mem, PARSE_AS_U8, OUTPUT_AS_AUTO);
+	parser_to_buf(input, &re_buf_mem, PARSE_AS_AUTO, OUTPUT_AS_AUTO);
 
 	csh handle;
 	cs_insn *insn;
@@ -124,6 +124,12 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_cs_arch = CS_ARCH_ARM;
 		_cs_mode |= CS_MODE_THUMB;
+	} else if (arch == ARCH_RISCV64) {
+		_cs_arch = CS_ARCH_RISCV;
+		_cs_mode |= CS_MODE_RISCV64;
+	} else if (arch == ARCH_RISCV32) {
+		_cs_arch = CS_ARCH_RISCV;
+		_cs_mode |= CS_MODE_RISCV32;
 	} else {
 		err_buf->append(err_buf, "Unsupported architecture", 0);
 		return -1;
@@ -160,17 +166,17 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct OutBuffer *buf
 }
 
 int cli_asm_test(void) {
-	struct OutBuffer buf = create_stdout_hex_buffer();
-	struct OutBuffer err = create_stdout_buffer();
+	struct RetBuffer buf = create_stdout_hex_buffer();
+	struct RetBuffer err = create_stdout_buffer();
 
-	int rc = re_assemble(ARCH_ARM64, 0, &buf, &err, "nop\nnop\nmov x0, 123000000000000");
+	int rc = re_assemble(ARCH_ARM64, 0, &buf, &err, "nop\nnop\nmov x0, 123000000000000", OUTPUT_AS_AUTO);
 	printf("\n");
 	return rc;
 }
 
 static int cli_asm(enum Arch arch, const char *filename) {
-	struct OutBuffer buf = create_mem_hex_buffer();
-	struct OutBuffer err = create_stdout_buffer();
+	struct RetBuffer buf = create_mem_hex_buffer();
+	struct RetBuffer err = create_stdout_buffer();
 
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
@@ -193,13 +199,13 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, &buf, &err, input);
+	int rc = re_assemble(arch, 0, &buf, &err, input, OUTPUT_AS_AUTO);
 	printf("\n");
 	return rc;
 }
 
 int prettify(void) {
-	struct OutBuffer buf = create_mem_hex_buffer();
+	struct RetBuffer buf = create_mem_hex_buffer();
 	parser_to_buf("12 34 56 78 12 34 56 78 91", &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
 	printf("%s\n", buf.buffer);	
 	return 0;

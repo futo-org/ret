@@ -16,7 +16,7 @@
 
 struct EmulatorState {
 	uc_arch arch;
-	struct OutBuffer *log;
+	struct RetBuffer *log;
 	char last_char;
 };
 
@@ -45,7 +45,7 @@ static void hook_intr(uc_engine *uc, uint32_t intno, void *user_data) {
 	printf("Interrupt\n");
 }
 
-int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_buffer, struct OutBuffer *log) {
+int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_buffer, struct RetBuffer *log) {
 	log->clear(log);
 	uc_engine *uc;
 	uc_err err;
@@ -115,6 +115,10 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct OutBuffer *asm_bu
 
 	uc_hook trace;
 	err = uc_hook_add(uc, &trace, UC_HOOK_INTR, (void *)hook_intr, &state, 1, 0, 0);
+	if (err != UC_ERR_OK) {
+		buffer_appendf(log, "hook setup error\n", 0);
+		return 1;
+	}
 
 	if (_uc_mode & UC_MODE_THUMB) {
 		err = uc_emu_start(uc, MEMORY_BASE_ADDR | 1, MEMORY_BASE_ADDR + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);

@@ -25,18 +25,18 @@ static int is_end_of_4(int c) {
 	return (c >= 3) && ((c - 3) % 4 == 0);
 }
 
-static void buf_clear(struct OutBuffer *buf) {
+static void buf_clear(struct RetBuffer *buf) {
 	buf->offset = 0;
 	buf->counter = 0;
 }
-static void buf_append(struct OutBuffer *buf, const void *in, unsigned int len) {
+static void buf_append(struct RetBuffer *buf, const void *in, unsigned int len) {
 	if (buf->length < (len + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + len + 1000);
 	}
 	memcpy(buf->buffer + buf->offset, in, len);
 	buf->offset += len;
 }
-static void buf_append_hex(struct OutBuffer *buf, const void *in, unsigned int len) {
+static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int len) {
 	unsigned int max_str_len = 32 * len;
 	if (buf->length < (max_str_len + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
@@ -76,7 +76,7 @@ static void buf_append_hex(struct OutBuffer *buf, const void *in, unsigned int l
 		buf->counter++;
 	}
 }
-static void buf_append_string(struct OutBuffer *buf, const void *in, unsigned int len) {
+static void buf_append_string(struct RetBuffer *buf, const void *in, unsigned int len) {
 	const char *str = in;
 	unsigned int max_str_len = strlen(str) + 1;
 	if (buf->length < (max_str_len + buf->offset)) {
@@ -86,8 +86,8 @@ static void buf_append_string(struct OutBuffer *buf, const void *in, unsigned in
 	buf->offset += max_str_len - 1;
 }
 
-struct OutBuffer create_mem_buffer(void) {
-	struct OutBuffer buf = {0};
+struct RetBuffer create_mem_buffer(void) {
+	struct RetBuffer buf = {0};
 	buf.buffer = malloc(10000);
 	buf.length = 10000;
 	buf.offset = 0;
@@ -96,8 +96,8 @@ struct OutBuffer create_mem_buffer(void) {
 	return buf;
 }
 
-struct OutBuffer create_mem_string_buffer(void) {
-	struct OutBuffer buf = {0};
+struct RetBuffer create_mem_string_buffer(void) {
+	struct RetBuffer buf = {0};
 	buf.buffer = malloc(10000);
 	buf.length = 10000;
 	buf.offset = 0;
@@ -106,8 +106,8 @@ struct OutBuffer create_mem_string_buffer(void) {
 	return buf;
 }
 
-struct OutBuffer create_mem_hex_buffer(void) {
-	struct OutBuffer buf = {0};
+struct RetBuffer create_mem_hex_buffer(void) {
+	struct RetBuffer buf = {0};
 	buf.buffer = malloc(10000);
 	buf.length = 10000;
 	buf.offset = 0;
@@ -117,8 +117,8 @@ struct OutBuffer create_mem_hex_buffer(void) {
 	return buf;
 }
 
-static void stdio_clear(struct OutBuffer *buf) {}
-static void stdio_append_hex(struct OutBuffer *buf, const void *in, unsigned int len) {
+static void stdio_clear(struct RetBuffer *buf) {}
+static void stdio_append_hex(struct RetBuffer *buf, const void *in, unsigned int len) {
 	for (unsigned int i = 0; i < len; i++) {
 		if (is_end_of_4(buf->length)) {
 			printf("\n");
@@ -129,23 +129,24 @@ static void stdio_append_hex(struct OutBuffer *buf, const void *in, unsigned int
 		buf->length++;
 	}
 }
-static void stdio_append(struct OutBuffer *buf, const void *in, unsigned int len) {
+static void stdio_append(struct RetBuffer *buf, const void *in, unsigned int len) {
 	(void)buf;
 	(void)len;
 	printf("%s", (const char *)in);
 	fflush(stdout);
 }
 
-const void *get_buffer_contents(struct OutBuffer *buf) {
+const void *get_buffer_contents(struct RetBuffer *buf) {
 	return buf->buffer;
 }
 
-void buffer_to_buffer(struct OutBuffer *buf_in, struct OutBuffer *buf_out, int output_options) {
+void buffer_to_buffer(struct RetBuffer *buf_in, struct RetBuffer *buf_out, int output_options) {
+	buf_out->output_options = output_options;
 	buf_out->clear(buf_out);
 	buf_out->append(buf_out, buf_in->buffer, buf_in->offset);
 }
 
-void buffer_appendf(struct OutBuffer *buf, const char *fmt, ...) {
+void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...) {
 	char buffer[512] = {0};
 	va_list args;
 	va_start(args, fmt);
@@ -154,16 +155,23 @@ void buffer_appendf(struct OutBuffer *buf, const char *fmt, ...) {
 	buf->append(buf, buffer, 0);
 }
 
-struct OutBuffer create_stdout_hex_buffer(void) {
-	struct OutBuffer buf;
+void buffer_append_mode(struct RetBuffer *buf, void *data, unsigned int length, int output_options) {
+	int temp = buf->output_options;
+	buf->output_options = output_options;
+	buf->append(buf, data, length);
+	buf->output_options = temp;
+}
+
+struct RetBuffer create_stdout_hex_buffer(void) {
+	struct RetBuffer buf = {0};
 	buf.length = 0;
 	buf.clear = stdio_clear;
 	buf.append = stdio_append_hex;
 	return buf;
 }
 
-struct OutBuffer create_stdout_buffer(void) {
-	struct OutBuffer buf;
+struct RetBuffer create_stdout_buffer(void) {
+	struct RetBuffer buf = {0};
 	buf.length = 0;
 	buf.clear = stdio_clear;
 	buf.append = stdio_append;
