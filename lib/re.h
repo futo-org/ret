@@ -39,6 +39,14 @@ enum OutputOptions {
 	OUTPUT_AS_BIG_ENDIAN = 1 << 12,
 };
 
+enum SyntaxOption {
+	RET_SYNTAX_INTEL = 0,
+	RET_SYNTAX_ATT = 1,
+	RET_SYNTAX_NASM = 2,
+	RET_SYNTAX_MASM = 3,
+	RET_SYNTAX_GAS = 4,
+};
+
 struct RetBuffer {
 	/// @brief Growable buffer that holds string or binary data
 	char *buffer;

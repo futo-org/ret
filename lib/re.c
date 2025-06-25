@@ -85,7 +85,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, s
     unsigned char *encode = NULL;
     size_t size = 0;
 
-    err = ks_asm(ks, input, 0, &encode, &size, &count);
+    err = ks_asm(ks, input, base_addr, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
 		char buffer[128];
 		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
@@ -114,12 +114,15 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf
 	csh handle;
 	cs_insn *insn;
 	size_t count;
+	//ks_opt_value syntax = KS_OPT_SYNTAX_GAS;
+	//ks_option
 
 	cs_arch _cs_arch = 0;
 	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
 	if (arch == ARCH_X86_64) {
 		_cs_arch = CS_ARCH_X86;
 		_cs_mode |= CS_MODE_64;
+		//syntax = KS_OPT_SYNTAX_NASM;
 	} else if (arch == ARCH_ARM64) {
 		_cs_arch = CS_ARCH_AARCH64;
 	} else if (arch == ARCH_ARM32) {
@@ -150,10 +153,22 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf
 
 	count = cs_disasm(handle, (const uint8_t *)re_buf_mem.buffer, re_buf_mem.offset, base_addr, 0, &insn);
 	if (count > 0) {
-		size_t j;
-		for (j = 0; j < count; j++) {
+		unsigned int code_size = 0;
+		for (size_t j = 0; j < count; j++) {
 			char inst_buf[512];
+			// TODO: if inst[j].illegal, then do .int 0xdeadbeef
 			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", insn[j].mnemonic, insn[j].op_str);
+			code_size += insn[j].size;
+			buf->append(buf, inst_buf, 0);
+		}
+
+		for (; code_size < re_buf_mem.offset; code_size++) {
+			char inst_buf[512];
+			if (arch == ARCH_X86_64 || arch == ARCH_X86) {
+				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[code_size]);
+			} else {
+				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[code_size]);
+			}
 			buf->append(buf, inst_buf, 0);
 		}
 
