@@ -6,6 +6,8 @@ on:
 #on:
 #  create
 
+permissions: write-all
+
 jobs:
   build:
     runs-on: ubuntu-latest
