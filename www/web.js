@@ -51,7 +51,7 @@ addi x0, x0, 0x12
 `;
 
 // Prevent selection while dragging
-function pauseEvent(e){
+function pauseEvent(e) {
     if (e.stopPropagation) e.stopPropagation();
     if (e.preventDefault) e.preventDefault();
     e.cancelBubble = true;
@@ -385,6 +385,9 @@ const highlight = editor => {
 let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\t'});
 
 // Set editor text if empty (will not be if window was duplicated)
+if (ret.urlOptions.hasOwnProperty("code")) {
+	editor.updateCode(decodeURIComponent(ret.urlOptions.code));
+}
 if (editor.toString() == "") {
 	switch (ret.currentArch) {
 		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
@@ -507,6 +510,18 @@ document.querySelector("#base-address").onkeyup = function() {
 	}
 }
 
+document.querySelector("#settings-btn").onclick = function() {
+	document.querySelector("#popup").style.display = "block";
+}
+document.querySelector("#share-btn").onclick = function() {
+	ret.urlOptions.code = encodeURIComponent(editor.toString());
+	var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(ret.urlOptions).toString();
+	prompt("Copy", newUrl);
+}
+document.querySelector("#popup-close").onclick = function() {
+	document.querySelector("#popup").style.display = "none";
+}
+
 setupRadio("select_parse_as", 0, function(index, value, e) {
 	var option = 0;
 	if (index == 0) option = ret.PARSE_AS_AUTO;
@@ -526,6 +541,12 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	ret.currentOutputOption = option; // currently only one option is allowed
 	//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
 });
+
+//for (var i = 0; i < 10; i++) {
+//	var el = document.createElement("option");
+//	el.innerText = "asd";
+//	example.appendChild(el);
+//}
 
 // Try to get F9 to trigger assembler
 document.addEventListener("keydown", keyCapt, false); 

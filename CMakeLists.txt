@@ -1,4 +1,3 @@
-# cmake -G Ninja -B build_em -DCMAKE_TOOLCHAIN_FILE=/home/daniel/dotfiles/emscripten2.cmake -DCMAKE_BUILD_TYPE=Release
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)

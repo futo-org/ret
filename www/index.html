@@ -6,6 +6,7 @@
 	<link rel="icon" href="favicon.ico">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" type="text/css" href="sublime.css">
+	<meta name="description" content="Online assembler and disassembler. Arm, Thumb, Arm64, x86, and RISC-V. Runs entirely client-side in WebAssembly.">
 </head>
 <body>
 <div class="container">
@@ -27,27 +28,17 @@
 		<div class="btn" id="hex-dropdown">
 			<span>Format Hex</span>
 			<div class="dropdown-content" id="hex-dropdown-box">
-				<!-- <button class="btn" id="format-hex">Format hex</button> -->
-				<!-- <span class="dropdown-text">Parse as:</span> -->
-				<!-- <div class="radio-button" name="select_parse_as">auto</div> -->
-				<!-- <div class="radio-button" name="select_parse_as">u8</div> -->
-				<!-- <div class="radio-button" name="select_parse_as">u16</div> -->
-				<!-- <div class="radio-button" name="select_parse_as">u32</div> -->
-
 				<span class="dropdown-text">Output as:</span>
 				<div class="radio-button" name="select_output_as">auto</div>
 				<div class="radio-button" name="select_output_as">u8</div>
 				<div class="radio-button" name="select_output_as">u32</div>
 				<div class="radio-button" name="select_output_as">C array</div>
-
-				<!-- <div style="padding: 10px;"> -->
-				<!-- 	<input type="checkbox" id="usebase10" name="usebase10" /> -->
-				<!-- 	<label for="usebase10">Use Base 10?</label> -->
-				<!-- </div> -->
 			</div>
 		</div>
 		<div class="right">
 			<div class="btn">Base address: <input type="text" id="base-address" value="0x0"></div>
+			<div class="btn" id="settings-btn">Settings</div>
+			<div class="btn" id="share-btn">Share</div>
 			<div class="btn" id="help-dropdown">
 				<img src="ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
@@ -58,6 +49,7 @@ ______ _   _ _____ _____
 |  _| | | | | | | | | | |
 | |   | |_| | | | \ \_/ /
 \_|    \___/  \_/  \___/ 
+Ret version RET_VERSION
 					</textarea>
 					<ul>
 						<li><a target="_blank" href="https://github.com/petabyt/ret">Source code</a></li>
@@ -70,6 +62,7 @@ ______ _   _ _____ _____
 
 	<div class="panels">
 		<div class="panel" id="panel1">
+			<!-- <select name="example" id="example"></select> -->
 			<div id="asm" class="editor"></div>
 		</div>
 		<div class="panel" id="right-column">
@@ -81,6 +74,28 @@ ______ _   _ _____ _____
 				<textarea readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
 			</div>
 		</div>
+	</div>
+
+	<div id="popup">
+		<div class="btn" id="popup-close">Close</div>
+
+		<span class="dropdown-text">Parse as:</span>
+		<div class="radio-button" name="select_parse_as">auto</div>
+		<div class="radio-button" name="select_parse_as">u8</div>
+		<div class="radio-button" name="select_parse_as">u16</div>
+		<div class="radio-button" name="select_parse_as">u32</div>
+
+		<div style="padding: 10px;">
+			<input type="checkbox" id="usebase10" name="usebase10" />
+			<label for="usebase10">Use Base 10?</label>
+		</div>
+
+		<div style="padding: 10px;">
+			<input type="checkbox" id="bigendian" name="bigendian" />
+			<label for="bigendian">Big Endian mode</label>
+		</div>
+
+		<div class="btn">Save settings to cookie</div>
 	</div>
 </div>
 </body>
