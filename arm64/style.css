@@ -152,6 +152,10 @@ textarea, #asm {
 	background: #3d3c3c;
 }
 
+.btn:active {
+	background: #3f3f3f;
+}
+
 /* .dropdown { */
 /* 	position: relative; */
 /* 	display: flex; */
@@ -170,12 +174,12 @@ textarea, #asm {
 	cursor: auto;
 }
 
-.dropdown-content .btn {
-	width: 100%;
-}
-.dropdown-content .radio-button {
-	width: 100%;
-}
+/* .dropdown-content .btn { */
+/* 	width: 100%; */
+/* } */
+/* .dropdown-content .radio-button { */
+/* 	width: 100%; */
+/* } */
 
 #help-dropdown-box {
 	left: unset;
@@ -194,4 +198,24 @@ textarea, #asm {
 
 #arch-dropdown-box {
 	min-width: 160px;
+}
+
+#panel1 {position: relative;}
+#example {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}
+
+#popup {
+	position: absolute;
+	top: 25%;
+	right: 25%;
+	width: 40%;
+	height: 40%;
+	min-width: 500px;
+	min-height: 400px;
+	background: #2a3c3f;
+	border: 2px solid black;
+	display: none;
 }
