@@ -23,7 +23,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y cmake ninja-build
-      - name: emsdk
+
+      - name: install emsdk
         run: |
           cd
           git clone https://github.com/emscripten-core/emsdk.git
@@ -31,14 +32,15 @@ jobs:
           ./emsdk install latest
           ./emsdk activate latest
 
-      - name: Compile 3 arches
+      - name: Compile emscripten
         run: |
           make CMAKE=~/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake config_all -j`nproc`
           make CMAKE=~/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake build_all
 
-      - name: Setup root
+      - name: Generate static content
         run: |
           make deploy
+          zip -r ret.zip deploy
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -46,3 +48,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./deploy
 
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zipped-artifact
+          path: ret.zip
