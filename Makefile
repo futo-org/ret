@@ -15,7 +15,7 @@ define deploy
 	rm -rf deploy/$(1)/build && mkdir deploy/$(1)/build
 	cp build_$(1)/ret.js deploy/$(1)/build/
 	cp build_$(1)/ret.wasm deploy/$(1)/build/
-	m4 -DRET_VERSION=v4.0 deploy/$(1)/index.html > deploy/$(1)/index.html
+	#m4 -DRET_VERSION=v4.0 deploy/$(1)/index.html > deploy/$(1)/index.html
 endef
 
 .PHONY: deploy
