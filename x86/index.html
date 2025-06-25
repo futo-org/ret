@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Ret</title>
+	<link rel="icon" href="favicon.ico">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="sublime.css">
+	<meta name="description" content="Online assembler and disassembler. Arm, Thumb, Arm64, x86, and RISC-V. Runs entirely client-side in WebAssembly.">
+</head>
+<body>
+<div class="container">
+	<div class="menu" id="menu">
+		<div class="btn" id="arch-select">
+			<span id="arch-select-text">ARM64</span><span>&#9660;</span>
+			<div class="dropdown-content" id="arch-dropdown-box">
+				<button class="btn" id="switch-x86">x86</button>
+				<button class="btn" id="switch-arm64">Arm64</button>
+				<button class="btn" id="switch-arm32">Arm32</button>
+				<button class="btn" id="switch-arm32thumb">Arm32 Thumb</button>
+				<button class="btn" id="switch-riscv">RISC-V 64</button>
+				<button class="btn" id="switch-riscv32">RISC-V 32</button>
+			</div>
+		</div>
+		<div class="btn" id="assemble" >Assemble</div>
+		<div class="btn" id="disassemble">Disassemble</div>
+		<div class="btn" id="run">Assemble and Run</div>
+		<div class="btn" id="hex-dropdown">
+			<span>Format Hex</span>
+			<div class="dropdown-content" id="hex-dropdown-box">
+				<span class="dropdown-text">Output as:</span>
+				<div class="radio-button" name="select_output_as">auto</div>
+				<div class="radio-button" name="select_output_as">u8</div>
+				<div class="radio-button" name="select_output_as">u32</div>
+				<div class="radio-button" name="select_output_as">C array</div>
+			</div>
+		</div>
+		<div class="right">
+			<div class="btn">Base address: <input type="text" id="base-address" value="0x0"></div>
+			<div class="btn" id="settings-btn">Settings</div>
+			<div class="btn" id="share-btn">Share</div>
+			<div class="btn" id="help-dropdown">
+				<img src="ret.png" width="30">
+				<div class="dropdown-content" id="help-dropdown-box">
+					<textarea readonly="true" spellcheck="false" id="help-textarea">
+______ _   _ _____ _____ 
+|  ___| | | |_   _|  _  |
+| |_  | | | | | | | | | |
+|  _| | | | | | | | | | |
+| |   | |_| | | | \ \_/ /
+\_|    \___/  \_/  \___/ 
+Ret version RET_VERSION
+					</textarea>
+					<ul>
+						<li><a target="_blank" href="https://github.com/petabyt/ret">Source code</a></li>
+						<li><a target="_blank" href="https://futo.org/">FUTO website</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panels">
+		<div class="panel" id="panel1">
+			<!-- <select name="example" id="example"></select> -->
+			<div id="asm" class="editor"></div>
+		</div>
+		<div class="panel" id="right-column">
+			<div id="hseparator"></div>
+			<div class="panel" id="panel2">
+				<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+			</div>
+			<div class="panel" id="panel3">
+				<textarea readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
+			</div>
+		</div>
+	</div>
+
+	<div id="popup">
+		<div class="btn" id="popup-close">Close</div>
+
+		<span class="dropdown-text">Parse as:</span>
+		<div class="radio-button" name="select_parse_as">auto</div>
+		<div class="radio-button" name="select_parse_as">u8</div>
+		<div class="radio-button" name="select_parse_as">u16</div>
+		<div class="radio-button" name="select_parse_as">u32</div>
+
+		<div style="padding: 10px;">
+			<input type="checkbox" id="usebase10" name="usebase10" />
+			<label for="usebase10">Use Base 10?</label>
+		</div>
+
+		<div style="padding: 10px;">
+			<input type="checkbox" id="bigendian" name="bigendian" />
+			<label for="bigendian">Big Endian mode</label>
+		</div>
+
+		<div class="btn">Save settings to cookie</div>
+	</div>
+</div>
+</body>
+<script src="highlight.min.js"></script>
+<script src="x86asm.js"></script>
+<script src="codejar.js"></script>
+<script src="lib.js"></script>
+<script>
+// emscripten js will merge with (?) this object
+var Module = {
+	onRuntimeInitialized: function() {
+		ret.main();
+	}
+};
+</script>
+<script src="build/ret.js"></script>
+<script src="web.js"></script>
+</html>
