@@ -42,14 +42,17 @@ jobs:
           make deploy
           zip -r ret.zip deploy
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./deploy
-
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
         with:
           name: zipped-artifact
           path: ret.zip
+
+      - name: Add CNAME
+        run: cp CNAME deploy/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
