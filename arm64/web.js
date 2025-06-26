@@ -124,11 +124,18 @@ const ret = {
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 
+	SYNTAX_INTEL: 0,
+	SYNTAX_ATT: 1,
+	SYNTAX_NASM: 2,
+	SYNTAX_MASM: 3,
+	SYNTAX_GAS: 4,
+
 	init: function() {
 		this.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 		this.currentArch = this.checkArch();
 		this.currentParseOption = this.PARSE_AS_AUTO;
 		this.currentOutputOption = this.OUTPUT_AS_AUTO;
+		this.currentSyntax = this.SYNTAX_INTEL;
 		this.log("Loading..");
 	},
 	checkArch: function() {
@@ -154,6 +161,7 @@ const ret = {
 		}
 	},
 	urlOptions: null,
+	
 	currentArch: 0,
 	currentSyntax: 2, // NASM
 	currentBaseOffset: 0,
@@ -192,9 +200,9 @@ const ret = {
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
 		ret.re_is_arch_supported = Module.cwrap('re_is_arch_supported', 'number', []);
 		ret.re_is_unicorn_supported = Module.cwrap('re_is_unicorn_supported', 'number', []);
-		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string', 'number']);
+		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'number', 'string', 'number']);
 		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
-		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string', 'number', 'number']);
+		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'number', 'string', 'number', 'number']);
 		ret.re_get_hex_buffer = Module.cwrap('re_get_hex_buffer', 'number', []);
 		ret.re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
@@ -260,9 +268,11 @@ const ret = {
 			const isX86 = ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64;
 			if (examples[i].arch == "arm32" && isArm) {
 				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86gnu" && isX86 && ret.currentSyntax == 4) {
+			} else if (examples[i].arch == "x86gnu" && isX86 && ret.currentSyntax == ret.SYNTAX_GAS) {
 				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86nasm" && isX86 && ret.currentSyntax == 2) {
+			} else if (examples[i].arch == "x86nasm" && isX86 && ret.currentSyntax == ret.SYNTAX_NASM) {
+				selected.push(examples[i]);
+			} else if (examples[i].arch == "x86intel" && isX86 && ret.currentSyntax == ret.SYNTAX_INTEL) {
 				selected.push(examples[i]);
 			} else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
 				selected.push(examples[i]);
@@ -281,7 +291,7 @@ const ret = {
 				return selected[i].data;
 			}
 		}
-		throw "Error";
+		return "";
 	}
 };
 ret.init();
@@ -383,7 +393,7 @@ function setBytes(hex_buf) {
 
 function finishAssembler(code) {
 	var then = Date.now();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.hex_buf, ret.err_buf, code, ret.currentOutputOption);
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.hex_buf, ret.err_buf, code, ret.currentOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -426,7 +436,7 @@ document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
 	var then = Date.now();
-	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.currentParseOption, ret.currentOutputOption);
+	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.currentParseOption, ret.currentOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -444,7 +454,7 @@ document.querySelector("#run").onclick = function() {
 		return;
 	}
 	var code = editor.toString();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.err_buf, code, ret.currentOutputOption);
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.mem_buf, ret.err_buf, code, ret.currentOutputOption);
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {

@@ -11,4 +11,5 @@ addExample("Stack", "arm32", "// Note: the emulator already has the stack pointe
 addExample("Hello World", "arm64", "ldr w2, UART_DR\nadr x1, string\ntop:\n	ldrb w0, [x1]\n	cmp w0, #0x0\n	beq end\n	str w0, [x2]\n	add x1, x1, #0x1\n	b top\nend:\n\nb skip\nUART_DR: .int 0x9000000\nstring:\n.ascii \"Hello, World\\n\"\n.byte 0\n.align 4\nskip:\n");
 addExample("Hello World (PIC)", "arm64", "ldr w2, UART_DR\nldr w1, string_addr\ntop:\n	ldrb w0, [x1]\n	cmp w0, #0x0\n	beq end\n	str w0, [x2]\n	add x1, x1, #0x1\n	b top\nend:\n\nb skip\nUART_DR: .int 0x9000000\nstring_addr: .int string\nstring:\n.ascii \"Hello, World\\n\"\n.byte 0\n.align 4\nskip:\n");
 addExample("Hello World", "x86gnu", "mov eax, 0x9000000 // UART_DR\nmov dword ptr [eax], 'X'\nmov dword ptr [eax], '\\n'\n");
-addExample("Hello World", "x86nasm", "mov eax, 0x9000000 ; UART_DR\nmov dword [eax], 'X'\nmov dword [eax], '\\n'\n");
+addExample("Hello World", "x86nasm", "mov eax, 0x9000000 ; UART_DR\nmov dword [eax], 'H'\nmov dword [eax], 'e'\nmov dword [eax], 'l'\nmov dword [eax], 'l'\nmov dword [eax], 'o'\nmov dword [eax], '\\n'\n");
+addExample("Hello World", "x86intel", "mov eax, 0x9000000 // UART_DR\nmov dword ptr [eax], 'X'\nmov dword ptr [eax], '\\n'\n");
