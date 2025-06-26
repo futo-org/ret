@@ -1,0 +1,14 @@
+addExample("Hello World", "rv64", "// TODO: rv64 hello world\n");
+addExample("Registers", "rv64", "// The following instructions are equivalent\naddi x0, x0, 0x1\nli x0, 0x1\n// x1 will be 0x2\nadd x1, x0, x0\n");
+addExample("Registers 2", "rv64", "addi x0, x0, 0x12\n");
+addExample("Hello World", "arm32", "adr r1, string\nldr r2, UART_DR\ntop:\n	ldrb r0, [r1]\n	cmp r0, #0x0\n	beq end\n	str r0, [r2]\n	add r1, r1, #0x1\n	b top\nend:\n\nb skip\nUART_DR: .int 0x9000000\nstring:\n.ascii \"Hello, World\\\\n\"\n.byte 0\n.align 4\nskip:\n");
+addExample("Registers", "arm32", "// Add two numbers\nmov r0, #0x50\nmov r1, #0xb0\nadd r2, r0, r1 // r2 = r0 + r1\n");
+addExample("Registers", "arm32", "// Add two numbers\nmov r0, #0x50\nmov r1, #0xb0\nadd r2, r0, r1 // r2 = r0 + r1\n");
+addExample("Jumps", "arm32", "b skip\nmov r0, #0x123 // this never gets called\nskip:\n");
+addExample("Conditions", "arm32", "mov r0, #0x10\nmov r1, #0x20\ncmp r0, r1\nblt end // Jump to end if r0 > r1\nmov r0, #0x123 // this doesn't get run\nend:\n// Note: blt stands for 'branch if less than'\n// There is also bgt 'brand if greater than', beq, etc\n");
+addExample("Functions", "arm32", "// 0x5 * 0x5 = 0x19\nmov r0, #0x5\nmov r1, #0x5\nbl multiply\n\nb skip\nmultiply:\n	mul r0, r0, r1\n	bx lr\nskip:\n");
+addExample("Stack", "arm32", "// Note: the emulator already has the stack pointer setup.\nmov r0, #0x123\npush {r0}\nmov r0, #0x0\npop {r0}\n");
+addExample("Hello World", "arm64", "ldr w2, UART_DR\nadr x1, string\ntop:\n	ldrb w0, [x1]\n	cmp w0, #0x0\n	beq end\n	str w0, [x2]\n	add x1, x1, #0x1\n	b top\nend:\n\nb skip\nUART_DR: .int 0x9000000\nstring:\n.ascii \"Hello, World\\n\"\n.byte 0\n.align 4\nskip:\n");
+addExample("Hello World (PIC)", "arm64", "ldr w2, UART_DR\nldr w1, string_addr\ntop:\n	ldrb w0, [x1]\n	cmp w0, #0x0\n	beq end\n	str w0, [x2]\n	add x1, x1, #0x1\n	b top\nend:\n\nb skip\nUART_DR: .int 0x9000000\nstring_addr: .int string\nstring:\n.ascii \"Hello, World\\n\"\n.byte 0\n.align 4\nskip:\n");
+addExample("Hello World", "x86gnu", "mov eax, 0x9000000 // UART_DR\nmov dword ptr [eax], 'X'\nmov dword ptr [eax], '\\n'\n");
+addExample("Hello World", "x86nasm", "mov eax, 0x9000000 ; UART_DR\nmov dword [eax], 'X'\nmov dword [eax], '\\n'\n");

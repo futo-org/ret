@@ -1,55 +1,3 @@
-const arm64_demo =
-`
-ldr w2, UART_DR
-adr x1, string
-top:
-	ldrb w0, [x1]
-	cmp w0, #0x0
-	beq end
-	str w0, [x2]
-	add x1, x1, #0x1
-	b top
-end:
-
-b skip
-UART_DR: .int 0x9000000
-string:
-.ascii "Hello, World\\n"
-.byte 0
-.align 4
-skip:
-`;
-const arm32_demo = `
-adr r1, string
-ldr r2, UART_DR
-top:
-	ldrb r0, [r1]
-	cmp r0, #0x0
-	beq end
-	str r0, [r2]
-	add r1, r1, #0x1
-	b top
-end:
-
-b skip
-UART_DR: .int 0x9000000
-string:
-.ascii "Hello, World\\n"
-.byte 0
-.align 4
-skip:
-`;
-const x86_64_demo =
-`
-mov eax, 0x9000000 // UART_DR
-mov dword ptr [eax], 'X'
-mov dword ptr [eax], '\\n'
-`;
-const riscv64_demo =
-`
-addi x0, x0, 0x12
-`;
-
 // Prevent selection while dragging
 function pauseEvent(e) {
     if (e.stopPropagation) e.stopPropagation();
@@ -164,6 +112,8 @@ const ret = {
 	SKIP_1_AT_START: 1 << 5,
 	SKIP_2_AT_START: 1 << 6,
 	PARSE_AS_BASE_10: 1 << 10,
+	PARSE_AS_BIG_ENDIAN: 1 << 11,
+	PARSE_C_COMMENTS: 1 << 12,
 
 	// Buffer output options
 	OUTPUT_AS_AUTO: 0,
@@ -205,6 +155,7 @@ const ret = {
 	},
 	urlOptions: null,
 	currentArch: 0,
+	currentSyntax: 2, // NASM
 	currentBaseOffset: 0,
 	currentParseOption: 0,
 	currentOutputOption: 0,
@@ -243,7 +194,7 @@ const ret = {
 		ret.re_is_unicorn_supported = Module.cwrap('re_is_unicorn_supported', 'number', []);
 		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'string', 'number']);
 		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
-		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string']);
+		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'string', 'number', 'number']);
 		ret.re_get_hex_buffer = Module.cwrap('re_get_hex_buffer', 'number', []);
 		ret.re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
@@ -301,6 +252,36 @@ const ret = {
 			})
 		});
 		return await res.text();
+	},
+	getExamples: function() {
+		var selected = [];
+		for (var i = 0; i < examples.length; i++) {
+			const isArm = ret.currentArch == ret.ARCH_ARM32 || ret.currentArch == ret.ARCH_ARM32_THUMB;
+			const isX86 = ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64;
+			if (examples[i].arch == "arm32" && isArm) {
+				selected.push(examples[i]);
+			} else if (examples[i].arch == "x86gnu" && isX86 && ret.currentSyntax == 4) {
+				selected.push(examples[i]);
+			} else if (examples[i].arch == "x86nasm" && isX86 && ret.currentSyntax == 2) {
+				selected.push(examples[i]);
+			} else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
+				selected.push(examples[i]);
+			} else if (examples[i].arch == "rv32" && ret.currentArch == ret.ARCH_RV32) {
+				selected.push(examples[i]);
+			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv32") && ret.currentArch == ret.ARCH_RISCV64) {
+				selected.push(examples[i]);
+			}
+		}
+		return selected;
+	},
+	getExample: function(name) {
+		var selected = ret.getExamples();
+		for (var i = 0; i < selected.length; i++) {
+			if (selected[i].name == name) {
+				return selected[i].data;
+			}
+		}
+		throw "Error";
 	}
 };
 ret.init();
@@ -345,7 +326,7 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "x86";
 		document.querySelector("#menu").style.background = "rgb(97 36 48)";
 		document.title = "Ret x86";
-		document.querySelector(".editor").classList.add("language-x86asm2");
+		document.querySelector(".editor").classList.add("language-x86asm");
 	} else if (ret.currentArch == ret.ARCH_ARM32) {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
 		document.querySelector("#menu").style.background = "rgb(19 73 64)";
@@ -389,13 +370,7 @@ if (ret.urlOptions.hasOwnProperty("code")) {
 	editor.updateCode(decodeURIComponent(ret.urlOptions.code));
 }
 if (editor.toString() == "") {
-	switch (ret.currentArch) {
-		case ret.ARCH_ARM64: editor.updateCode(arm64_demo.trim()); break;
-		case ret.ARCH_X86_64: editor.updateCode(x86_64_demo.trim()); break;
-		case ret.ARCH_ARM32: editor.updateCode(arm32_demo.trim()); break;
-		case ret.ARCH_ARM32_THUMB: editor.updateCode(arm32_demo.trim()); break;
-		case ret.ARCH_RISCV64: editor.updateCode(riscv64_demo.trim()); break;
-	}
+	editor.updateCode(ret.getExample("Hello World"));
 }
 
 function setBytes(hex_buf) {
@@ -451,7 +426,7 @@ document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
 	var then = Date.now();
-	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value);
+	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.currentParseOption, ret.currentOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -531,7 +506,6 @@ setupRadio("select_parse_as", 0, function(index, value, e) {
 	ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
 });
 
-
 setupRadio("select_output_as", 0, function(index, value, e) {
 	var option = 0;
 	if (index == 0) option = ret.OUTPUT_AS_AUTO;
@@ -541,6 +515,14 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	ret.currentOutputOption = option; // currently only one option is allowed
 	//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
 });
+
+document.querySelector("#parseccomments").onchange = function() {
+	if (this.checked) {
+		ret.currentParseOption |= ret.PARSE_C_COMMENTS;
+	} else {
+		ret.currentParseOption &= ~(ret.PARSE_C_COMMENTS);
+	}
+}
 
 //for (var i = 0; i < 10; i++) {
 //	var el = document.createElement("option");

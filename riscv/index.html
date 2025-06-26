@@ -85,23 +85,38 @@ Ret version RET_VERSION
 		<div class="radio-button" name="select_parse_as">u16</div>
 		<div class="radio-button" name="select_parse_as">u32</div>
 
-		<div style="padding: 10px;">
-			<input type="checkbox" id="usebase10" name="usebase10" />
-			<label for="usebase10">Use Base 10?</label>
-		</div>
+		<!-- <div style="padding: 10px;"> -->
+		<!-- 	<input type="checkbox" id="usebase10" name="usebase10" /> -->
+		<!-- 	<label for="usebase10">Use Base 10?</label> -->
+		<!-- </div> -->
 
 		<div style="padding: 10px;">
-			<input type="checkbox" id="bigendian" name="bigendian" />
-			<label for="bigendian">Big Endian mode</label>
+			<input type="checkbox" id="parseccomments" name="parseccomments" />
+			<label for="parseccomments">Parse C comments in hex</label>
 		</div>
 
-		<div class="btn">Save settings to cookie</div>
+		<!-- <div style="padding: 10px;"> -->
+		<!-- 	<input type="checkbox" id="bigendian" name="bigendian" /> -->
+		<!-- 	<label for="bigendian">Big Endian mode</label> -->
+		<!-- </div> -->
+
+		<!-- <div class="btn">Save settings to cookie</div> -->
 	</div>
 </div>
 </body>
 <script src="highlight.min.js"></script>
-<script src="x86asm.js"></script>
 <script src="codejar.js"></script>
+<script>
+var examples = [];
+function addExample(name, arch, data) {
+	examples.push({
+		name: name,
+		arch: arch,
+		data: data
+	});
+}
+</script>
+<script src="examples.js"></script>
 <script src="lib.js"></script>
 <script>
 // emscripten js will merge with (?) this object
