@@ -26,6 +26,8 @@ enum ParseOptions {
 
 	PARSE_AS_BASE_10 = 1 << 10,
 	PARSE_AS_BIG_ENDIAN = 1 << 11,
+
+	PARSE_C_COMMENTS = 1 << 12,
 };
 
 enum OutputOptions {

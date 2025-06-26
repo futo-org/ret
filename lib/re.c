@@ -81,6 +81,10 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, s
         return -1;
     }
 
+    if (_ks_arch == KS_ARCH_X86) {
+    	ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_NASM);
+    }
+
     size_t count = 0;
     unsigned char *encode = NULL;
     size_t size = 0;
@@ -103,13 +107,13 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, s
 	return 0;
 }
 
-int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input) {
+int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
 	buf->clear(buf);
 	err_buf->clear(err_buf);
 
 	re_buf_mem.clear(&re_buf_mem);
 
-	parser_to_buf(input, &re_buf_mem, PARSE_AS_AUTO, OUTPUT_AS_AUTO);
+	parser_to_buf(input, &re_buf_mem, parse_options, output_options);
 
 	csh handle;
 	cs_insn *insn;

@@ -45,7 +45,7 @@ jobs:
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zipped-artifact
+          name: ret.zip build for self-hosting
           path: ret.zip
 
       - name: Add CNAME

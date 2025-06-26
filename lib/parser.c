@@ -131,7 +131,7 @@ struct Number lex_number(struct HexPars *p) {
 }
 
 void create_parser(struct HexPars *p, const char *in, int options) {
-	p->options = PARSE_AS_AUTO;
+	p->options = options;
 	p->buf = in;
 	p->parsing_long_hex = 0;
 	p->of = 0;
@@ -148,11 +148,19 @@ struct Number parser_next(struct HexPars *p) {
 			return eof;
 		}
 	
-		// Always parse as hex if '0x' is found
-		// TODO: Check buf+2
+		// TODO: Always parse as hex if '0x' is found
 		if (in[p->of] == '0' && in[p->of + 1] == 'x') {
 			p->of += 2;
+			if (in[p->of] == '\0') return eof;
 			// TODO: Check if following is valid hex, may not be
+		}
+		if (p->options & PARSE_C_COMMENTS) {
+			if (in[p->of] == '/' && in[p->of + 1] == '/') {
+				while (in[p->of] != '\n') {
+					if (in[p->of] == '\0') return eof;
+					p->of++;
+				}
+			}
 		}
 		if (is_digit(in[p->of]) || is_hexa(in[p->of])) {
 			struct Number n = lex_number(p);
