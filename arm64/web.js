@@ -136,6 +136,12 @@ const ret = {
 		this.currentParseOption = this.PARSE_AS_AUTO;
 		this.currentOutputOption = this.OUTPUT_AS_AUTO;
 		this.currentSyntax = this.SYNTAX_INTEL;
+		if (ret.urlOptions.hasOwnProperty("useGodboltOnAssembler")) {
+			this.useGodboltOnAssembler = true;
+		}
+		if (ret.urlOptions.hasOwnProperty("currentParseOption")) {
+			this.currentParseOption = Number(ret.urlOptions.currentParseOption);
+		}
 		this.log("Loading..");
 	},
 	checkArch: function() {
@@ -526,6 +532,7 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
 });
 
+document.querySelector("#parseccomments").checked = (ret.currentParseOption & ret.PARSE_C_COMMENTS) != 0;
 document.querySelector("#parseccomments").onchange = function() {
 	if (this.checked) {
 		ret.currentParseOption |= ret.PARSE_C_COMMENTS;
