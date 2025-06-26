@@ -45,7 +45,7 @@ int re_is_unicorn_supported(void) {
 #endif
 }
 
-int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
+int re_assemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
 	buf->clear(buf);
 	buf->clear(err_buf);
 	ks_engine *ks;
@@ -76,20 +76,33 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, s
 	}
 
 	err = ks_open(_ks_arch, _ks_mode, &ks);
-    if (err != KS_ERR_OK) {
-	    buffer_appendf(err_buf, "ks_open failed (%s)\n", ks_strerror(err));
-        return -1;
-    }
+	if (err != KS_ERR_OK) {
+		buffer_appendf(err_buf, "ks_open failed (%s)\n", ks_strerror(err));
+		return -1;
+	}
 
-    if (_ks_arch == KS_ARCH_X86) {
-    	ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_NASM);
-    }
+	if (_ks_arch == KS_ARCH_X86) {
+		if (syntax == RET_SYNTAX_INTEL) {
+			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_INTEL);
+		} else if (syntax == RET_SYNTAX_ATT) {
+			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_ATT);
+		} else if (syntax == RET_SYNTAX_NASM) {
+			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_NASM);
+		} else if (syntax == RET_SYNTAX_MASM) {
+			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_MASM);
+		} else if (syntax == RET_SYNTAX_GAS) {
+			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_GAS);
+		} else {
+			buffer_appendf(err_buf, "Invalid syntax code\n");
+			return -1;
+		}
+	}
 
-    size_t count = 0;
-    unsigned char *encode = NULL;
-    size_t size = 0;
+	size_t count = 0;
+	unsigned char *encode = NULL;
+	size_t size = 0;
 
-    err = ks_asm(ks, input, base_addr, &encode, &size, &count);
+	err = ks_asm(ks, input, base_addr, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
 		char buffer[128];
 		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
@@ -107,7 +120,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, s
 	return 0;
 }
 
-int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
+int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
 	buf->clear(buf);
 	err_buf->clear(err_buf);
 
@@ -118,15 +131,12 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf
 	csh handle;
 	cs_insn *insn;
 	size_t count;
-	//ks_opt_value syntax = KS_OPT_SYNTAX_GAS;
-	//ks_option
 
 	cs_arch _cs_arch = 0;
 	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
 	if (arch == ARCH_X86_64) {
 		_cs_arch = CS_ARCH_X86;
 		_cs_mode |= CS_MODE_64;
-		//syntax = KS_OPT_SYNTAX_NASM;
 	} else if (arch == ARCH_ARM64) {
 		_cs_arch = CS_ARCH_AARCH64;
 	} else if (arch == ARCH_ARM32) {
@@ -148,6 +158,29 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, struct RetBuffer *buf
 	if (cs_open(_cs_arch, _cs_mode, &handle) != CS_ERR_OK) {
 		err_buf->append(err_buf, "cs_open failed", 0);
 		return -1;
+	}
+
+	if (_cs_arch == CS_ARCH_X86) {
+		if (syntax == RET_SYNTAX_INTEL) {
+			cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL);
+		} else if (syntax == RET_SYNTAX_ATT) {
+			cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_ATT);
+		} else if (syntax == RET_SYNTAX_NASM) {
+			buffer_appendf(err_buf, "NASM syntax is currently not supported in capstone.\n");
+			return -1;
+		} else if (syntax == RET_SYNTAX_MASM) {
+			cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_MASM);
+		} else if (syntax == RET_SYNTAX_GAS) {
+			buffer_appendf(err_buf, "GAS syntax is currently not supported in capstone.\n");
+			return -1;
+		} else {
+			buffer_appendf(err_buf, "Invalid syntax code\n");
+			return -1;
+		}
+	}
+
+	if (_cs_arch == CS_ARCH_X86) {
+		cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL);
 	}
 
 	if (re_buf_mem.offset == 0) {
@@ -191,7 +224,7 @@ int cli_asm_test(void) {
 	struct RetBuffer buf = create_stdout_hex_buffer();
 	struct RetBuffer err = create_stdout_buffer();
 
-	int rc = re_assemble(ARCH_ARM64, 0, &buf, &err, "nop\nnop\nmov x0, 123000000000000", OUTPUT_AS_AUTO);
+	int rc = re_assemble(ARCH_ARM64, 0, 0, &buf, &err, "nop\nnop\nmov x0, 123000000000000", OUTPUT_AS_AUTO);
 	printf("\n");
 	return rc;
 }
@@ -221,7 +254,7 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, &buf, &err, input, OUTPUT_AS_AUTO);
+	int rc = re_assemble(arch, 0, 0, &buf, &err, input, OUTPUT_AS_AUTO);
 	printf("\n");
 	return rc;
 }

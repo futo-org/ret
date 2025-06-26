@@ -1,0 +1,5 @@
+      0f 20 c1 // mov rcx, cr0
+      48 89 c8 // mov rax, rcx
+      48 25 00 00 01 00 // and rax, 10000
+      48 31 c1 // xor rcx, rax
+      0f 22 c1 // mov cr0, rcx
