@@ -1,1 +1,1 @@
-// TODO: rv64 hello world
+// RISC-V doesn't work in the web-based emulator yet.

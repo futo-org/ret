@@ -1,3 +1,4 @@
+// Hello world that doesn't use adr
 ldr w2, UART_DR
 ldr w1, string_addr
 top:

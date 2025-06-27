@@ -79,7 +79,9 @@
           + 'float128l float128h __FLOAT_DAZ__ __FLOAT_ROUND__ __FLOAT__'
       },
       contains: [
-        hljs.COMMENT('//', '$', { contains: [ { begin: /\\\n/ } ] }),
+        hljs.COMMENT(';', '$', { contains: [ { begin: /\\\n/ } ] }),
+//        hljs.COMMENT('//', '$', { contains: [ { begin: /\\\n/ } ] }),
+//        hljs.COMMENT('#', '$', { contains: [ { begin: /\\\n/ } ] }),
         {
           className: 'number',
           variants: [

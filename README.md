@@ -31,3 +31,4 @@ python3 -m http.server 8000
 - Keystone: https://github.com/keystone-engine/keystone/blob/master/COPYING
 - CodeJar: https://github.com/antonmedv/codejar/blob/master/LICENSE
 - Highlight.js: https://github.com/highlightjs/highlight.js/blob/main/LICENSE
+- Google Fonts icons: https://fonts.google.com/ (Apache License)
