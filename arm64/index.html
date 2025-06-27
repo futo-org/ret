@@ -12,7 +12,7 @@
 <div class="container">
 	<div class="menu" id="menu">
 		<div class="btn" id="arch-select">
-			<span id="arch-select-text">ARM64</span><span>&#9660;</span>
+			<span id="arch-select-text">ARM64</span><img src="arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 			<div class="dropdown-content" id="arch-dropdown-box">
 				<button class="btn" id="switch-x86">x86</button>
 				<button class="btn" id="switch-arm64">Arm64</button>
@@ -36,9 +36,13 @@
 			</div>
 		</div>
 		<div class="right">
-			<div class="btn">Base address: <input type="text" id="base-address" value="0x0"></div>
-			<div class="btn" id="settings-btn">Settings</div>
-			<div class="btn" id="share-btn">Share</div>
+			<div class="btn" id="examples-dropdown">
+				<span>Examples</span><img src="arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+				<div class="dropdown-content" id="examples-dropdown-box"></div>
+			</div>
+			<div class="btn">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>
+			<div class="btn" id="settings-btn"><img width="24" src="settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="share-btn"><img width="24" src="share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
 			<div class="btn" id="help-dropdown">
 				<img src="ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
@@ -68,7 +72,7 @@ Ret version RET_VERSION
 		<div class="panel" id="right-column">
 			<div id="hseparator"></div>
 			<div class="panel" id="panel2">
-				<textarea spellcheck="false" id="bytes" placeholder="Input bytes here"></textarea>
+				<textarea spellcheck="false" id="bytes" placeholder="Hex goes here"></textarea>
 			</div>
 			<div class="panel" id="panel3">
 				<textarea readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
@@ -105,6 +109,7 @@ Ret version RET_VERSION
 </div>
 </body>
 <script src="highlight.min.js"></script>
+<script src="x86asm.js"></script>
 <script src="codejar.js"></script>
 <script>
 var examples = [];

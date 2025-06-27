@@ -303,6 +303,7 @@ const ret = {
 ret.init();
 
 setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
+setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
 setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
 setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
 
@@ -342,7 +343,7 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "x86";
 		document.querySelector("#menu").style.background = "rgb(97 36 48)";
 		document.title = "Ret x86";
-		document.querySelector(".editor").classList.add("language-x86asm");
+		document.querySelector(".editor").classList.add("language-x86asm2");
 	} else if (ret.currentArch == ret.ARCH_ARM32) {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
 		document.querySelector("#menu").style.background = "rgb(19 73 64)";
@@ -481,13 +482,20 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 			ret.log("Failed to parse bytes");
 		} else {
 			setBytes(ret.hex_buf);
-			var output_as = "auto", parse_as = "";
+			var output_as = "", parse_as = "";
 			if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
 			if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
 			if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
 			if (ret.currentParseOption & ret.PARSE_AS_AUTO) parse_as = "auto";
 			if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
 			if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as = ", base10";
+
+			if (ret.currentOutputOption & ret.OUTPUT_AS_U8) output_as = "u8";
+			if (ret.currentOutputOption & ret.OUTPUT_AS_U16) output_as = "u16";
+			if (ret.currentOutputOption & ret.OUTPUT_AS_U32) output_as = "u32";
+			if (ret.currentOutputOption & ret.OUTPUT_AS_AUTO) output_as = "auto";
+			if (ret.currentOutputOption & ret.OUTPUT_AS_U64) output_as = "u64";
+			if (ret.currentOutputOption & ret.OUTPUT_AS_C_ARRAY) output_as = "c array";
 
 			ret.log("Formatted hex (parse as '" + parse_as + "') (output as '" + output_as + "')");
 		}
@@ -541,11 +549,20 @@ document.querySelector("#parseccomments").onchange = function() {
 	}
 }
 
-//for (var i = 0; i < 10; i++) {
-//	var el = document.createElement("option");
-//	el.innerText = "asd";
-//	example.appendChild(el);
-//}
+function fillExamples() {
+	var examples = ret.getExamples();
+	for (var i = 0; i < examples.length; i++) {
+		var el = document.createElement("div");
+		el.className = "btn";
+		el.exampleName = examples[i].name;
+		el.onclick = function() {
+			editor.updateCode(ret.getExample(this.exampleName));
+		}
+		el.innerText = examples[i].name;
+		document.querySelector("#examples-dropdown-box").appendChild(el);
+	}
+}
+fillExamples();
 
 // Try to get F9 to trigger assembler
 document.addEventListener("keydown", keyCapt, false); 
