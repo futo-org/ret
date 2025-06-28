@@ -214,6 +214,8 @@ const ret = {
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
 		ret.re_get_mem_buffer = Module.cwrap('re_get_mem_buffer', 'number', []);
 		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
+		ret.get_buffer_contents_raw = Module.cwrap('get_buffer_contents', 'number', ['number']);
+		ret.get_buffer_data_length = Module.cwrap('get_buffer_data_length', 'number', ['number']);
 		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number', 'number']);
 		ret.buffer_to_buffer = Module.cwrap('buffer_to_buffer', 'void', ['number', 'number', 'number']);
 
@@ -282,9 +284,9 @@ const ret = {
 				selected.push(examples[i]);
 			} else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
 				selected.push(examples[i]);
-			} else if (examples[i].arch == "rv32" && ret.currentArch == ret.ARCH_RV32) {
+			} else if ((examples[i].arch == "rv32" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV32) {
 				selected.push(examples[i]);
-			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv32") && ret.currentArch == ret.ARCH_RISCV64) {
+			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV64) {
 				selected.push(examples[i]);
 			}
 		}
@@ -298,6 +300,17 @@ const ret = {
 			}
 		}
 		return "";
+	},
+
+	downloadFile: function(blob) {
+		var a = document.createElement("a");
+		document.body.appendChild(a);
+		a.download = "binary.dat";
+		a.href = window.URL.createObjectURL(new Blob([blob], {
+			type: "application/octet-stream"
+		}));
+		a.click();
+		document.body.removeChild(a);
 	}
 };
 ret.init();
@@ -378,6 +391,10 @@ const highlight = editor => {
 	delete editor.dataset.highlighted;
 	editor.innerHTML = escape_html(editor.textContent);
 	hljs.highlightElement(editor);
+	editor.innerHTML = editor.innerHTML.replace(
+		/(https?:\/\/[^\s<\"]+)/g,
+		url => `<a href="${url}" contenteditable="false" target="_blank" rel="noopener noreferrer">${url}</a>`
+	);
 };
 
 let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\t'});
@@ -502,6 +519,19 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 	}
 }
 
+document.querySelector("#save-button").onclick = function() {
+	if (ret.mem_buf == null) throw "NULL";	
+	ret.clearLog();
+	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.currentParseOption, ret.currentOutputOption);
+	if (rc != 0) {
+		ret.log("Failed to parse bytes");
+	} else {
+		var ptr = ret.get_buffer_contents_raw(ret.mem_buf);
+		var len = ret.get_buffer_data_length(ret.mem_buf);
+		ret.downloadFile(Module.HEAPU8.subarray(ptr, ptr + len));
+	}
+}
+
 document.querySelector("#base-address").value = "0x" + (ret.currentBaseOffset).toString(16);
 document.querySelector("#base-address").onkeyup = function() {
 	if (Number(this.value) != NaN) {
@@ -550,6 +580,7 @@ document.querySelector("#parseccomments").onchange = function() {
 }
 
 function fillExamples() {
+	document.querySelector("#examples-dropdown-box").innerHTML = "";
 	var examples = ret.getExamples();
 	for (var i = 0; i < examples.length; i++) {
 		var el = document.createElement("div");

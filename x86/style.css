@@ -208,12 +208,12 @@ textarea, #asm {
 	min-width: 160px;
 }
 
-#panel1 {position: relative;}
-#example {
-	position: absolute;
-	top: 5px;
-	right: 5px;
-}
+/* #panel2 {position: relative;} */
+/* #save-button { */
+/* 	position: absolute; */
+/* 	bottom: 10px; */
+/* 	right: 10px; */
+/* } */
 
 #popup {
 	position: absolute;
