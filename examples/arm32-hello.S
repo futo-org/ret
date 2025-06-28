@@ -12,7 +12,7 @@ end:
 b skip
 UART_DR: .int 0x9000000
 string:
-.ascii "Hello, World\\n"
+.ascii "Hello, World\n"
 .byte 0
 .align 4
 skip:
