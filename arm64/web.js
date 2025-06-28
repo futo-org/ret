@@ -528,7 +528,8 @@ document.querySelector("#save-button").onclick = function() {
 	} else {
 		var ptr = ret.get_buffer_contents_raw(ret.mem_buf);
 		var len = ret.get_buffer_data_length(ret.mem_buf);
-		ret.downloadFile(Module.HEAPU8.subarray(ptr, ptr + len));
+		// Latest emsdk seems to not put HEAPU8 in Module (?)
+		ret.downloadFile(HEAPU8.subarray(ptr, ptr + len));
 	}
 }
 
