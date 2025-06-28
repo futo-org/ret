@@ -7,9 +7,8 @@ def add(name, arch, file):
 
 # 'Hello World' file is required for each arch
 
-add("Hello World", "rv64", "rv64-hello.s")
-add("Registers", "rv64", "rv64-regs.s")
-add("Registers 2", "rv64", "rv64-regs2.s")
+add("Hello World", "rv", "rv-hello.S")
+add("Registers", "rv", "rv-regs.S")
 
 add("Registers", "arm32", "arm32-regs.S")
 add("Jumps", "arm32", "arm32-jumps.S")
@@ -19,7 +18,7 @@ add("Stack", "arm32", "arm32-stack.S")
 add("Hello World", "arm32", "arm32-hello.S")
 
 add("Hello World", "arm64", "arm64-hello.S")
-add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
+#add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
 
 add("Hello World", "x86gnu", "x86-hello-gnu.asm")
 add("Hello World", "x86nasm", "x86_hello.asm")

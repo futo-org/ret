@@ -33,6 +33,7 @@
 				<div class="radio-button" name="select_output_as">u8</div>
 				<div class="radio-button" name="select_output_as">u32</div>
 				<div class="radio-button" name="select_output_as">C array</div>
+				<div class="btn" id="save-button">Save As File</div>
 			</div>
 		</div>
 		<div class="right">
@@ -66,12 +67,12 @@ Ret version RET_VERSION
 
 	<div class="panels">
 		<div class="panel" id="panel1">
-			<!-- <select name="example" id="example"></select> -->
 			<div id="asm" class="editor"></div>
 		</div>
 		<div class="panel" id="right-column">
 			<div id="hseparator"></div>
 			<div class="panel" id="panel2">
+				<!-- <button id="save-button">Save as binary file</button> -->
 				<textarea spellcheck="false" id="bytes" placeholder="Hex goes here"></textarea>
 			</div>
 			<div class="panel" id="panel3">

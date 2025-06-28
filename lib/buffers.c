@@ -145,6 +145,10 @@ const void *get_buffer_contents(struct RetBuffer *buf) {
 	return buf->buffer;
 }
 
+unsigned int get_buffer_data_length(struct RetBuffer *buf) {
+	return buf->offset;
+}
+
 void buffer_to_buffer(struct RetBuffer *buf_out, struct RetBuffer *buf_in, int output_options) {
 	int option = buf_out->output_options;
 	buf_out->output_options = output_options;

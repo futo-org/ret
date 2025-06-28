@@ -1,5 +1,5 @@
-ldr w2, UART_DR
 adr x1, string
+ldr w2, UART_DR
 top:
 	ldrb w0, [x1]
 	cmp w0, #0x0

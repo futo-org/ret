@@ -105,7 +105,7 @@ add_executable(ret
 	$<$<BOOL:${UNICORN_SUPPORT}>:lib/unicorn.c>
 )
 
-set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_parser_to_buf,_re_is_unicorn_supported,_buffer_to_buffer)
+set(EXPORT_FUNCS _re_is_arch_supported,_cli_asm_test,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_get_buffer_contents,_parser_to_buf,_re_is_unicorn_supported,_buffer_to_buffer,_get_buffer_data_length)
 if(UNICORN_SUPPORT)
 	set(EXPORT_FUNCS ${EXPORT_FUNCS},_re_emulator)
 endif()
