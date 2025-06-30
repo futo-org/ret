@@ -27,7 +27,7 @@ void pl011_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t v
 		char str[2] = {'\0', '\0'};
 		str[0] = (char)value;
 		state->last_char = (char)value;
-		buffer_appendf(state->log, str, 0);
+		state->log->append(state->log, str, 0);
 	} return;
 	}
 }
