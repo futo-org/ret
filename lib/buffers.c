@@ -150,6 +150,8 @@ unsigned int get_buffer_data_length(struct RetBuffer *buf) {
 }
 
 void buffer_to_buffer(struct RetBuffer *buf_out, struct RetBuffer *buf_in, int output_options) {
+	if (buf_in == NULL) return;
+	if (buf_out == NULL) return;
 	int option = buf_out->output_options;
 	buf_out->output_options = output_options;
 	buf_out->clear(buf_out);
@@ -167,6 +169,8 @@ void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...) {
 }
 
 void buffer_append_mode(struct RetBuffer *buf, void *data, unsigned int length, int output_options) {
+	if (buf == NULL) return;
+	if (data == NULL) return;
 	int temp = buf->output_options;
 	buf->output_options = output_options;
 	buf->append(buf, data, length);

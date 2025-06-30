@@ -46,6 +46,8 @@ static void hook_intr(uc_engine *uc, uint32_t intno, void *user_data) {
 }
 
 int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_buffer, struct RetBuffer *log) {
+	if (asm_buffer == NULL) return -1;
+	if (log == NULL) return -1;
 	log->clear(log);
 	uc_engine *uc;
 	uc_err err;

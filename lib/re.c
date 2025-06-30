@@ -46,6 +46,7 @@ int re_is_unicorn_supported(void) {
 }
 
 int re_assemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
+	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
 	buf->clear(buf);
 	buf->clear(err_buf);
 	ks_engine *ks;
@@ -121,6 +122,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBu
 }
 
 int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
+	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
 	buf->clear(buf);
 	err_buf->clear(err_buf);
 

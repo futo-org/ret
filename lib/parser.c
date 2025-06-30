@@ -178,6 +178,7 @@ struct Number parser_next(struct HexPars *p) {
 }
 
 int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, int output_options) {
+	if (input == NULL || buf == NULL) return -1;
 	buf->clear(buf);
 	struct HexPars p;
 	create_parser(&p, input, parse_options);
