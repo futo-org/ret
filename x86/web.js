@@ -437,12 +437,7 @@ function finishAssembler(code, outBuf, errBuf, doneCallback) {
 	var then = Date.now();
 	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.currentOutputOption);
 	var now = Date.now();
-	if (rc != 0) {
-		doneCallback(rc, now - then);
-	} else {
-		ret.log("Assembled in " + String(now - then) + "us");
-		doneCallback(rc, now - then);
-	}
+	doneCallback(rc, now - then);
 }
 function fullAssembler(code, outBuf, errBuf, doneCallback) {
 	if (!code.endsWith("\n")) {
@@ -477,10 +472,11 @@ document.querySelector("#assemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
 	ret.clearLog();
 	var code = editor.toString();
-	fullAssembler(code, ret.hex_buf, ret.err_buf, function(rc) {
+	fullAssembler(code, ret.hex_buf, ret.err_buf, function(rc, time) {
 		if (rc != 0) {
 			ret.log(ret.get_buffer_contents(ret.err_buf));
 		} else {
+			ret.log("Assembled in " + String(time) + "us");
 			setBytes(ret.hex_buf);
 		}
 	});
