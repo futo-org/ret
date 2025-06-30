@@ -145,11 +145,11 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		int x0_reg = UC_ARM64_REG_X0;
 
 		uc_reg_read(uc, pc_reg, rb);
-		buffer_appendf(log, " PC: 0x%016llX\n", ((uint64_t *)rb)[0]);
+		buffer_appendf(log, " PC: 0x%llX\n", ((uint64_t *)rb)[0]);
 	
 		for (int i = 0; i < 5; i++) {
 			uc_reg_read(uc, x0_reg + i, rb);
-			buffer_appendf(log, " x%d: 0x%016llX\n", i, ((uint64_t *)rb)[0]);
+			buffer_appendf(log, " x%d: 0x%llX\n", i, ((uint64_t *)rb)[0]);
 		}
 	} else if (_uc_arch == UC_ARCH_X86) {
 		uint64_t reg;
