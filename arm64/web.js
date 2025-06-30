@@ -142,7 +142,25 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("currentParseOption")) {
 			this.currentParseOption = Number(ret.urlOptions.currentParseOption);
 		}
+		if (ret.urlOptions.hasOwnProperty("currentOutputOption")) {
+			this.currentOutputOption = Number(ret.urlOptions.currentOutputOption);
+		}
+		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
+			this.currentSyntax = Number(ret.urlOptions.currentSyntax);
+		}
 		this.log("Loading..");
+	},
+	encodeURL: function(allOptions) {
+		var opt = Object.assign({}, ret.urlOptions);
+		opt.code = encodeURIComponent(editor.toString());
+		if (allOptions) {
+			opt.currentParseOption = String(ret.currentParseOption);
+			opt.currentOutputOption = String(ret.currentOutputOption);
+			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
+			opt.currentSyntax = String(ret.currentSyntax);
+		}
+		var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
+		prompt("Copy", newUrl);
 	},
 	checkArch: function() {
 		if (window.location.pathname.includes("arm64")) {
@@ -169,7 +187,7 @@ const ret = {
 	urlOptions: null,
 	
 	currentArch: 0,
-	currentSyntax: 2, // NASM
+	currentSyntax: 0,
 	currentBaseOffset: 0,
 	currentParseOption: 0,
 	currentOutputOption: 0,
@@ -259,7 +277,7 @@ const ret = {
 				options: {
 					userArguments: arguments,
 					filters: {
-						intel: false,
+						intel: true,
 						comments: false,
 						labels: true,
 						directives: true
@@ -311,7 +329,7 @@ const ret = {
 		}));
 		a.click();
 		document.body.removeChild(a);
-	}
+	},
 };
 ret.init();
 
@@ -415,29 +433,24 @@ function setBytes(hex_buf) {
 	}
 }
 
-function finishAssembler(code) {
+function finishAssembler(code, outBuf, errBuf, doneCallback) {
 	var then = Date.now();
 	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.hex_buf, ret.err_buf, code, ret.currentOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
-		ret.log(ret.get_buffer_contents(ret.err_buf));
+		doneCallback(rc, now - then);
 	} else {
-		setBytes(ret.hex_buf);
 		ret.log("Assembled in " + String(now - then) + "us");
+		doneCallback(rc, now - then);
 	}
 }
-
-document.querySelector("#assemble").onclick = function() {
-	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
-	ret.clearLog();
-	var code = editor.toString();
+function fullAssembler(code, outBuf, errBuf, doneCallback) {
 	if (!code.endsWith("\n")) {
 		// make file valid
 		code += "\n";
 	}
-	ret.log("Sending code to Godbolt...");
-	ret.clearLog();
 	if (ret.useGodboltOnAssembler) {
+		ret.log("Sending code to Godbolt...");
 		(async function() {
 			var x = await ret.godbolt(ret.currentArch, code);
 			if (x != null) {
@@ -445,7 +458,8 @@ document.querySelector("#assemble").onclick = function() {
 				var split = x.split("\nStandard error:\n");
 				if (split.length == 1) {
 					ret.log("No errors from Godbolt API.");
-					finishAssembler(code);
+					// TODO: Feed in new code
+					finishAssembler(code, outBuf, errBuf, doneCallback);
 				} else {
 					ret.log("Error message from Godbolt API:");
 					ret.log(split[1]);
@@ -455,8 +469,21 @@ document.querySelector("#assemble").onclick = function() {
 			}
 		})();
 	} else {
-		finishAssembler(code);
+		finishAssembler(code, outBuf, errBuf, doneCallback);
 	}
+}
+
+document.querySelector("#assemble").onclick = function() {
+	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
+	ret.clearLog();
+	var code = editor.toString();
+	fullAssembler(code, ret.hex_buf, ret.err_buf, function(rc) {
+		if (rc != 0) {
+			ret.log(ret.get_buffer_contents(ret.err_buf));
+		} else {
+			setBytes(ret.hex_buf);
+		}
+	});
 }
 
 document.querySelector("#disassemble").onclick = function() {
@@ -481,16 +508,18 @@ document.querySelector("#run").onclick = function() {
 		return;
 	}
 	var code = editor.toString();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.mem_buf, ret.err_buf, code, ret.currentOutputOption);
-	if (rc != 0) {
-		ret.log(ret.get_buffer_contents(ret.err_buf));
-	} else {
-		ret.buffer_to_buffer(ret.hex_buf, ret.mem_buf, ret.currentOutputOption);
-		setBytes(ret.hex_buf);
 
-		rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
-		ret.log(ret.get_buffer_contents(ret.str_buf));
-	}
+	fullAssembler(code, ret.mem_buf, ret.err_buf, function(rc) {
+		if (rc != 0) {
+			ret.log(ret.get_buffer_contents(ret.err_buf));
+		} else {
+			ret.buffer_to_buffer(ret.hex_buf, ret.mem_buf, ret.currentOutputOption);
+			setBytes(ret.hex_buf);
+
+			rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
+			ret.log(ret.get_buffer_contents(ret.str_buf));
+		}
+	});
 }
 
 document.querySelector("#hex-dropdown").onclick = function(e) {
@@ -547,9 +576,10 @@ document.querySelector("#settings-btn").onclick = function() {
 	document.querySelector("#popup").style.display = "block";
 }
 document.querySelector("#share-btn").onclick = function() {
-	ret.urlOptions.code = encodeURIComponent(editor.toString());
-	var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(ret.urlOptions).toString();
-	prompt("Copy", newUrl);
+	ret.encodeURL(false);
+}
+document.querySelector("#all-url-options").onclick = function() {
+	ret.encodeURL(true);
 }
 document.querySelector("#popup-close").onclick = function() {
 	document.querySelector("#popup").style.display = "none";
