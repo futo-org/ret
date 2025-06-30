@@ -435,7 +435,7 @@ function setBytes(hex_buf) {
 
 function finishAssembler(code, outBuf, errBuf, doneCallback) {
 	var then = Date.now();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.hex_buf, ret.err_buf, code, ret.currentOutputOption);
+	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.currentOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
 		doneCallback(rc, now - then);
