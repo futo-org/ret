@@ -34,6 +34,7 @@ input:focus {
 	display: flex;
 	flex-flow: row;
 	height: 100%;
+	overflow-y: hidden;
 }
 
 .panel {
@@ -208,12 +209,12 @@ textarea, #asm {
 	min-width: 160px;
 }
 
-/* #panel2 {position: relative;} */
-/* #save-button { */
-/* 	position: absolute; */
-/* 	bottom: 10px; */
-/* 	right: 10px; */
-/* } */
+#panel2 {position: relative;}
+#save-button {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+}
 
 #popup {
 	position: absolute;
@@ -226,4 +227,11 @@ textarea, #asm {
 	background: #2a3c3f;
 	border: 2px solid black;
 	display: none;
+}
+
+.flex-container {
+	display: flex;
+}
+.flex-child-horiz {
+	flex: 1;
 }
