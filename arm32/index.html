@@ -93,7 +93,7 @@ Ret version RET_VERSION
 				<div class="radio-button" name="select_parse_as">u32</div>
 			</div>
 			<div class="flex-child-horiz">
-				<span class="dropdown-text">X86 Syntax</span>
+				<span class="dropdown-text">X86 Syntax:</span>
 				<div class="radio-button" name="x86_syntax">Intel</div>
 				<div class="radio-button" name="x86_syntax">AT&T</div>
 				<div class="radio-button" name="x86_syntax">NASM</div>
@@ -110,6 +110,11 @@ Ret version RET_VERSION
 		<div style="padding: 10px;">
 			<input type="checkbox" id="parseccomments" name="parseccomments" />
 			<label for="parseccomments">Parse C comments in hex</label>
+		</div>
+
+		<div style="padding: 10px;">
+			<input type="checkbox" id="usegodbolt" name="usegodbolt" />
+			<label for="usegodbolt">Use Godbolt API as first-pass assembler</label>
 		</div>
 
 		<!-- <div style="padding: 10px;"> -->

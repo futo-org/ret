@@ -435,10 +435,13 @@ document.querySelector("#assemble").onclick = function() {
 		// make file valid
 		code += "\n";
 	}
+	ret.log("Sending code to Godbolt...");
+	ret.clearLog();
 	if (ret.useGodboltOnAssembler) {
 		(async function() {
 			var x = await ret.godbolt(ret.currentArch, code);
 			if (x != null) {
+				// This has to be done because of godbolt policy - we can't get JSON output
 				var split = x.split("\nStandard error:\n");
 				if (split.length == 1) {
 					ret.log("No errors from Godbolt API.");
@@ -587,6 +590,15 @@ document.querySelector("#parseccomments").onchange = function() {
 		ret.currentParseOption |= ret.PARSE_C_COMMENTS;
 	} else {
 		ret.currentParseOption &= ~(ret.PARSE_C_COMMENTS);
+	}
+}
+
+document.querySelector("#usegodbolt").checked = ret.useGodboltOnAssembler;
+document.querySelector("#usegodbolt").onchange = function() {
+	if (this.checked) {
+		ret.useGodboltOnAssembler = true;
+	} else {
+		ret.useGodboltOnAssembler = false;
 	}
 }
 
