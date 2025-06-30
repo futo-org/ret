@@ -33,7 +33,7 @@
 				<div class="radio-button" name="select_output_as">u8</div>
 				<div class="radio-button" name="select_output_as">u32</div>
 				<div class="radio-button" name="select_output_as">C array</div>
-				<div class="btn" id="save-button">Save As File</div>
+				<!-- <div class="btn" id="save-button">Save As File</div> -->
 			</div>
 		</div>
 		<div class="right">
@@ -72,7 +72,7 @@ Ret version RET_VERSION
 		<div class="panel" id="right-column">
 			<div id="hseparator"></div>
 			<div class="panel" id="panel2">
-				<!-- <button id="save-button">Save as binary file</button> -->
+				<button id="save-button">Save as binary file</button>
 				<textarea spellcheck="false" id="bytes" placeholder="Hex goes here"></textarea>
 			</div>
 			<div class="panel" id="panel3">
@@ -84,11 +84,23 @@ Ret version RET_VERSION
 	<div id="popup">
 		<div class="btn" id="popup-close">Close</div>
 
-		<span class="dropdown-text">Parse as:</span>
-		<div class="radio-button" name="select_parse_as">auto</div>
-		<div class="radio-button" name="select_parse_as">u8</div>
-		<div class="radio-button" name="select_parse_as">u16</div>
-		<div class="radio-button" name="select_parse_as">u32</div>
+		<div class="flex-container">
+			<div class="flex-child-horiz">
+				<span class="dropdown-text">Parse as:</span>
+				<div class="radio-button" name="select_parse_as">auto</div>
+				<div class="radio-button" name="select_parse_as">u8</div>
+				<div class="radio-button" name="select_parse_as">u16</div>
+				<div class="radio-button" name="select_parse_as">u32</div>
+			</div>
+			<div class="flex-child-horiz">
+				<span class="dropdown-text">X86 Syntax</span>
+				<div class="radio-button" name="x86_syntax">Intel</div>
+				<div class="radio-button" name="x86_syntax">AT&T</div>
+				<div class="radio-button" name="x86_syntax">NASM</div>
+				<div class="radio-button" name="x86_syntax">MASM</div>
+				<div class="radio-button" name="x86_syntax">GNU GAS</div>
+			</div>
+		</div>
 
 		<!-- <div style="padding: 10px;"> -->
 		<!-- 	<input type="checkbox" id="usebase10" name="usebase10" /> -->
