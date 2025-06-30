@@ -88,11 +88,13 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		return -1;
 	}
 
-	// 100k of stack (grows backwards)
-	unsigned int reg = MEMORY_BASE_ADDR + RAM_SIZE;
-	reg -= (reg % 0x8);
-	if (_uc_arch == UC_ARCH_ARM) {
-		uc_reg_write(uc, UC_ARM_REG_SP, &reg);
+	{
+		// 100k of stack (grows backwards)
+		uint32_t reg = MEMORY_BASE_ADDR + RAM_SIZE;
+		reg -= (reg % 0x8);
+		if (_uc_arch == UC_ARCH_ARM) {
+			uc_reg_write(uc, UC_ARM_REG_SP, &reg);
+		}
 	}
 
 	err = uc_mem_write(uc, MEMORY_BASE_ADDR, asm_buffer->buffer, asm_buffer->offset);
@@ -135,18 +137,20 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		buffer_appendf(log, "Emulation finished\n", 0);
 	}
 
+	uint8_t rb[16] = {0};
 	if (_uc_arch == UC_ARCH_ARM64) {
 		int pc_reg = UC_ARM64_REG_PC;
 		int x0_reg = UC_ARM64_REG_X0;
-	
-		uc_reg_read(uc, pc_reg, &reg);
-		buffer_appendf(log, " PC: 0x%08X\n", reg);
+
+		uc_reg_read(uc, pc_reg, rb);
+		buffer_appendf(log, " PC: 0x%016llX\n", ((uint64_t *)rb)[0]);
 	
 		for (int i = 0; i < 5; i++) {
-			uc_reg_read(uc, x0_reg + i, &reg);
-			buffer_appendf(log, " x%d: 0x%X\n", i, reg);
+			uc_reg_read(uc, x0_reg + i, rb);
+			buffer_appendf(log, " x%d: 0x%016llX\n", i, ((uint64_t *)rb)[0]);
 		}
 	} else if (_uc_arch == UC_ARCH_X86) {
+		uint64_t reg;
 		const char *reg_names[] = {"eax", "ebx", "ecx", "esp", "ebp"};
 		int regs[] = {UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
 
@@ -155,6 +159,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 			buffer_appendf(log, " %s: 0x%X\n", reg_names[i], reg);
 		}
 	} else if (_uc_arch == UC_ARCH_ARM) {
+		uint32_t reg;
 		int pc_reg = UC_ARM_REG_PC;
 		int x0_reg = UC_ARM_REG_R0;
 	
