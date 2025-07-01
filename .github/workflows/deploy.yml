@@ -40,7 +40,6 @@ jobs:
       - name: Generate static content
         run: |
           make deploy
-          zip -r ret.zip deploy
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4

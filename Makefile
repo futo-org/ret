@@ -15,7 +15,7 @@ define deploy
 	rm -rf deploy/$(1)/build && mkdir deploy/$(1)/build
 	cp build_$(1)/ret.js deploy/$(1)/build/
 	cp build_$(1)/ret.wasm deploy/$(1)/build/
-	python3 html.py www/index.html $(1) > deploy/$(1)/index.html
+	python3 pphtml.py www/index.html $(1) > deploy/$(1)/index.html
 endef
 
 .PHONY: deploy
@@ -30,6 +30,7 @@ deploy:
 
 	cp www/landing.html deploy/index.html
 	cp www/favicon.ico deploy/favicon.ico
+	zip -r ret.zip deploy
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON

@@ -14,6 +14,9 @@
 #define FRAMEBUFFER_ADDR 0xf0000000
 #define FRAMEBUFFER_SIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4)
 
+// unicorn-wasm patch
+UNICORN_EXPORT int uc_hit_execution_limit(uc_engine* uc);
+
 struct EmulatorState {
 	uc_arch arch;
 	struct RetBuffer *log;
@@ -113,16 +116,16 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 
 	err = uc_mmio_map(uc, 0x9000000, 0x1000, pl011_mmio_reads, &state, pl011_mmio_writes, &state);
 	if (err != UC_ERR_OK) {
-		buffer_appendf(log, "MMIO map error\n", 0);
+		buffer_appendf(log, "MMIO map error\n");
 		return 1;
 	}
 
-	uc_hook trace;
-	err = uc_hook_add(uc, &trace, UC_HOOK_INTR, (void *)hook_intr, &state, 1, 0, 0);
-	if (err != UC_ERR_OK) {
-		buffer_appendf(log, "hook setup error\n", 0);
-		return 1;
-	}
+//	uc_hook trace;
+//	err = uc_hook_add(uc, &trace, UC_HOOK_INTR, (void *)hook_intr, &state, 1, 0, 0);
+//	if (err != UC_ERR_OK) {
+//		buffer_appendf(log, "hook setup error\n", 0);
+//		return 1;
+//	}
 
 	if (_uc_mode & UC_MODE_THUMB) {
 		err = uc_emu_start(uc, MEMORY_BASE_ADDR | 1, MEMORY_BASE_ADDR + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);
@@ -133,8 +136,10 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		buffer_appendf(log, "\n");
 	}
 	if (err) {
-		buffer_appendf(log, "Emulation failed\n", 0);
+		buffer_appendf(log, "Emulation failed '%s'\n", uc_strerror(err));
 		printf("Emulation failed: %u %s\n", err, uc_strerror(err));
+	} else if (uc_hit_execution_limit(uc)) {
+		buffer_appendf(log, "Execution limit reached - code was stuck in an infinite loop\n", 0);
 	} else {
 		buffer_appendf(log, "Emulation finished\n", 0);
 	}
@@ -152,13 +157,12 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 			buffer_appendf(log, " x%d: 0x%llX\n", i, ((uint64_t *)rb)[0]);
 		}
 	} else if (_uc_arch == UC_ARCH_X86) {
-		uint64_t reg;
 		const char *reg_names[] = {"eax", "ebx", "ecx", "esp", "ebp"};
 		int regs[] = {UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
 
 		for (int i = 0; i < 5; i++) {
-			uc_reg_read(uc, regs[i], &reg);
-			buffer_appendf(log, " %s: 0x%X\n", reg_names[i], reg);
+			uc_reg_read(uc, regs[i], rb);
+			buffer_appendf(log, " %s: 0x%X\n", reg_names[i], ((uint32_t *)rb)[0]);
 		}
 	} else if (_uc_arch == UC_ARCH_ARM) {
 		uint32_t reg;
