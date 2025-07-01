@@ -148,7 +148,7 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
 			this.currentSyntax = Number(ret.urlOptions.currentSyntax);
 		}
-		this.log("Loading..");
+		this.log("Loading...");
 	},
 	encodeURL: function(allOptions) {
 		var opt = Object.assign({}, ret.urlOptions);
@@ -527,13 +527,13 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 			ret.log("Failed to parse bytes");
 		} else {
 			setBytes(ret.hex_buf);
-			var output_as = "", parse_as = "";
+			var output_as = "auto", parse_as = "auto";
 			if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
 			if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
 			if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
 			if (ret.currentParseOption & ret.PARSE_AS_AUTO) parse_as = "auto";
 			if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
-			if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as = ", base10";
+			if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as += ", base10";
 
 			if (ret.currentOutputOption & ret.OUTPUT_AS_U8) output_as = "u8";
 			if (ret.currentOutputOption & ret.OUTPUT_AS_U16) output_as = "u16";
