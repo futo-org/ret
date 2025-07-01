@@ -1,7 +1,7 @@
 CMAKE ?= /home/daniel/Pulled/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DCMAKE_BUILD_TYPE=Release
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DCMAKE_BUILD_TYPE=Release
 
 cli_build:
 	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
@@ -15,7 +15,7 @@ define deploy
 	rm -rf deploy/$(1)/build && mkdir deploy/$(1)/build
 	cp build_$(1)/ret.js deploy/$(1)/build/
 	cp build_$(1)/ret.wasm deploy/$(1)/build/
-	#m4 -DRET_VERSION=v4.0 deploy/$(1)/index.html > deploy/$(1)/index.html
+	python3 html.py www/index.html $(1) > deploy/$(1)/index.html
 endef
 
 .PHONY: deploy

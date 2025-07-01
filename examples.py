@@ -18,6 +18,9 @@ add("Stack", "arm32", "arm32-stack.S")
 add("Hello World", "arm32", "arm32-hello.S")
 
 add("Hello World", "arm64", "arm64-hello.S")
+add("Registers", "arm64", "arm64-registers.S")
+add("Exception Levels", "arm64", "arm64-el.S")
+add("Exception Levels", "arm64", "arm64-simd.S")
 #add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
 
 add("Hello World", "x86gnu", "x86-hello-gnu.asm")

@@ -80,7 +80,7 @@
       },
       contains: [
         hljs.COMMENT(';', '$', { contains: [ { begin: /\\\n/ } ] }),
-//        hljs.COMMENT('//', '$', { contains: [ { begin: /\\\n/ } ] }),
+        hljs.COMMENT('//', '$', { contains: [ { begin: /\\\n/ } ] }),
 //        hljs.COMMENT('#', '$', { contains: [ { begin: /\\\n/ } ] }),
         {
           className: 'number',
