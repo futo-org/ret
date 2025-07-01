@@ -1,4 +1,4 @@
-CMAKE ?= /home/daniel/Pulled/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+CMAKE ?= /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
 	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DCMAKE_BUILD_TYPE=Release
