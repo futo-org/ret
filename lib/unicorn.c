@@ -6,7 +6,6 @@
 
 #define INSTRUCTION_HARD_CAP 100000
 
-#define MEMORY_BASE_ADDR 0x0
 #define RAM_SIZE (1024 * 1024)
 
 #define FRAMEBUFFER_WIDTH 640
@@ -87,7 +86,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 	}
 
 	// Map dedicated RAM
-	err = uc_mem_map(uc, MEMORY_BASE_ADDR, RAM_SIZE, UC_PROT_ALL);
+	err = uc_mem_map(uc, base_addr, RAM_SIZE, UC_PROT_ALL);
 	if (err != UC_ERR_OK) {
 		buffer_appendf(log, "Failed to map memory\n", 0);
 		return -1;
@@ -95,14 +94,14 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 
 	{
 		// 100k of stack (grows backwards)
-		uint32_t reg = MEMORY_BASE_ADDR + RAM_SIZE;
+		uint32_t reg = base_addr + RAM_SIZE;
 		reg -= (reg % 0x8);
 		if (_uc_arch == UC_ARCH_ARM) {
 			uc_reg_write(uc, UC_ARM_REG_SP, &reg);
 		}
 	}
 
-	err = uc_mem_write(uc, MEMORY_BASE_ADDR, asm_buffer->buffer, asm_buffer->offset);
+	err = uc_mem_write(uc, base_addr, asm_buffer->buffer, asm_buffer->offset);
 	if (err != UC_ERR_OK) {
 		buffer_appendf(log, "Failed to write data\n", 0);
 		return -1;
@@ -128,9 +127,9 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 //	}
 
 	if (_uc_mode & UC_MODE_THUMB) {
-		err = uc_emu_start(uc, MEMORY_BASE_ADDR | 1, MEMORY_BASE_ADDR + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);
+		err = uc_emu_start(uc, base_addr | 1, base_addr + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);
 	} else {
-		err = uc_emu_start(uc, MEMORY_BASE_ADDR, MEMORY_BASE_ADDR + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);		
+		err = uc_emu_start(uc, base_addr, base_addr + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);		
 	}
 	if (state.last_char != '\n') {
 		buffer_appendf(log, "\n");
