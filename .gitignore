@@ -12,4 +12,8 @@ build_x86
 build_arm32
 build_risc
 build_riscv
+build2
 deploy
+*.zip
+__pycache__
+.idea
