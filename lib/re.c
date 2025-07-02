@@ -181,10 +181,6 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 		}
 	}
 
-	if (_cs_arch == CS_ARCH_X86) {
-		cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL);
-	}
-
 	if (re_buf_mem.offset == 0) {
 		err_buf->append(err_buf, "ERROR: No bytes to disassemble!", 0);
 		return -1;
