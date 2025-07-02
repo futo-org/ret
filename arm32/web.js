@@ -600,15 +600,25 @@ setupRadio("select_output_as", 0, function(index, value, e) {
 	//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
 });
 
-setupRadio("x86_syntax", 0, function(index, value, e) {
-	var option = 0;
-	if (index == 0) option = ret.SYNTAX_INTEL;
-	if (index == 1) option = ret.SYNTAX_ATT;
-	if (index == 2) option = ret.SYNTAX_NASM;
-	if (index == 3) option = ret.SYNTAX_MASM;
-	if (index == 4) option = ret.SYNTAX_GAS;
-	ret.currentSyntax = option;
-});
+{
+	var syntax = 0;
+	switch (ret.currentSyntax) {
+		case ret.SYNTAX_INTEL: syntax = 0; break;
+		case ret.SYNTAX_ATT: syntax = 1; break;
+		case ret.SYNTAX_NASM: syntax = 2; break;
+		case ret.SYNTAX_MASM: syntax = 3; break;
+		case ret.SYNTAX_GAS: syntax = 4; break;
+	}
+	setupRadio("x86_syntax", syntax, function(index, value, e) {
+		var option = 0;
+		if (index == 0) option = ret.SYNTAX_INTEL;
+		if (index == 1) option = ret.SYNTAX_ATT;
+		if (index == 2) option = ret.SYNTAX_NASM;
+		if (index == 3) option = ret.SYNTAX_MASM;
+		if (index == 4) option = ret.SYNTAX_GAS;
+		ret.currentSyntax = option;
+	});
+}
 
 document.querySelector("#parseccomments").checked = (ret.currentParseOption & ret.PARSE_C_COMMENTS) != 0;
 document.querySelector("#parseccomments").onchange = function() {
