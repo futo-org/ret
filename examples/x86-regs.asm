@@ -1,6 +1,6 @@
-// More info on X86: "https://en.wikibooks.org/wiki/X86_Assembly/X86_Architecture"
+// More info on x86: "https://en.wikibooks.org/wiki/X86_Assembly/X86_Architecture"
 
-mov rax, 1234
-mov eax, 1234
-mov ax, 123
-mov al, 12
+mov rax, 0x12345678
+mov eax, 0x12345678
+mov ax, 0x8888
+mov al, 0xff
