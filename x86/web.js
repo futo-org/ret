@@ -581,24 +581,40 @@ document.querySelector("#popup-close").onclick = function() {
 	document.querySelector("#popup").style.display = "none";
 }
 
-setupRadio("select_parse_as", 0, function(index, value, e) {
-	var option = 0;
-	if (index == 0) option = ret.PARSE_AS_AUTO;
-	if (index == 1) option = ret.PARSE_AS_U8;
-	if (index == 2) option = ret.PARSE_AS_U16;
-	if (index == 3) option = ret.PARSE_AS_U32;
-	ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
-});
+{
+	var curr = (ret.currentParseOption & ret.PARSE_AS_MASK);
+	var defaultOpt = 0;
+	if (curr == ret.PARSE_AS_AUTO) defaultOpt = 0;
+	if (curr == ret.PARSE_AS_U8) defaultOpt = 1;
+	if (curr == ret.PARSE_AS_U16) defaultOpt = 2;
+	if (curr == ret.PARSE_AS_U32) defaultOpt = 3;
+	setupRadio("select_parse_as", defaultOpt, function(index, value, e) {
+		var option = 0;
+		if (index == 0) option = ret.PARSE_AS_AUTO;
+		if (index == 1) option = ret.PARSE_AS_U8;
+		if (index == 2) option = ret.PARSE_AS_U16;
+		if (index == 3) option = ret.PARSE_AS_U32;
+		ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
+	});
+}
 
-setupRadio("select_output_as", 0, function(index, value, e) {
-	var option = 0;
-	if (index == 0) option = ret.OUTPUT_AS_AUTO;
-	if (index == 1) option = ret.OUTPUT_AS_U8;
-	if (index == 2) option = ret.OUTPUT_AS_U32;
-	if (index == 3) option = ret.OUTPUT_AS_C_ARRAY;
-	ret.currentOutputOption = option; // currently only one option is allowed
-	//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
-});
+{
+	var curr = ret.currentOutputOption;
+	var defaultOpt = 0;
+	if (curr == ret.OUTPUT_AS_AUTO) defaultOpt = 0;
+	if (curr == ret.OUTPUT_AS_U8) defaultOpt = 1;
+	if (curr == ret.OUTPUT_AS_U32) defaultOpt = 2;
+	if (curr == ret.OUTPUT_AS_C_ARRAY) defaultOpt = 3;
+	setupRadio("select_output_as", defaultOpt, function(index, value, e) {
+		var option = 0;
+		if (index == 0) option = ret.OUTPUT_AS_AUTO;
+		if (index == 1) option = ret.OUTPUT_AS_U8;
+		if (index == 2) option = ret.OUTPUT_AS_U32;
+		if (index == 3) option = ret.OUTPUT_AS_C_ARRAY;
+		ret.currentOutputOption = option; // currently only one option is allowed
+		//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
+	});
+}
 
 {
 	var syntax = 0;
