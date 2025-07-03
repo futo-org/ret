@@ -2,9 +2,8 @@ name: Compile and deploy ret
 
 on:
   push:
-    branches: [master]
-#on:
-#  create
+    tags:
+      - '*'
 
 permissions: write-all
 
