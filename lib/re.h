@@ -41,12 +41,14 @@ enum OutputOptions {
 	OUTPUT_AS_BIG_ENDIAN = 1 << 12,
 };
 
-enum SyntaxOption {
+enum DisasmOptions {
 	RET_SYNTAX_INTEL = 0,
-	RET_SYNTAX_ATT = 1,
-	RET_SYNTAX_NASM = 2,
-	RET_SYNTAX_MASM = 3,
-	RET_SYNTAX_GAS = 4,
+	RET_SYNTAX_ATT = 1 << 1,
+	RET_SYNTAX_NASM = 1 << 2,
+	RET_SYNTAX_MASM = 1 << 3,
+	RET_SYNTAX_GAS = 1 << 4,
+
+	RET_AGGRESSIVE_DISASM = 1 << 10,
 };
 
 struct RetBuffer {

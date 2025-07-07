@@ -125,10 +125,10 @@ const ret = {
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 
 	SYNTAX_INTEL: 0,
-	SYNTAX_ATT: 1,
-	SYNTAX_NASM: 2,
-	SYNTAX_MASM: 3,
-	SYNTAX_GAS: 4,
+	SYNTAX_ATT: 1 << 1,
+	SYNTAX_NASM: 1 << 2,
+	SYNTAX_MASM: 1 << 3,
+	SYNTAX_GAS: 1 << 4,
 
 	init: function() {
 		this.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());

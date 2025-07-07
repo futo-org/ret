@@ -131,8 +131,6 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 	parser_to_buf(input, &re_buf_mem, parse_options, output_options);
 
 	csh handle;
-	cs_insn *insn;
-	size_t count;
 
 	cs_arch _cs_arch = 0;
 	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
@@ -186,31 +184,36 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 		return -1;
 	}
 
-	count = cs_disasm(handle, (const uint8_t *)re_buf_mem.buffer, re_buf_mem.offset, base_addr, 0, &insn);
-	if (count > 0) {
-		unsigned int code_size = 0;
-		for (size_t j = 0; j < count; j++) {
-			char inst_buf[512];
-			// TODO: if inst[j].illegal, then do .int 0xdeadbeef
-			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", insn[j].mnemonic, insn[j].op_str);
-			code_size += insn[j].size;
-			buf->append(buf, inst_buf, 0);
-		}
+	cs_insn *inst = cs_malloc(handle);
 
-		for (; code_size < re_buf_mem.offset; code_size++) {
-			char inst_buf[512];
+	const uint8_t *bytecode = (const uint8_t *)re_buf_mem.buffer;
+	size_t size = re_buf_mem.offset;
+	uint64_t address = base_addr;
+	int end_of_valid = 0;
+	while (size != 0) {
+		char inst_buf[512];
+		int is_valid_offset = 1;
+		if ((arch == ARCH_ARM64 || arch == ARCH_ARM32) && (address & 0b11) != 0) {
+			is_valid_offset = 0;
+		}
+		
+		if (!end_of_valid && is_valid_offset && cs_disasm_iter(handle, &bytecode, &size, &address, inst)) {
+			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", inst->mnemonic, inst->op_str);
+			buf->append(buf, inst_buf, 0);
+		} else {
+			if (syntax & RET_AGGRESSIVE_DISASM)
+				end_of_valid = 1;
+			// TODO: Print as u32 for arm64 and arm32
 			if (arch == ARCH_X86_64 || arch == ARCH_X86) {
-				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[code_size]);
+				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[size]);
 			} else {
-				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[code_size]);
+				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[size]);
 			}
 			buf->append(buf, inst_buf, 0);
+			size--;
+			address++;
+			bytecode++;
 		}
-
-		cs_free(insn, count);
-	} else {
-		err_buf->append(err_buf, "ERROR: Failed to disassemble given code!", 0);
-		return -1;
 	}
 
 	cs_close(&handle);
