@@ -7,17 +7,24 @@ function pauseEvent(e) {
     return false;
 }
 
-function createResizeBar(leftPanel, rightPanel, separator) {
+function createResizeBar(leftPanel, rightPanel, separator, horizontal = true) {
 	function resizePanel(event) {
 		let prevX = event.x;
-	
+		let prevY = event.y;
 		let lefthPanelWidth = leftPanel.getBoundingClientRect().width;
+		let lefthPanelHeight = leftPanel.getBoundingClientRect().height;
 		let rightPanelWidth = rightPanel.getBoundingClientRect().width;
+		let rightPanelHeight = rightPanel.getBoundingClientRect().height;
 		function mousemove(e) {
-			let distance =  e.x - prevX;
-			// Only resize left panel, right panel will flex
 			leftPanel.style.flex = "none";
-			leftPanel.style.width = `${lefthPanelWidth + distance}px`;
+			if (horizontal) {
+				let distance =  e.x - prevX;
+				// Only resize left panel, right panel will flex
+				leftPanel.style.width = `${lefthPanelWidth + distance}px`;
+			} else {
+				let distance =  e.y - prevY;
+				leftPanel.style.height = `${lefthPanelHeight + distance}px`;
+			}
 	
 			leftPanel.style.userSelect = "none";
 			rightPanel.style.userSelect = "none";
@@ -125,10 +132,11 @@ const ret = {
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 
 	SYNTAX_INTEL: 0,
-	SYNTAX_ATT: 1,
-	SYNTAX_NASM: 2,
-	SYNTAX_MASM: 3,
-	SYNTAX_GAS: 4,
+	SYNTAX_ATT: 1 << 1,
+	SYNTAX_NASM: 1 << 2,
+	SYNTAX_MASM: 1 << 3,
+	SYNTAX_GAS: 1 << 4,
+	AGGRESSIVE_DISASM: 1 << 10,
 
 	init: function() {
 		this.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
@@ -342,6 +350,12 @@ createResizeBar(
 	document.querySelector("#panel1"),
 	document.querySelector("#right-column"),
 	document.querySelector("#hseparator")
+);
+createResizeBar(
+	document.querySelector("#panel2"),
+	document.querySelector("#panel3"),
+	document.querySelector("#vseparator"),
+	vertical = false
 );
 
 document.querySelector("#switch-arm64").onclick = function() {
