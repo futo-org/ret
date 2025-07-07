@@ -54,6 +54,12 @@ input:focus {
 	padding-left: 8px;
 }
 
+#panel3 {
+	flex-flow: row;
+	position: relative;
+	padding-top: 8px;
+}
+
 #hseparator {
 	position: absolute;
 	top: 0;
@@ -61,10 +67,24 @@ input:focus {
 	width: 8px;
 	height: 100%;
 	background-color: #666;
-	cursor:col-resize;	
+	cursor: col-resize;	
 	box-sizing: border-box;
 }
 #hseparator:hover {
+	border: 1px dashed black;
+}
+
+#vseparator {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 8px;
+	width: 100%;
+	background-color: #666;
+	cursor: row-resize;	
+	box-sizing: border-box;
+}
+#vseparator:hover {
 	border: 1px dashed black;
 }
 
@@ -88,6 +108,9 @@ textarea, #asm {
 #bytes {
 	background: #313131;
 	color: white;
+}
+#log {
+	background: #161616;
 }
 
 .editor {
