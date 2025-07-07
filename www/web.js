@@ -100,6 +100,7 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 }
 
 const ret = {
+	DEFAULT_ARCH: 0, // Default arch on root page
 	ARCH_ARM64: 0,
 	ARCH_ARM32: 1,
 	ARCH_X86: 2,
@@ -208,7 +209,13 @@ const ret = {
 		document.querySelector("#log").value += str + "\n";
 	},
 	switchArch: function(arch) {
-		if (arch == ret.ARCH_ARM64) {
+		if (arch == ret.DEFAULT_ARCH) {
+			if (ret.currentArch == arch) {
+				window.location.href = "./";
+			} else {
+				window.location.href = "../";
+			}
+		} else if (arch == ret.ARCH_ARM64) {
 			window.location.href = "../arm64/";
 		} else if (arch == ret.ARCH_X86) {
 			window.location.href = "../x86/";
