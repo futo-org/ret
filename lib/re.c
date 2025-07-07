@@ -201,13 +201,13 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", inst->mnemonic, inst->op_str);
 			buf->append(buf, inst_buf, 0);
 		} else {
-			if (syntax & RET_AGGRESSIVE_DISASM)
+			if (!(syntax & RET_AGGRESSIVE_DISASM))
 				end_of_valid = 1;
 			// TODO: Print as u32 for arm64 and arm32
 			if (arch == ARCH_X86_64 || arch == ARCH_X86) {
-				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[size]);
+				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", *bytecode);
 			} else {
-				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", ((const uint8_t *)re_buf_mem.buffer)[size]);
+				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", *bytecode);
 			}
 			buf->append(buf, inst_buf, 0);
 			size--;
