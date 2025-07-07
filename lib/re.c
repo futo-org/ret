@@ -218,15 +218,6 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 	return 0;
 }
 
-int cli_asm_test(void) {
-	struct RetBuffer buf = create_stdout_hex_buffer();
-	struct RetBuffer err = create_stdout_buffer();
-
-	int rc = re_assemble(ARCH_ARM64, 0, 0, &buf, &err, "nop\nnop\nmov x0, 123000000000000", OUTPUT_AS_AUTO);
-	printf("\n");
-	return rc;
-}
-
 static int cli_asm(enum Arch arch, const char *filename) {
 	struct RetBuffer buf = create_mem_hex_buffer();
 	struct RetBuffer err = create_stdout_buffer();
@@ -252,14 +243,47 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, 0, &buf, &err, input, OUTPUT_AS_AUTO);
-	printf("\n");
+	int rc = re_assemble(arch, 0, 0, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_AUTO);
+	printf("%s\n", re_buf_hex.buffer);
+	free(input);
 	return rc;
 }
 
-int prettify(void) {
+int cli_disasm(enum Arch arch, const char *filename) {
+	FILE *f = fopen(filename, "rb");
+	if (!f) {
+		printf("Error opening %s\n", filename);
+		return -1;
+	}
+
+	fseek(f, 0, SEEK_END);
+	size_t sz = ftell(f);
+	rewind(f);
+
+	char *input = malloc(sz + 1);
+
+	if (fread(input, 1, sz, f) != sz) {
+		free(input);
+		fclose(f);
+		return -1;
+	}
+
+	fclose(f);
+	input[sz] = '\0';
+
+	int rc = re_disassemble(arch, 0x0, 0, &re_buf_str, &re_buf_err, input, PARSE_AS_AUTO, OUTPUT_AS_AUTO);
+	if (rc) {
+		return -1;
+	}
+	printf("%s\n", re_buf_str.buffer);
+
+	free(input);
+	return 0;
+}
+
+int cli_hex(enum Arch arch, const char *input) {
 	struct RetBuffer buf = create_mem_hex_buffer();
-	parser_to_buf("12 34 56 78 12 34 56 78 91", &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
+	parser_to_buf(input, &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
 	printf("%s\n", buf.buffer);	
 	return 0;
 }
@@ -267,10 +291,14 @@ int prettify(void) {
 static int help(void) {
 	printf("ret <arch> <action> <file>\n");
 	printf("--x86, --arm, --arm64\n");
+	printf("--asm <filename>\n");
+	printf("--dis <filename>\n");
+	printf("--hex <string>\n");
 	return 0;
 }
 
 int main(int argc, char **argv) {
+	re_init_globals();
 	enum Arch arch = ARCH_ARM64;
 	for (int i = 0; i < argc; i++) {
 		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86_64;
@@ -279,7 +307,8 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV64;
 		
 		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);
-		if (!strcmp(argv[i], "--hex")) return prettify();
+		if (!strcmp(argv[i], "--dis")) return cli_disasm(arch, argv[i + 1]);
+		if (!strcmp(argv[i], "--hex")) return cli_hex(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();
 	}
 
