@@ -1,5 +1,5 @@
 // Note: RISC-V doesn't work in the web-based emulator yet.
-// RISC-V Resources: "https://msyksphinz-self.github.io/riscv-isadoc" 
+// RISC-V Resources: https://msyksphinz-self.github.io/riscv-isadoc
 
 li x0, 0x9000000
 li x1, 'X'

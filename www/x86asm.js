@@ -80,11 +80,13 @@
       },
       contains: [
         hljs.COMMENT(';', '$', { contains: [ { begin: /\\\n/ } ] }),
-        hljs.COMMENT('//', '$', { contains: [ { begin: /\\\n/ } ] }),
 //        hljs.COMMENT('#', '$', { contains: [ { begin: /\\\n/ } ] }),
+        hljs.C_BLOCK_COMMENT_MODE,
+        hljs.C_LINE_COMMENT_MODE,
         {
           className: 'number',
           variants: [
+          
             // Float number and x87 BCD
             {
               begin: '\\b(?:([0-9][0-9_]*)?\\.[0-9_]*(?:[eE][+-]?[0-9_]+)?|'

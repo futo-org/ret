@@ -1,3 +1,4 @@
+// https://mariokartwii.com/armv8/ is an excellent resource for learning ARM64 Assembly
 adr x1, string
 ldr w2, UART_DR
 top:

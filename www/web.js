@@ -259,6 +259,7 @@ const ret = {
 	godbolt: async function(arch, assemblyCode) {
 		var compiler = "";
 		var arguments = "";
+		var useIntel = false;
 		if (arch == ret.ARCH_ARM64) {
 			compiler = "gnuasarm64g1510";
 		} else if (arch == ret.ARCH_ARM32) {
@@ -266,8 +267,14 @@ const ret = {
 		} else if (arch == ret.ARCH_ARM32_THUMB) {
 			compiler = "gnuasarmhfg54";
 			arguments += "-mthumb ";
-		} else if (arch == ret.ARCH_X86_64) {
+		} else if (arch == ret.ARCH_X86_64 || arch == ret.ARCH_X86) {
 			compiler = "gnuassnapshot";
+			if (ret.currentSyntax == ret.SYNTAX_INTEL) {
+				useIntel = true;
+				assemblyCode = ".intel_syntax noprefix\n" + assemblyCode;
+			} else if (ret.currentSyntax == ret.SYNTAX_NASM) {
+				compiler = "nasm21601";
+			}
 		} else if (arch == ret.ARCH_RISCV64) {
 			compiler = "gnuasriscv64g1510";
 		} else if (arch == ret.ARCH_RISCV32) {
@@ -285,7 +292,7 @@ const ret = {
 				options: {
 					userArguments: arguments,
 					filters: {
-						intel: true,
+						intel: useIntel,
 						comments: false,
 						labels: true,
 						directives: true
@@ -489,6 +496,7 @@ document.querySelector("#assemble").onclick = function() {
 	fullAssembler(code, ret.hex_buf, ret.err_buf, function(rc, time) {
 		if (rc != 0) {
 			ret.log(ret.get_buffer_contents(ret.err_buf));
+			document.querySelector("#bytes").value = "";
 		} else {
 			ret.log("Assembled in " + String(time) + "us");
 			setBytes(ret.hex_buf);
@@ -522,6 +530,7 @@ document.querySelector("#run").onclick = function() {
 	fullAssembler(code, ret.mem_buf, ret.err_buf, function(rc) {
 		if (rc != 0) {
 			ret.log(ret.get_buffer_contents(ret.err_buf));
+			document.querySelector("#bytes").value = "";
 		} else {
 			ret.buffer_to_buffer(ret.hex_buf, ret.mem_buf, ret.currentOutputOption);
 			setBytes(ret.hex_buf);

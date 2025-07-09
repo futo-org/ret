@@ -1,3 +1,4 @@
+// https://armasm.com/ is an excellent resource for learning ARM Assembly
 adr r1, string
 ldr r2, UART_DR
 top:
