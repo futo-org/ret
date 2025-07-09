@@ -25,6 +25,15 @@ static int is_end_of_4(int c) {
 	return (c >= 3) && ((c - 3) % 4 == 0);
 }
 
+static void to_bits(uint32_t v, int n_bits, char *buffer) {
+	int c = 0;
+	for (int i = (n_bits - 1); i >= 0; i--) {
+		buffer[c] = '0' + ((v & (1 << i)) ? 1 : 0);
+		c++;
+	}
+	buffer[c] = '\0';
+}
+
 static void buf_clear(struct RetBuffer *buf) {
 	buf->offset = 0;
 	buf->counter = 0;
@@ -46,6 +55,7 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 	if (buf->output_options & OUTPUT_AS_U8) data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U16) data_type_size = 2;
 	if (buf->output_options & OUTPUT_AS_U32) data_type_size = 4;
+	if (buf->output_options & OUTPUT_AS_U32_BINARY) data_type_size = 4;
 	if (buf->output_options & OUTPUT_AS_C_ARRAY) data_type_size = 1;
 
 	for (unsigned int i = 0; i < len; i += data_type_size) {
@@ -59,8 +69,12 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 			read_u8((const uint8_t *)in + i, &b);
 			if (buf->output_options & OUTPUT_AS_C_ARRAY) {
 				buf->offset += sprintf(buf->buffer + buf->offset, "0x%02x, ", b);
+			} else if (buf->output_options & OUTPUT_AS_U8_BINARY) {
+				char binbuf[9];
+				to_bits(b, 8, binbuf);
+				buf->offset += sprintf(buf->buffer + buf->offset, "0b%s%c", binbuf, ch);				
 			} else {
-				buf->offset += sprintf(buf->buffer + buf->offset, "%02x%c", b, ch);				
+				buf->offset += sprintf(buf->buffer + buf->offset, "%02x%c", b, ch);
 			}
 		} else if (data_type_size == 2) {
 			if (i + 2 >= len + 1) break;
@@ -76,7 +90,13 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 			if (i + 3 < len + 1) out |= ((uint32_t)b[2] << 16);
 			if (i + 4 < len + 1) out |= ((uint32_t)b[3] << 24);
 
-			buf->offset += sprintf(buf->buffer + buf->offset, "%08x%c", out, '\n');
+			if (buf->output_options & OUTPUT_AS_U32_BINARY) {
+				char binbuf[33];
+				to_bits(out, 32, binbuf);
+				buf->offset += sprintf(buf->buffer + buf->offset, "0b%s%c", binbuf, '\n');
+			} else {
+				buf->offset += sprintf(buf->buffer + buf->offset, "%08x%c", out, '\n');
+			}
 		}
 		buf->counter++;
 	}

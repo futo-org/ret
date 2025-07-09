@@ -246,7 +246,7 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, 0, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_AUTO);
+	int rc = re_assemble(arch, 0, 0, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8_BINARY);
 	printf("%s\n", re_buf_hex.buffer);
 	free(input);
 	return rc;
