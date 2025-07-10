@@ -61,8 +61,10 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 	for (unsigned int i = 0; i < len; i += data_type_size) {
 		if (data_type_size == 1) {
 			char ch = ' ';
-			if (is_end_of_4(buf->counter)) {
-				ch = '\n';
+			if (buf->output_options & OUTPUT_SPLIT_BY_FOUR) {
+				if (is_end_of_4(buf->counter)) {
+					ch = '\n';
+				}
 			}
 
 			uint8_t b;
@@ -188,7 +190,7 @@ void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...) {
 	buf->append(buf, buffer, 0);
 }
 
-void buffer_append_mode(struct RetBuffer *buf, void *data, unsigned int length, int output_options) {
+void buffer_append_mode(struct RetBuffer *buf, const void *data, unsigned int length, int output_options) {
 	if (buf == NULL) return;
 	if (data == NULL) return;
 	int temp = buf->output_options;

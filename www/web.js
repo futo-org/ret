@@ -128,6 +128,8 @@ const ret = {
 	OUTPUT_AS_U16: 1 << 2,
 	OUTPUT_AS_U32: 1 << 3,
 	OUTPUT_AS_U64: 1 << 4,
+	OUTPUT_AS_U32_BINARY: 1 << 5,
+	OUTPUT_AS_U8_BINARY: 1 << 6,
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 
@@ -137,6 +139,7 @@ const ret = {
 	SYNTAX_MASM: 1 << 3,
 	SYNTAX_GAS: 1 << 4,
 	AGGRESSIVE_DISASM: 1 << 10,
+	SPLIT_BYTES_BY_INSTRUCTION: 1 << 11,
 
 	init: function() {
 		this.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
@@ -430,6 +433,7 @@ const highlight = editor => {
 	delete editor.dataset.highlighted;
 	editor.innerHTML = escape_html(editor.textContent);
 	hljs.highlightElement(editor);
+	// TODO: Search only class elements 'hljs-comment' to optimize for performance
 	editor.innerHTML = editor.innerHTML.replace(
 		/(https?:\/\/[^\s<\"]+)/g,
 		url => `<a href="${url}" contenteditable="false" target="_blank" rel="noopener noreferrer">${url}</a>`

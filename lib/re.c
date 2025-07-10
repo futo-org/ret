@@ -45,13 +45,7 @@ int re_is_unicorn_supported(void) {
 #endif
 }
 
-int re_assemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
-	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
-	buf->clear(buf);
-	buf->clear(err_buf);
-	ks_engine *ks;
-	ks_err err;
-
+static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_engine **ks) {
 	ks_arch _ks_arch;
 	ks_mode _ks_mode = KS_MODE_LITTLE_ENDIAN;
 	if (arch == ARCH_X86_64) {
@@ -76,62 +70,30 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBu
 		return -1;
 	}
 
-	err = ks_open(_ks_arch, _ks_mode, &ks);
+	ks_err err = ks_open(_ks_arch, _ks_mode, ks);
 	if (err != KS_ERR_OK) {
 		buffer_appendf(err_buf, "ks_open failed (%s)\n", ks_strerror(err));
 		return -1;
 	}
 
 	if (_ks_arch == KS_ARCH_X86) {
-		if (syntax == RET_SYNTAX_INTEL) {
-			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_INTEL);
-		} else if (syntax == RET_SYNTAX_ATT) {
-			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_ATT);
-		} else if (syntax == RET_SYNTAX_NASM) {
-			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_NASM);
-		} else if (syntax == RET_SYNTAX_MASM) {
-			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_MASM);
-		} else if (syntax == RET_SYNTAX_GAS) {
-			ks_option(ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_GAS);
+		if (opt & RET_SYNTAX_ATT) {
+			ks_option(*ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_ATT);
+		} else if (opt & RET_SYNTAX_NASM) {
+			ks_option(*ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_NASM);
+		} else if (opt & RET_SYNTAX_MASM) {
+			ks_option(*ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_MASM);
+		} else if (opt & RET_SYNTAX_GAS) {
+			ks_option(*ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_GAS);
 		} else {
-			buffer_appendf(err_buf, "Invalid syntax code\n");
-			return -1;
+			ks_option(*ks, KS_OPT_SYNTAX, KS_OPT_SYNTAX_INTEL);
 		}
 	}
 
-	size_t count = 0;
-	unsigned char *encode = NULL;
-	size_t size = 0;
-
-	err = ks_asm(ks, input, base_addr, &encode, &size, &count);
-	if (err != KS_ERR_OK) {
-		char buffer[128];
-		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
-		printf("%s\n", buffer);
-		err_buf->append(err_buf, buffer, 0);
-		return -1;
-	} else if (size == 0) {
-		err_buf->append(err_buf, "ERROR: Assembler returned 0 bytes", 0);
-		return -1;
-	}
-
-	buffer_append_mode(buf, encode, size, output_options);
-	ks_free(encode);
-
-	return 0;
+	return 0;	
 }
 
-int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
-	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
-	buf->clear(buf);
-	err_buf->clear(err_buf);
-
-	re_buf_mem.clear(&re_buf_mem);
-
-	parser_to_buf(input, &re_buf_mem, parse_options, output_options);
-
-	csh handle;
-
+static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *cs) {
 	cs_arch _cs_arch = 0;
 	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
 	if (arch == ARCH_X86_64) {
@@ -155,36 +117,97 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 		return -1;
 	}
 
-	if (cs_open(_cs_arch, _cs_mode, &handle) != CS_ERR_OK) {
+	if (cs_open(_cs_arch, _cs_mode, cs) != CS_ERR_OK) {
 		err_buf->append(err_buf, "cs_open failed", 0);
 		return -1;
 	}
 
 	if (_cs_arch == CS_ARCH_X86) {
-		if (syntax == RET_SYNTAX_INTEL) {
-			cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL);
-		} else if (syntax == RET_SYNTAX_ATT) {
-			cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_ATT);
-		} else if (syntax == RET_SYNTAX_NASM) {
+		if (opt & RET_SYNTAX_ATT) {
+			cs_option(*cs, CS_OPT_SYNTAX, CS_OPT_SYNTAX_ATT);
+		} else if (opt & RET_SYNTAX_NASM) {
 			buffer_appendf(err_buf, "NASM syntax is currently not supported in capstone.\n");
 			return -1;
-		} else if (syntax == RET_SYNTAX_MASM) {
-			cs_option(handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_MASM);
-		} else if (syntax == RET_SYNTAX_GAS) {
+		} else if (opt & RET_SYNTAX_MASM) {
+			cs_option(*cs, CS_OPT_SYNTAX, CS_OPT_SYNTAX_MASM);
+		} else if (opt & RET_SYNTAX_GAS) {
 			buffer_appendf(err_buf, "GAS syntax is currently not supported in capstone.\n");
 			return -1;
 		} else {
-			buffer_appendf(err_buf, "Invalid syntax code\n");
-			return -1;
+			cs_option(*cs, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL);
 		}
 	}
+	return 0;
+}
+
+int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
+	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
+	buf->clear(buf);
+	buf->clear(err_buf);
+	ks_engine *ks;
+	ks_err err;
+
+	if (re_open_ks(arch, options, err_buf, &ks)) return -1;
+
+	size_t count = 0;
+	unsigned char *encode = NULL;
+	size_t size = 0;
+
+	err = ks_asm(ks, input, base_addr, &encode, &size, &count);
+	if (err != KS_ERR_OK) {
+		char buffer[128];
+		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
+		printf("%s\n", buffer);
+		err_buf->append(err_buf, buffer, 0);
+		return -1;
+	} else if (size == 0) {
+		err_buf->append(err_buf, "ERROR: Assembler returned 0 bytes", 0);
+		return -1;
+	}
+
+	if (options & RET_SPLIT_BYTES_BY_INSTRUCTION) {
+		csh cs;
+		if (re_open_cs(arch, options, err_buf, &cs)) return -1;
+		cs_insn *inst = cs_malloc(cs);
+
+		const uint8_t *bytecode = (const uint8_t *)encode;
+		size_t cs_size = size;
+		uint64_t address = base_addr;
+		uint64_t last_address = address;
+		while (cs_disasm_iter(cs, &bytecode, &size, &address, inst)) {
+			buffer_append_mode(buf, bytecode, address - last_address, output_options);
+			last_address = address;
+
+			buf->buffer[buf->offset] = '\n';
+			buf->offset++;
+		}
+	} else {
+		buffer_append_mode(buf, encode, size, output_options);
+	}
+
+	ks_free(encode);
+
+	return 0;
+}
+
+int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
+	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
+	buf->clear(buf);
+	err_buf->clear(err_buf);
+
+	re_buf_mem.clear(&re_buf_mem);
+
+	parser_to_buf(input, &re_buf_mem, parse_options, output_options);
 
 	if (re_buf_mem.offset == 0) {
 		err_buf->append(err_buf, "ERROR: No bytes to disassemble!", 0);
 		return -1;
 	}
 
-	cs_insn *inst = cs_malloc(handle);
+	csh cs;
+	if (re_open_cs(arch, options, err_buf, &cs)) return -1;
+
+	cs_insn *inst = cs_malloc(cs);
 
 	const uint8_t *bytecode = (const uint8_t *)re_buf_mem.buffer;
 	size_t size = re_buf_mem.offset;
@@ -197,11 +220,11 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 			is_valid_offset = 0;
 		}
 		
-		if (!end_of_valid && is_valid_offset && cs_disasm_iter(handle, &bytecode, &size, &address, inst)) {
+		if (!end_of_valid && is_valid_offset && cs_disasm_iter(cs, &bytecode, &size, &address, inst)) {
 			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", inst->mnemonic, inst->op_str);
 			buf->append(buf, inst_buf, 0);
 		} else {
-			if (!(syntax & RET_AGGRESSIVE_DISASM))
+			if (!(options & RET_AGGRESSIVE_DISASM))
 				end_of_valid = 1;
 			// TODO: Print as u32 for arm64 and arm32
 			if (arch == ARCH_X86_64 || arch == ARCH_X86) {
@@ -216,7 +239,8 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int syntax, struct Re
 		}
 	}
 
-	cs_close(&handle);
+	cs_close(&cs);
+	cs_free(inst, 1);
 
 	return 0;
 }
@@ -246,8 +270,12 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, 0, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8_BINARY);
-	printf("%s\n", re_buf_hex.buffer);
+	int rc = re_assemble(arch, 0, RET_SYNTAX_INTEL | RET_SPLIT_BYTES_BY_INSTRUCTION, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8);
+	if (rc) {
+		printf("%s\n", re_buf_err.buffer);
+	} else {
+		printf("%s\n", re_buf_hex.buffer);
+	}
 	free(input);
 	return rc;
 }

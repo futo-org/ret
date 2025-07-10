@@ -20,17 +20,22 @@ enum ParseOptions {
 	PARSE_AS_U64 = 1 << 3,
 	PARSE_AS_AUTO = 1 << 4,
 
-	// Skip X numbers at the beginning of a line
+	// TODO: Skip X numbers at the beginning of a line
 	SKIP_1_AT_START = 1 << 5,
 	SKIP_2_AT_START = 1 << 6,
 
+	// TODO:
 	PARSE_AS_BASE_10 = 1 << 10,
+	// TODO:
 	PARSE_AS_BIG_ENDIAN = 1 << 11,
 
+	// Parse // comments in the hex code, same as C does
 	PARSE_C_COMMENTS = 1 << 12,
 };
 
 enum OutputOptions {
+	// If the parser was piped into a buffer the data format will be detected
+	// automatically
 	OUTPUT_AS_AUTO = 0,
 	OUTPUT_AS_U8 = 1 << 1,
 	OUTPUT_AS_U16 = 1 << 2,
@@ -40,17 +45,25 @@ enum OutputOptions {
 	OUTPUT_AS_U8_BINARY = 1 << 6,
 	OUTPUT_AS_C_ARRAY = 1 << 10,
 	OUTPUT_AS_RUST_ARRAY = 1 << 11,
+	// TODO:
 	OUTPUT_AS_BIG_ENDIAN = 1 << 12,
+	// Split output every 4 bytes
+	OUTPUT_SPLIT_BY_FOUR = 1 << 13,
 };
 
-enum DisasmOptions {
+enum AssemblyOptions {
+	// Intel is the default syntax for assembler and disassembler
 	RET_SYNTAX_INTEL = 0,
 	RET_SYNTAX_ATT = 1 << 1,
 	RET_SYNTAX_NASM = 1 << 2,
 	RET_SYNTAX_MASM = 1 << 3,
 	RET_SYNTAX_GAS = 1 << 4,
 
+	// Tries to disassemble from every valid offset.
+	// If not chosen, .byte or .db directives will be added for the rest of the program.
 	RET_AGGRESSIVE_DISASM = 1 << 10,
+	// Split byte output by each instruction rather
+	RET_SPLIT_BYTES_BY_INSTRUCTION = 1 << 11,
 };
 
 struct RetBuffer {
@@ -86,7 +99,7 @@ const void *get_buffer_contents(struct RetBuffer *buf);
 /// @brief Appends string to buffer (passes length 0)
 void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...);
 /// @brief Append data to the buffer with a specific output mode
-void buffer_append_mode(struct RetBuffer *buf, void *data, unsigned int length, int output_options);
+void buffer_append_mode(struct RetBuffer *buf, const void *data, unsigned int length, int output_options);
 
 /// @brief Run the hex parser and output into a buffer
 int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, int output_options);
