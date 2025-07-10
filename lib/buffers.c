@@ -21,6 +21,16 @@ inline static int read_u32(const void *buf, uint32_t *out) {
 	return 4;
 }
 
+static void buf_append_string(struct RetBuffer *buf, const void *in, unsigned int len) {
+	const char *str = in;
+	unsigned int max_str_len = strlen(str) + 1;
+	if (buf->length < (max_str_len + buf->offset)) {
+		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
+	}
+	memcpy(buf->buffer + buf->offset, str, max_str_len);
+	buf->offset += max_str_len - 1;
+}
+
 static int is_end_of_4(int c) {
 	return (c >= 3) && ((c - 3) % 4 == 0);
 }
@@ -46,6 +56,10 @@ static void buf_append(struct RetBuffer *buf, const void *in, unsigned int len) 
 	buf->offset += len;
 }
 static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int len) {
+	if (len == 0) {
+		buf_append_string(buf, in, 0);
+		return;
+	}
 	unsigned int max_str_len = 32 * len;
 	if (buf->length < (max_str_len + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
@@ -102,15 +116,6 @@ static void buf_append_hex(struct RetBuffer *buf, const void *in, unsigned int l
 		}
 		buf->counter++;
 	}
-}
-static void buf_append_string(struct RetBuffer *buf, const void *in, unsigned int len) {
-	const char *str = in;
-	unsigned int max_str_len = strlen(str) + 1;
-	if (buf->length < (max_str_len + buf->offset)) {
-		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
-	}
-	memcpy(buf->buffer + buf->offset, str, max_str_len);
-	buf->offset += max_str_len - 1;
 }
 
 struct RetBuffer create_mem_buffer(void) {

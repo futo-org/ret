@@ -165,7 +165,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		return -1;
 	}
 
-	if (options & RET_SPLIT_BYTES_BY_INSTRUCTION) {
+	if (output_options & OUTPUT_SPLIT_BY_INSTRUCTION) {
 		csh cs;
 		if (re_open_cs(arch, options, err_buf, &cs)) return -1;
 		cs_insn *inst = cs_malloc(cs);
@@ -175,12 +175,13 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		uint64_t address = base_addr;
 		uint64_t last_address = address;
 		while (cs_disasm_iter(cs, &bytecode, &size, &address, inst)) {
-			buffer_append_mode(buf, bytecode, address - last_address, output_options);
+			uint32_t size_last = address - last_address;
+			buffer_append_mode(buf, bytecode - size_last, size_last, output_options);
 			last_address = address;
-
-			buf->buffer[buf->offset] = '\n';
-			buf->offset++;
+			buffer_appendf(buf, "\n");
 		}
+
+		buffer_append_mode(buf, bytecode, size, output_options);
 	} else {
 		buffer_append_mode(buf, encode, size, output_options);
 	}
@@ -270,7 +271,7 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, RET_SYNTAX_INTEL | RET_SPLIT_BYTES_BY_INSTRUCTION, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8);
+	int rc = re_assemble(arch, 0, RET_SYNTAX_INTEL, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
 	if (rc) {
 		printf("%s\n", re_buf_err.buffer);
 	} else {

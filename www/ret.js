@@ -1,4 +1,5 @@
 const ret = {
+	// Architectures and variants
 	ARCH_ARM64: 0,
 	ARCH_ARM32: 1,
 	ARCH_X86: 2,
@@ -21,7 +22,7 @@ const ret = {
 	PARSE_AS_BIG_ENDIAN: 1 << 11,
 	PARSE_C_COMMENTS: 1 << 12,
 
-	// Buffer output options
+	// Hex buffer output options
 	OUTPUT_AS_AUTO: 0,
 	OUTPUT_AS_U8: 1 << 1,
 	OUTPUT_AS_U16: 1 << 2,
@@ -31,7 +32,12 @@ const ret = {
 	OUTPUT_AS_U8_BINARY: 1 << 6,
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
+	OUTPUT_AS_BIG_ENDIAN: 1 << 12,
+	OUTPUT_SPLIT_BY_FOUR: 1 << 13,
+	OUTPUT_SPLIT_BY_INSTRUCTION: 1 << 14,
+	OUTPUT_ASSEMBLY_ANNOTATIONS: 1 << 15,
 
+	// Assembly options
 	SYNTAX_INTEL: 0,
 	SYNTAX_ATT: 1 << 1,
 	SYNTAX_NASM: 1 << 2,
@@ -39,6 +45,16 @@ const ret = {
 	SYNTAX_GAS: 1 << 4,
 	AGGRESSIVE_DISASM: 1 << 10,
 	SPLIT_BYTES_BY_INSTRUCTION: 1 << 11,
+
+	// has object with initial URL options
+	urlOptions: null,
+	
+	currentArch: 0,
+	currentSyntax: 0,
+	currentBaseOffset: 0,
+	currentParseOption: 0,
+	currentOutputOption: 0,
+	useGodboltOnAssembler: false,
 
 	init: function() {
 		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
@@ -94,14 +110,6 @@ const ret = {
 			return ret.ARCH_ARM64;
 		}
 	},
-	urlOptions: null,
-	
-	currentArch: 0,
-	currentSyntax: 0,
-	currentBaseOffset: 0,
-	currentParseOption: 0,
-	currentOutputOption: 0,
-	useGodboltOnAssembler: false,
 
 	clearLog: function(str) {
 		document.querySelector("#log").value = "";
@@ -246,6 +254,13 @@ const ret = {
 		}));
 		a.click();
 		document.body.removeChild(a);
+	},
+
+	assembler: function(code, outBuf, errBuf, doneCallback) {
+		var then = Date.now();
+		var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.currentOutputOption);
+		var now = Date.now();
+		return [rc, now - then];
 	},
 };
 ret.init();

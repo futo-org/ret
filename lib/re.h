@@ -49,6 +49,10 @@ enum OutputOptions {
 	OUTPUT_AS_BIG_ENDIAN = 1 << 12,
 	// Split output every 4 bytes
 	OUTPUT_SPLIT_BY_FOUR = 1 << 13,
+	// Split byte output by each instruction
+	OUTPUT_SPLIT_BY_INSTRUCTION = 1 << 14,
+	// Assembly
+	OUTPUT_ASSEMBLY_ANNOTATIONS = 1 << 15,
 };
 
 enum AssemblyOptions {
@@ -62,8 +66,6 @@ enum AssemblyOptions {
 	// Tries to disassemble from every valid offset.
 	// If not chosen, .byte or .db directives will be added for the rest of the program.
 	RET_AGGRESSIVE_DISASM = 1 << 10,
-	// Split byte output by each instruction rather
-	RET_SPLIT_BYTES_BY_INSTRUCTION = 1 << 11,
 };
 
 struct RetBuffer {

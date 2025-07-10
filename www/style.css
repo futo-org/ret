@@ -99,6 +99,7 @@ textarea {
 	tab-size: 4;
 	color: white;
 	background: black;
+	padding: .5em;
 }
 
 textarea, #asm {
