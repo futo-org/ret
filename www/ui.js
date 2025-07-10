@@ -20,10 +20,10 @@ function createResizeBar(leftPanel, rightPanel, separator, horizontal = true) {
 			if (horizontal) {
 				let distance =  e.x - prevX;
 				// Only resize left panel, right panel will flex
-				leftPanel.style.width = `${lefthPanelWidth + distance}px`;
+				leftPanel.style.width = String(lefthPanelWidth + distance) + "px";
 			} else {
 				let distance =  e.y - prevY;
-				leftPanel.style.height = `${lefthPanelHeight + distance}px`;
+				leftPanel.style.height = String(lefthPanelHeight + distance) + "px";
 			}
 	
 			leftPanel.style.userSelect = "none";
@@ -99,296 +99,46 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 	}
 }
 
-const ret = {
-	ARCH_ARM64: 0,
-	ARCH_ARM32: 1,
-	ARCH_X86: 2,
-	ARCH_X86_64: 3,
-	ARCH_RISCV32: 4,
-	ARCH_RISCV64: 5,
-	ARCH_WASM: 6,
-	ARCH_ARM32_THUMB: 7,
+{ // Setup widgets
+	setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
+	setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
+	setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
+	setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
 
-	// Hex parser options
-	PARSE_AS_MASK: 0x1f,
-	PARSE_AS_U8: 1 << 0,
-	PARSE_AS_U16: 1 << 1,
-	PARSE_AS_U32: 1 << 2,
-	PARSE_AS_U64: 1 << 3,
-	PARSE_AS_AUTO: 1 << 4,
-	SKIP_1_AT_START: 1 << 5,
-	SKIP_2_AT_START: 1 << 6,
-	PARSE_AS_BASE_10: 1 << 10,
-	PARSE_AS_BIG_ENDIAN: 1 << 11,
-	PARSE_C_COMMENTS: 1 << 12,
+	createResizeBar(
+		document.querySelector("#panel1"),
+		document.querySelector("#right-column"),
+		document.querySelector("#hseparator")
+	);
+	createResizeBar(
+		document.querySelector("#panel2"),
+		document.querySelector("#panel3"),
+		document.querySelector("#vseparator"),
+		vertical = false
+	);
 
-	// Buffer output options
-	OUTPUT_AS_AUTO: 0,
-	OUTPUT_AS_U8: 1 << 1,
-	OUTPUT_AS_U16: 1 << 2,
-	OUTPUT_AS_U32: 1 << 3,
-	OUTPUT_AS_U64: 1 << 4,
-	OUTPUT_AS_U32_BINARY: 1 << 5,
-	OUTPUT_AS_U8_BINARY: 1 << 6,
-	OUTPUT_AS_C_ARRAY: 1 << 10,
-	OUTPUT_AS_RUST_ARRAY: 1 << 11,
-
-	SYNTAX_INTEL: 0,
-	SYNTAX_ATT: 1 << 1,
-	SYNTAX_NASM: 1 << 2,
-	SYNTAX_MASM: 1 << 3,
-	SYNTAX_GAS: 1 << 4,
-	AGGRESSIVE_DISASM: 1 << 10,
-	SPLIT_BYTES_BY_INSTRUCTION: 1 << 11,
-
-	init: function() {
-		this.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
-		this.currentArch = this.checkArch();
-		this.currentParseOption = this.PARSE_AS_AUTO;
-		this.currentOutputOption = this.OUTPUT_AS_AUTO;
-		this.currentSyntax = this.SYNTAX_INTEL;
-		if (ret.urlOptions.hasOwnProperty("useGodboltOnAssembler")) {
-			this.useGodboltOnAssembler = true;
-		}
-		if (ret.urlOptions.hasOwnProperty("currentParseOption")) {
-			this.currentParseOption = Number(ret.urlOptions.currentParseOption);
-		}
-		if (ret.urlOptions.hasOwnProperty("currentOutputOption")) {
-			this.currentOutputOption = Number(ret.urlOptions.currentOutputOption);
-		}
-		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
-			this.currentSyntax = Number(ret.urlOptions.currentSyntax);
-		}
-		this.log("Loading...");
-	},
-	encodeURL: function(allOptions) {
-		var opt = Object.assign({}, ret.urlOptions);
-		opt.code = encodeURIComponent(editor.toString());
-		if (allOptions) {
-			opt.currentParseOption = String(ret.currentParseOption);
-			opt.currentOutputOption = String(ret.currentOutputOption);
-			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
-			opt.currentSyntax = String(ret.currentSyntax);
-		}
-		var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
-		prompt("Copy", newUrl);
-	},
-	checkArch: function() {
-		if (window.location.pathname.includes("arm64")) {
-			return ret.ARCH_ARM64;
-		} else if (window.location.pathname.includes("arm") || window.location.pathname.includes("arm32")) {
-			if (ret.urlOptions.hasOwnProperty("thumb")) {
-				return ret.ARCH_ARM32_THUMB;
-			} else {
-				return ret.ARCH_ARM32;
-			}
-		} else if (window.location.pathname.includes("riscv")) {
-			if (ret.urlOptions.hasOwnProperty("rv32")) {
-				return ret.ARCH_RISCV32;
-			} else {
-				return ret.ARCH_RISCV64;
-			}
-			return ret.ARCH_RISCV64;
-		} else if (window.location.pathname.includes("x86")) {
-			return ret.ARCH_X86_64;
-		} else {
-			return ret.ARCH_ARM64;
-		}
-	},
-	urlOptions: null,
-	
-	currentArch: 0,
-	currentSyntax: 0,
-	currentBaseOffset: 0,
-	currentParseOption: 0,
-	currentOutputOption: 0,
-	useGodboltOnAssembler: false,
-
-	clearLog: function(str) {
-		document.querySelector("#log").value = "";
-	},
-	log: function(str) {
-		document.querySelector("#log").value += str + "\n";
-	},
-	switchArch: function(arch) {
-		if (arch == ret.ARCH_ARM64) {
-			window.location.href = "../arm64/";
-		} else if (arch == ret.ARCH_X86) {
-			window.location.href = "../x86/";
-		} else if (arch == ret.ARCH_ARM32) {
-			window.location.href = "../arm32/";
-		} else if (arch == ret.ARCH_ARM32_THUMB) {
-			window.location.href = "../arm32/?thumb";
-		} else if (arch == ret.ARCH_RISCV64) {
-			window.location.href = "../riscv/";
-		} else if (arch == ret.ARCH_RISCV32) {
-			window.location.href = "../riscv/?rv32";
-		}
-	},
-
-	err_buf: null,
-	hex_buf: null,
-	str_buf: null,
-	mem_buf: null,
-
-	main: function() {
-		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
-		ret.re_is_arch_supported = Module.cwrap('re_is_arch_supported', 'number', []);
-		ret.re_is_unicorn_supported = Module.cwrap('re_is_unicorn_supported', 'number', []);
-		ret.re_assemble = Module.cwrap('re_assemble', 'number', ['number', 'number', 'number', 'number', 'number', 'string', 'number']);
-		ret.re_emulator = Module.cwrap('re_emulator', 'number', ['number', 'number', 'number', 'number']);
-		ret.re_disassemble = Module.cwrap('re_disassemble', 'number', ['number', 'number', 'number', 'number', 'number', 'string', 'number', 'number']);
-		ret.re_get_hex_buffer = Module.cwrap('re_get_hex_buffer', 'number', []);
-		ret.re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
-		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
-		ret.re_get_mem_buffer = Module.cwrap('re_get_mem_buffer', 'number', []);
-		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
-		ret.get_buffer_contents_raw = Module.cwrap('get_buffer_contents', 'number', ['number']);
-		ret.get_buffer_data_length = Module.cwrap('get_buffer_data_length', 'number', ['number']);
-		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number', 'number']);
-		ret.buffer_to_buffer = Module.cwrap('buffer_to_buffer', 'void', ['number', 'number', 'number']);
-
-		ret.re_init_globals();
-		ret.err_buf = ret.re_get_err_buffer();
-		ret.hex_buf = ret.re_get_hex_buffer();
-		ret.str_buf = ret.re_get_str_buffer();
-		ret.mem_buf = ret.re_get_mem_buffer();
-
-		ret.clearLog();
-		ret.log("Ret v4");
-		ret.log("Running in WebAssembly with Capstone, keystone, and Unicorn.");
-	},
-
-	godbolt: async function(arch, assemblyCode) {
-		var compiler = "";
-		var arguments = "";
-		var useIntel = false;
-		if (arch == ret.ARCH_ARM64) {
-			compiler = "gnuasarm64g1510";
-		} else if (arch == ret.ARCH_ARM32) {
-			compiler = "gnuasarmhfg54";
-		} else if (arch == ret.ARCH_ARM32_THUMB) {
-			compiler = "gnuasarmhfg54";
-			arguments += "-mthumb ";
-		} else if (arch == ret.ARCH_X86_64 || arch == ret.ARCH_X86) {
-			compiler = "gnuassnapshot";
-			if (ret.currentSyntax == ret.SYNTAX_INTEL) {
-				useIntel = true;
-				assemblyCode = ".intel_syntax noprefix\n" + assemblyCode;
-			} else if (ret.currentSyntax == ret.SYNTAX_NASM) {
-				compiler = "nasm21601";
-			}
-		} else if (arch == ret.ARCH_RISCV64) {
-			compiler = "gnuasriscv64g1510";
-		} else if (arch == ret.ARCH_RISCV32) {
-			compiler = "gnuasriscv32g1510";
-		} else {
-			throw "Error";
-		}
-		var res = await fetch('https://godbolt.org/api/compiler/' + compiler + '/compile', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				source: assemblyCode,
-				options: {
-					userArguments: arguments,
-					filters: {
-						intel: useIntel,
-						comments: false,
-						labels: true,
-						directives: true
-					}
-				}
-			})
-		});
-		return await res.text();
-	},
-	getExamples: function() {
-		var selected = [];
-		for (var i = 0; i < examples.length; i++) {
-			const isArm = ret.currentArch == ret.ARCH_ARM32 || ret.currentArch == ret.ARCH_ARM32_THUMB;
-			const isX86 = ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64;
-			if (examples[i].arch == "arm32" && isArm) {
-				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86gnu" && isX86 && ret.currentSyntax == ret.SYNTAX_GAS) {
-				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86nasm" && isX86 && ret.currentSyntax == ret.SYNTAX_NASM) {
-				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86intel" && isX86 && ret.currentSyntax == ret.SYNTAX_INTEL) {
-				selected.push(examples[i]);
-			} else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
-				selected.push(examples[i]);
-			} else if ((examples[i].arch == "rv32" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV32) {
-				selected.push(examples[i]);
-			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV64) {
-				selected.push(examples[i]);
-			}
-		}
-		return selected;
-	},
-	getExample: function(name) {
-		var selected = ret.getExamples();
-		for (var i = 0; i < selected.length; i++) {
-			if (selected[i].name == name) {
-				return selected[i].data;
-			}
-		}
-		return "";
-	},
-
-	downloadFile: function(blob) {
-		var a = document.createElement("a");
-		document.body.appendChild(a);
-		a.download = "binary.dat";
-		a.href = window.URL.createObjectURL(new Blob([blob], {
-			type: "application/octet-stream"
-		}));
-		a.click();
-		document.body.removeChild(a);
-	},
-};
-ret.init();
-
-setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
-setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
-setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
-setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
-
-createResizeBar(
-	document.querySelector("#panel1"),
-	document.querySelector("#right-column"),
-	document.querySelector("#hseparator")
-);
-createResizeBar(
-	document.querySelector("#panel2"),
-	document.querySelector("#panel3"),
-	document.querySelector("#vseparator"),
-	vertical = false
-);
-
-document.querySelector("#switch-arm64").onclick = function() {
-	ret.switchArch(ret.ARCH_ARM64);
-}
-document.querySelector("#switch-arm32").onclick = function() {
-	ret.switchArch(ret.ARCH_ARM32);
-}
-document.querySelector("#switch-arm32thumb").onclick = function() {
-	ret.switchArch(ret.ARCH_ARM32_THUMB);
-}
-document.querySelector("#switch-x86").onclick = function() {
-	ret.switchArch(ret.ARCH_X86);
-}
-document.querySelector("#switch-riscv").onclick = function() {
-	ret.switchArch(ret.ARCH_RISCV64);
-}
-document.querySelector("#switch-riscv32").onclick = function() {
-	ret.switchArch(ret.ARCH_RISCV32);
+	document.querySelector("#switch-arm64").onclick = function() {
+		ret.switchArch(ret.ARCH_ARM64);
+	}
+	document.querySelector("#switch-arm32").onclick = function() {
+		ret.switchArch(ret.ARCH_ARM32);
+	}
+	document.querySelector("#switch-arm32thumb").onclick = function() {
+		ret.switchArch(ret.ARCH_ARM32_THUMB);
+	}
+	document.querySelector("#switch-x86").onclick = function() {
+		ret.switchArch(ret.ARCH_X86);
+	}
+	document.querySelector("#switch-riscv").onclick = function() {
+		ret.switchArch(ret.ARCH_RISCV64);
+	}
+	document.querySelector("#switch-riscv32").onclick = function() {
+		ret.switchArch(ret.ARCH_RISCV32);
+	}
 }
 
+// Change menu color, syntax, title, etc depending on arch
 function updatePageArch() {
-	// Change menu color depending on arch
 	if (ret.currentArch == ret.ARCH_ARM64) {
 		document.querySelector("#arch-select-text").innerText = "Arm64";
 		document.querySelector("#menu").style.background = "rgb(23 55 81)";
@@ -421,23 +171,25 @@ function updatePageArch() {
 		document.querySelector(".editor").classList.add("language-armasm");
 	}
 }
-
 updatePageArch();
+
 function escape_html(s) {
-	return s.replace(/&/g, '&amp;')
-	        .replace(/</g, '&lt;')
-	        .replace(/>/g, '&gt;');
+	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 const highlight = editor => {
 	delete editor.dataset.highlighted;
 	editor.innerHTML = escape_html(editor.textContent);
 	hljs.highlightElement(editor);
-	// TODO: Search only class elements 'hljs-comment' to optimize for performance
-	editor.innerHTML = editor.innerHTML.replace(
-		/(https?:\/\/[^\s<\"]+)/g,
-		url => `<a href="${url}" contenteditable="false" target="_blank" rel="noopener noreferrer">${url}</a>`
-	);
+	// Only read/write innerHTML on hljs-comment elements to improve performance
+	var comments = editor.getElementsByClassName("hljs-comment");
+	for (var i = 0; i < comments.length; i++) {
+		comments[i].innerHTML = comments[i].innerHTML.replace(
+			/(https?:\/\/[^\s<\"]+)/g,
+			url => `<a href="${url}" contenteditable="false" target="_blank" rel="noopener noreferrer">${url}</a>`
+		);
+
+	}
 };
 
 let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\t'});
