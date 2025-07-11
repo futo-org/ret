@@ -11,25 +11,30 @@ serve:
 
 define deploy
 	mkdir -p deploy/$(1)
-	cp -r www/* deploy/$(1)
-	rm -rf deploy/$(1)/build && mkdir deploy/$(1)/build
+	cp -d -r www/* deploy/$(1)
+	rm -rf deploy/$(1)/build && mkdir -p deploy/$(1)/build
 	cp build_$(1)/ret.js deploy/$(1)/build/
 	cp build_$(1)/ret.wasm deploy/$(1)/build/
 	python3 pphtml.py www/index.html $(1) > deploy/$(1)/index.html
 endef
+define deploydefault
+	cp -d -r www/* deploy/
+	rm -rf deploy/build && mkdir -p deploy/build
+	cp build_$(1)/ret.js deploy/build/
+	cp build_$(1)/ret.wasm deploy/build/
+	python3 pphtml.py www/index.html $(1) > deploy/index.html
+endef
 
 .PHONY: deploy
 deploy:
+	rm -rf deploy
 	mkdir -p deploy
-	rm -rf deploy/*
 
+	$(call deploydefault,x86)
 	$(call deploy,arm64)
 	$(call deploy,arm32)
-	$(call deploy,x86)
 	$(call deploy,riscv)
 
-	cp www/landing.html deploy/index.html
-	cp www/favicon.ico deploy/favicon.ico
 	zip -r ret.zip deploy
 
 build_arm64:
@@ -55,3 +60,5 @@ build_all:
 
 clean:
 	rm -rf build_arm32 build_arm64 build_x86 build build_em deploy
+
+.PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy

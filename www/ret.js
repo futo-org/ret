@@ -1,4 +1,6 @@
 const ret = {
+	// Default architecture (root-level) will be x86
+	DEFAULT_ARCH: 3,
 	// Architectures and variants
 	ARCH_ARM64: 0,
 	ARCH_ARM32: 1,
@@ -123,7 +125,7 @@ const ret = {
 		} else if (window.location.pathname.includes("x86")) {
 			return ret.ARCH_X86_64;
 		} else {
-			return ret.ARCH_ARM64;
+			return ret.DEFAULT_ARCH;
 		}
 	},
 
@@ -134,18 +136,30 @@ const ret = {
 		document.querySelector("#log").value += str + "\n";
 	},
 	switchArch: function(arch) {
+		if (arch == ret.DEFAULT_ARCH) {
+			if (ret.currentArch == arch) {
+				window.location.href = "./";
+			} else {
+				window.location.href = "../";
+			}
+			return;
+		}
+		var prefix = "../";
+		if (ret.currentArch == ret.DEFAULT_ARCH) {
+			prefix = "";
+		}
 		if (arch == ret.ARCH_ARM64) {
-			window.location.href = "../arm64/";
+			window.location.href = prefix + "arm64/";
 		} else if (arch == ret.ARCH_X86) {
-			window.location.href = "../x86/";
+			window.location.href = prefix + "x86/";
 		} else if (arch == ret.ARCH_ARM32) {
-			window.location.href = "../arm32/";
+			window.location.href = prefix + "arm32/";
 		} else if (arch == ret.ARCH_ARM32_THUMB) {
-			window.location.href = "../arm32/?thumb";
+			window.location.href = prefix + "arm32/?thumb";
 		} else if (arch == ret.ARCH_RISCV64) {
-			window.location.href = "../riscv/";
+			window.location.href = prefix + "riscv/";
 		} else if (arch == ret.ARCH_RISCV32) {
-			window.location.href = "../riscv/?rv32";
+			window.location.href = prefix + "riscv/?rv32";
 		}
 	},
 

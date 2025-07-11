@@ -127,7 +127,7 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 		ret.switchArch(ret.ARCH_ARM32_THUMB);
 	}
 	document.querySelector("#switch-x86").onclick = function() {
-		ret.switchArch(ret.ARCH_X86);
+		ret.switchArch(ret.ARCH_X86_64);
 	}
 	document.querySelector("#switch-riscv").onclick = function() {
 		ret.switchArch(ret.ARCH_RISCV64);

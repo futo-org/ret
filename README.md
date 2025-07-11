@@ -7,6 +7,7 @@ This tool makes it as easy as possible to disassemble bits of assembly or try ou
 - Quickly assemble, disassemble, and run ARM64, ARM32, RISC, and X86
 - Smart hex parser and formatter - output as bytes, 32bit integers, or C arrays
 - Works entirely in the browser through WebAssembly, no server required
+- Incredibly lightweight - no unnecessary JS frameworks, assets, or cookies
 - Ready for self-hosting - unpack a zip of static content into your web server
 
 # Compiling WASM
