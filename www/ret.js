@@ -86,7 +86,21 @@ const ret = {
 		}
 		if (ret.urlOptions.hasOwnProperty("parseCComments")) ret.parseCComments = true;
 		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
-		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) ret.splitBytesByInstruction = (ret.splitBytesByInstruction == "true");
+		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
+			ret.splitBytesByInstruction = (ret.splitBytesByInstruction == "true");
+		} else {
+			switch (ret.currentArch) {
+			case ret.ARCH_X86:
+			case ret.ARCH_X86_64:
+			case ret.ARCH_RISCV64:
+			case ret.ARCH_RISCV32:
+			case ret.ARCH_ARM32_THUMB:
+				ret.splitBytesByInstruction = true;
+				break;
+			default:
+				break;
+			}
+		}
 		if (ret.urlOptions.hasOwnProperty("splitBytesByFour")) ret.splitBytesByFour = (ret.urlOptions.splitBytesByFour == "true");
 		ret.log("Loading...");
 	},
@@ -201,18 +215,6 @@ const ret = {
 
 		if (ret.re_is_arch_supported(ret.currentArch) == 0) {
 			ret.log("ERROR: This architecture was not compiled into the wasm binary.");
-		}
-
-		switch (ret.currentArch) {
-		case ret.ARCH_X86:
-		case ret.ARCH_X86_64:
-		case ret.ARCH_RISCV64:
-		case ret.ARCH_RISCV32:
-		case ret.ARCH_ARM32_THUMB:
-			ret.splitBytesByInstruction = true;
-			break;
-		default:
-			break;
 		}
 	},
 
