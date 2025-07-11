@@ -4,7 +4,7 @@ debug_build:
 	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DCMAKE_BUILD_TYPE=Release
 
 cli_build:
-	cmake -G Ninja -B build2 -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
+	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
 
 serve:
 	python3 serve.py
@@ -59,6 +59,6 @@ build_all:
 	cmake --build build_riscv
 
 clean:
-	rm -rf build_arm32 build_arm64 build_x86 build build_em deploy
+	rm -rf build_arm32 build_arm64 build_x86 build build_em buildcli deploy *.zip __pycache__ build_riscv build2
 
 .PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy

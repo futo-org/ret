@@ -313,7 +313,7 @@ const ret = {
 	},
 	getOptionOption: function() {
 		var v = ret.baseOutputOption;
-		if (ret.splitBytesByInstruction && (ret.baseOutputOption == ret.OUTPUT_AS_AUTO || ret.baseOutputOption == ret.OUTPUT_AS_U8))
+		if (ret.splitBytesByInstruction && (ret.baseOutputOption != ret.OUTPUT_AS_U32 || ret.baseOutputOption == ret.OUTPUT_AS_U16))
 			v |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
 		if (ret.splitBytesByFour && !ret.splitBytesByInstruction)
 			v |= ret.OUTPUT_SPLIT_BY_FOUR;

@@ -35,6 +35,9 @@ int re_is_arch_supported(int arch) {
 #ifdef RET_SUPPORT_X86
 	if (arch == ARCH_X86 || arch == ARCH_X86_64) return 1;
 #endif
+#ifdef RET_SUPPORT_RISCV
+	if (arch == ARCH_RISCV64 || arch == ARCH_RISCV32) return 1;
+#endif
 	return 0;
 }
 
