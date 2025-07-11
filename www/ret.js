@@ -292,16 +292,23 @@ const ret = {
 		document.body.removeChild(a);
 	},
 
-	assemble: function(code, outBuf, errBuf) {
-		var outputOpt = ret.baseOutputOption;
+	getParseOption: function() {
+		var v = ret.baseParseOption;
+		if (ret.parseCComments) v |= ret.PARSE_C_COMMENTS;
+		return v;
+	},
+	getOptionOption: function() {
+		var v = ret.baseOutputOption;
 		if (ret.splitBytesByInstruction && (ret.baseOutputOption == ret.OUTPUT_AS_AUTO || ret.baseOutputOption == ret.OUTPUT_AS_U8))
-			outputOpt |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
-
+			v |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
 		if (ret.splitBytesByFour && !ret.splitBytesByInstruction)
-			outputOpt |= ret.OUTPUT_SPLIT_BY_FOUR;
+			v |= ret.OUTPUT_SPLIT_BY_FOUR;
+		return v;
+	},
 
+	assemble: function(code, outBuf, errBuf) {
 		var then = Date.now();
-		var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, outputOpt);
+		var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.getOptionOption());
 		var now = Date.now();
 		return [rc, now - then];
 	},

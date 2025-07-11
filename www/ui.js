@@ -260,7 +260,7 @@ document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
 	var then = Date.now();
-	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.baseParseOption, ret.baseOutputOption);
+	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.getParseOption(), ret.getOptionOption());
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -296,7 +296,7 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 	if (!document.querySelector("#hex-dropdown-box").contains(e.target)) {
 		if (ret.hex_buf == null) throw "NULL";	
 		ret.clearLog();
-		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.baseParseOption, ret.baseOutputOption | ret.OUTPUT_SPLIT_BY_FOUR);
+		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.getParseOption(), ret.getOptionOption() | ret.OUTPUT_SPLIT_BY_FOUR);
 		if (rc != 0) {
 			ret.log("Failed to parse bytes");
 		} else {
@@ -324,7 +324,7 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 document.querySelector("#save-button").onclick = function() {
 	if (ret.mem_buf == null) throw "NULL";	
 	ret.clearLog();
-	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.baseParseOption, ret.baseOutputOption);
+	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.getParseOption(), ret.getOptionOption());
 	if (rc != 0) {
 		ret.log("Failed to parse bytes");
 	} else {
