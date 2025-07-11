@@ -182,7 +182,8 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 			buffer_appendf(buf, "\n");
 		}
 
-		buffer_append_mode(buf, bytecode, cs_size, output_options);
+		if (cs_size != 0)
+			buffer_append_mode(buf, bytecode, cs_size, output_options);
 	} else {
 		buffer_append_mode(buf, encode, size, output_options);
 	}

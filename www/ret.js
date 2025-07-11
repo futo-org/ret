@@ -168,12 +168,26 @@ const ret = {
 		ret.hex_mem_mirror_buf = ret.re_get_hex_mem_mirror_buffer();
 
 		ret.clearLog();
-		ret.log("Ret v4");
+		ret.log("Ret v4 - Reverse-Engineering Tool");
+		ret.log("A lightweight browser assembler/disassembler/CPU simulator running in WebAssembly.");
+		ret.log("");
 		ret.log("Click the top left button to switch architecture.");
 		ret.log("Click 'Examples' for some quick start demos.");
 
 		if (ret.re_is_arch_supported(ret.currentArch) == 0) {
 			ret.log("ERROR: This architecture was not compiled into the wasm binary.");
+		}
+
+		switch (ret.currentArch) {
+		case ret.ARCH_X86:
+		case ret.ARCH_X86_64:
+		case ret.ARCH_RISCV64:
+		case ret.ARCH_RISCV32:
+		case ret.ARCH_ARM32_THUMB:
+			ret.splitBytesByInstruction = true;
+			break;
+		default:
+			break;
 		}
 	},
 
@@ -269,7 +283,7 @@ const ret = {
 
 	assemble: function(code, outBuf, errBuf) {
 		var outputOpt = ret.currentOutputOption;
-		if (ret.splitBytesByInstruction)
+		if (ret.splitBytesByInstruction && (ret.currentOutputOption & ret.OUTPUT_AS_AUTO || ret.currentOutputOption & ret.OUTPUT_AS_U8))
 			outputOpt |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
 
 		if (ret.splitBytesByFour && !ret.splitBytesByInstruction)

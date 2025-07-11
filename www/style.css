@@ -4,6 +4,7 @@ html, body {
 	margin: 0px;
 	background: black;
 	color: white;
+	font-family: sans-serif;
 }
 
 a {color: lightblue;}
@@ -251,6 +252,7 @@ textarea, #asm {
 	background: #2a3c3f;
 	border: 2px solid black;
 	display: none;
+	user-select: none;
 }
 
 .flex-container {

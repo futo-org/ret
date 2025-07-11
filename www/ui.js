@@ -296,7 +296,7 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 	if (!document.querySelector("#hex-dropdown-box").contains(e.target)) {
 		if (ret.hex_buf == null) throw "NULL";	
 		ret.clearLog();
-		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.currentParseOption, ret.currentOutputOption);
+		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.currentParseOption, ret.currentOutputOption | ret.OUTPUT_SPLIT_BY_FOUR);
 		if (rc != 0) {
 			ret.log("Failed to parse bytes");
 		} else {
@@ -417,6 +417,11 @@ document.querySelector("#parseccomments").onchange = function() {
 	} else {
 		ret.currentParseOption &= ~(ret.PARSE_C_COMMENTS);
 	}
+}
+
+document.querySelector("#splitbyinst").checked = ret.splitBytesByInstruction;
+document.querySelector("#splitbyinst").onchange = function() {
+	ret.splitBytesByInstruction = this.checked;
 }
 
 document.querySelector("#usegodbolt").checked = ret.useGodboltOnAssembler;

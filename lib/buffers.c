@@ -212,8 +212,16 @@ static void mirror_clear(struct RetBuffer *buf) {
 }
 static void mirror_append(struct RetBuffer *buf, const void *in, unsigned int len) {
 	if (buf->mirror1 == NULL || buf->mirror2 == NULL) abort();
+	int temp1 = buf->mirror1->output_options;
+	int temp2 = buf->mirror2->output_options;
+	buf->mirror1->output_options = buf->output_options;
+	buf->mirror2->output_options = buf->output_options;
+
 	buf->mirror1->append(buf->mirror1, in, len);
 	buf->mirror2->append(buf->mirror2, in, len);
+
+	buf->mirror1->output_options = temp1;
+	buf->mirror2->output_options = temp2;
 }
 
 struct RetBuffer create_mirror_buffer(struct RetBuffer *buf1, struct RetBuffer *buf2) {
