@@ -210,12 +210,6 @@ function setBytes(hex_buf) {
 	}
 }
 
-function finishAssembler(code, outBuf, errBuf, doneCallback) {
-	var then = Date.now();
-	var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.currentOutputOption);
-	var now = Date.now();
-	doneCallback(rc, now - then);
-}
 function fullAssembler(code, outBuf, errBuf, doneCallback) {
 	if (!code.endsWith("\n")) {
 		// make file valid
@@ -231,7 +225,8 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 				if (split.length == 1) {
 					ret.log("No errors from Godbolt API.");
 					// TODO: Feed in new code
-					finishAssembler(code, outBuf, errBuf, doneCallback);
+					var t = ret.assemble(code, outBuf, errBuf);
+					doneCallback(t[0], t[1]);
 				} else {
 					ret.log("Error message from Godbolt API:");
 					ret.log(split[1]);
@@ -241,7 +236,8 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 			}
 		})();
 	} else {
-		finishAssembler(code, outBuf, errBuf, doneCallback);
+		var t = ret.assemble(code, outBuf, errBuf);
+		doneCallback(t[0], t[1]);
 	}
 }
 
@@ -283,12 +279,11 @@ document.querySelector("#run").onclick = function() {
 	}
 	var code = editor.toString();
 
-	fullAssembler(code, ret.mem_buf, ret.err_buf, function(rc) {
+	fullAssembler(code, ret.hex_mem_mirror_buf, ret.err_buf, function(rc) {
 		if (rc != 0) {
 			ret.log(ret.get_buffer_contents(ret.err_buf));
 			document.querySelector("#bytes").value = "";
 		} else {
-			ret.buffer_to_buffer(ret.hex_buf, ret.mem_buf, ret.currentOutputOption);
 			setBytes(ret.hex_buf);
 
 			rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);

@@ -1,9 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <keystone/keystone.h>
-#include <keystone/arm64.h>
 #include <capstone/capstone.h>
 #include "re.h"
 
@@ -11,18 +9,21 @@ static struct RetBuffer re_buf_err;
 static struct RetBuffer re_buf_hex;
 static struct RetBuffer re_buf_mem;
 static struct RetBuffer re_buf_str;
+static struct RetBuffer re_buf_mirror;
 
 void re_init_globals(void) {
 	re_buf_hex = create_mem_hex_buffer();
 	re_buf_mem = create_mem_buffer();
 	re_buf_err = create_mem_string_buffer();
 	re_buf_str = create_mem_string_buffer();
+	re_buf_mirror = create_mirror_buffer(&re_buf_mem, &re_buf_hex);
 }
 
 struct RetBuffer *re_get_err_buffer(void) { return &re_buf_err; }
 struct RetBuffer *re_get_hex_buffer(void) { return &re_buf_hex; }
 struct RetBuffer *re_get_str_buffer(void) { return &re_buf_str; }
 struct RetBuffer *re_get_mem_buffer(void) { return &re_buf_mem; }
+struct RetBuffer *re_get_hex_mem_mirror_buffer(void) { return &re_buf_mirror; }
 
 int re_is_arch_supported(int arch) {
 #ifdef RET_SUPPORT_ARM64
@@ -143,7 +144,7 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
 	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
 	buf->clear(buf);
-	buf->clear(err_buf);
+	err_buf->clear(err_buf);
 	ks_engine *ks;
 	ks_err err;
 
@@ -174,14 +175,14 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		size_t cs_size = size;
 		uint64_t address = base_addr;
 		uint64_t last_address = address;
-		while (cs_disasm_iter(cs, &bytecode, &size, &address, inst)) {
+		while (cs_disasm_iter(cs, &bytecode, &cs_size, &address, inst)) {
 			uint32_t size_last = address - last_address;
 			buffer_append_mode(buf, bytecode - size_last, size_last, output_options);
 			last_address = address;
 			buffer_appendf(buf, "\n");
 		}
 
-		buffer_append_mode(buf, bytecode, size, output_options);
+		buffer_append_mode(buf, bytecode, cs_size, output_options);
 	} else {
 		buffer_append_mode(buf, encode, size, output_options);
 	}
@@ -247,9 +248,6 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct R
 }
 
 static int cli_asm(enum Arch arch, const char *filename) {
-	struct RetBuffer buf = create_mem_hex_buffer();
-	struct RetBuffer err = create_stdout_buffer();
-
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
 		printf("Error opening %s\n", filename);
@@ -313,7 +311,7 @@ int cli_disasm(enum Arch arch, const char *filename) {
 	return 0;
 }
 
-int cli_hex(enum Arch arch, const char *input) {
+int cli_hex(const char *input) {
 	struct RetBuffer buf = create_mem_hex_buffer();
 	parser_to_buf(input, &buf, PARSE_AS_AUTO, OUTPUT_AS_U32);
 	printf("%s\n", buf.buffer);	
@@ -322,7 +320,7 @@ int cli_hex(enum Arch arch, const char *input) {
 
 static int help(void) {
 	printf("ret <arch> <action> <file>\n");
-	printf("--x86, --arm, --arm64\n");
+	printf("--x86, --arm, --arm64, --rv64\n");
 	printf("--asm <filename>\n");
 	printf("--dis <filename>\n");
 	printf("--hex <string>\n");
@@ -337,10 +335,18 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
 		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV64;
-		
+
+		if (!strcmp(argv[i], "--test")) {
+			if (test_buffer()) return -1;
+
+			if (re_assemble(ARCH_ARM64, 0, 0, &re_buf_mirror, &re_buf_err, "mov x0, #0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
+
+			return 0;
+		}
+
 		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--dis")) return cli_disasm(arch, argv[i + 1]);
-		if (!strcmp(argv[i], "--hex")) return cli_hex(arch, argv[i + 1]);
+		if (!strcmp(argv[i], "--hex")) return cli_hex(argv[i + 1]);
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();
 	}
 

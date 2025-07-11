@@ -44,7 +44,6 @@ const ret = {
 	SYNTAX_MASM: 1 << 3,
 	SYNTAX_GAS: 1 << 4,
 	AGGRESSIVE_DISASM: 1 << 10,
-	SPLIT_BYTES_BY_INSTRUCTION: 1 << 11,
 
 	// has object with initial URL options
 	urlOptions: null,
@@ -55,6 +54,10 @@ const ret = {
 	currentParseOption: 0,
 	currentOutputOption: 0,
 	useGodboltOnAssembler: false,
+
+	aggressiveDisasm: false,
+	splitBytesByInstruction: false,
+	splitBytesByFour: true,
 
 	init: function() {
 		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
@@ -137,6 +140,7 @@ const ret = {
 	hex_buf: null,
 	str_buf: null,
 	mem_buf: null,
+	hex_mem_mirror_buf: null,
 
 	main: function() {
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
@@ -149,9 +153,10 @@ const ret = {
 		ret.re_get_err_buffer = Module.cwrap('re_get_err_buffer', 'number', []);
 		ret.re_get_str_buffer = Module.cwrap('re_get_str_buffer', 'number', []);
 		ret.re_get_mem_buffer = Module.cwrap('re_get_mem_buffer', 'number', []);
-		ret.get_buffer_contents = Module.cwrap('get_buffer_contents', 'string', ['number']);
-		ret.get_buffer_contents_raw = Module.cwrap('get_buffer_contents', 'number', ['number']);
-		ret.get_buffer_data_length = Module.cwrap('get_buffer_data_length', 'number', ['number']);
+		ret.re_get_hex_mem_mirror_buffer = Module.cwrap('re_get_hex_mem_mirror_buffer', 'number', []);
+		ret.get_buffer_contents = Module.cwrap('buffer_get_contents', 'string', ['number']);
+		ret.get_buffer_contents_raw = Module.cwrap('buffer_get_contents', 'number', ['number']);
+		ret.get_buffer_data_length = Module.cwrap('buffer_get_data_length', 'number', ['number']);
 		ret.parser_to_buf = Module.cwrap('parser_to_buf', 'number', ['string', 'number', 'number', 'number']);
 		ret.buffer_to_buffer = Module.cwrap('buffer_to_buffer', 'void', ['number', 'number', 'number']);
 
@@ -160,10 +165,16 @@ const ret = {
 		ret.hex_buf = ret.re_get_hex_buffer();
 		ret.str_buf = ret.re_get_str_buffer();
 		ret.mem_buf = ret.re_get_mem_buffer();
+		ret.hex_mem_mirror_buf = ret.re_get_hex_mem_mirror_buffer();
 
 		ret.clearLog();
 		ret.log("Ret v4");
-		ret.log("Running in WebAssembly with Capstone, keystone, and Unicorn.");
+		ret.log("Click the top left button to switch architecture.");
+		ret.log("Click 'Examples' for some quick start demos.");
+
+		if (ret.re_is_arch_supported(ret.currentArch) == 0) {
+			ret.log("ERROR: This architecture was not compiled into the wasm binary.");
+		}
 	},
 
 	godbolt: async function(arch, assemblyCode) {
@@ -256,9 +267,16 @@ const ret = {
 		document.body.removeChild(a);
 	},
 
-	assembler: function(code, outBuf, errBuf, doneCallback) {
+	assemble: function(code, outBuf, errBuf) {
+		var outputOpt = ret.currentOutputOption;
+		if (ret.splitBytesByInstruction)
+			outputOpt |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
+
+		if (ret.splitBytesByFour && !ret.splitBytesByInstruction)
+			outputOpt |= ret.OUTPUT_SPLIT_BY_FOUR;
+
 		var then = Date.now();
-		var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.currentOutputOption);
+		var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, outputOpt);
 		var now = Date.now();
 		return [rc, now - then];
 	},

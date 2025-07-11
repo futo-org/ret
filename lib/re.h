@@ -51,7 +51,7 @@ enum OutputOptions {
 	OUTPUT_SPLIT_BY_FOUR = 1 << 13,
 	// Split byte output by each instruction
 	OUTPUT_SPLIT_BY_INSTRUCTION = 1 << 14,
-	// Assembly
+	// Output assembly instructions beside the hex in C comments
 	OUTPUT_ASSEMBLY_ANNOTATIONS = 1 << 15,
 };
 
@@ -81,8 +81,11 @@ struct RetBuffer {
 	int output_options;
 	/// @brief Clear and reset buffer
 	void (*clear)(struct RetBuffer *);
-	/// @brief Append string or binary data. If string, len can be 0.
+	/// @brief Append string or binary data. If len is 0, then buf is treated like a NULL terminated string.
 	void (*append)(struct RetBuffer *, const void *buf, unsigned int len);
+
+	struct RetBuffer *mirror1;
+	struct RetBuffer *mirror2;
 };
 
 /// @brief Buffer that writes into memory buffer
@@ -95,9 +98,11 @@ struct RetBuffer create_mem_hex_buffer(void);
 struct RetBuffer create_stdout_hex_buffer(void);
 /// @brief Buffer that prints directly to stdout
 struct RetBuffer create_stdout_buffer(void);
+/// @brief Buffer that pipes into two buffers
+struct RetBuffer create_mirror_buffer(struct RetBuffer *buf1, struct RetBuffer *buf2);
 
 /// @brief Get pointer to buffer contents
-const void *get_buffer_contents(struct RetBuffer *buf);
+const void *buffer_get_contents(struct RetBuffer *buf);
 /// @brief Appends string to buffer (passes length 0)
 void buffer_appendf(struct RetBuffer *buf, const char *fmt, ...);
 /// @brief Append data to the buffer with a specific output mode
@@ -105,6 +110,8 @@ void buffer_append_mode(struct RetBuffer *buf, const void *data, unsigned int le
 
 /// @brief Run the hex parser and output into a buffer
 int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, int output_options);
+
+int test_buffer(void);
 
 inline static int write_u8(void *buf, uint8_t out) {
 	((uint8_t *)buf)[0] = out;
@@ -122,5 +129,20 @@ inline static int write_u32(void *buf, uint32_t out) {
 	b[1] = (out >> 8) & 0xFF;
 	b[2] = (out >> 16) & 0xFF;
 	b[3] = (out >> 24) & 0xFF;
+	return 4;
+}
+inline static int read_u8(const void *buf, uint8_t *out) {
+	const uint8_t *b = (const uint8_t *)buf;
+	*out = b[0];
+	return 1;
+}
+inline static int read_u16(const void *buf, uint16_t *out) {
+	const uint8_t *b = (const uint8_t *)buf;
+	*out = (uint16_t)b[0] | ((uint16_t)b[1] << 8);
+	return 2;
+}
+inline static int read_u32(const void *buf, uint32_t *out) {
+	const uint8_t *b = (const uint8_t *)buf;
+	*out = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
 	return 4;
 }
