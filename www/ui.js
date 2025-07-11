@@ -203,7 +203,7 @@ if (editor.toString() == "") {
 }
 
 function setBytes(hex_buf) {
-	if (ret.currentOutputOption & ret.OUTPUT_AS_C_ARRAY) {
+	if (ret.baseOutputOption == ret.OUTPUT_AS_C_ARRAY) {
 		document.querySelector("#bytes").value = "{" + ret.get_buffer_contents(hex_buf) + "}";
 	} else {
 		document.querySelector("#bytes").value = ret.get_buffer_contents(hex_buf);
@@ -260,7 +260,7 @@ document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
 	var then = Date.now();
-	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.currentParseOption, ret.currentOutputOption);
+	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.baseParseOption, ret.baseOutputOption);
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -296,25 +296,25 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 	if (!document.querySelector("#hex-dropdown-box").contains(e.target)) {
 		if (ret.hex_buf == null) throw "NULL";	
 		ret.clearLog();
-		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.currentParseOption, ret.currentOutputOption | ret.OUTPUT_SPLIT_BY_FOUR);
+		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.baseParseOption, ret.baseOutputOption | ret.OUTPUT_SPLIT_BY_FOUR);
 		if (rc != 0) {
 			ret.log("Failed to parse bytes");
 		} else {
 			setBytes(ret.hex_buf);
 			var output_as = "auto", parse_as = "auto";
-			if (ret.currentParseOption & ret.PARSE_AS_U8) parse_as = "u8";
-			if (ret.currentParseOption & ret.PARSE_AS_U16) parse_as = "u16";
-			if (ret.currentParseOption & ret.PARSE_AS_U32) parse_as = "u32";
-			if (ret.currentParseOption & ret.PARSE_AS_AUTO) parse_as = "auto";
-			if (ret.currentParseOption & ret.PARSE_AS_U64) parse_as = "u64";
-			if (ret.currentParseOption & ret.PARSE_AS_BASE_10) parse_as += ", base10";
+			if (ret.baseParseOption == ret.PARSE_AS_U8) parse_as = "u8";
+			if (ret.baseParseOption == ret.PARSE_AS_U16) parse_as = "u16";
+			if (ret.baseParseOption == ret.PARSE_AS_U32) parse_as = "u32";
+			if (ret.baseParseOption == ret.PARSE_AS_AUTO) parse_as = "auto";
+			if (ret.baseParseOption == ret.PARSE_AS_U64) parse_as = "u64";
+			if (ret.baseParseOption == ret.PARSE_AS_BASE_10) parse_as += ", base10";
 
-			if (ret.currentOutputOption & ret.OUTPUT_AS_U8) output_as = "u8";
-			if (ret.currentOutputOption & ret.OUTPUT_AS_U16) output_as = "u16";
-			if (ret.currentOutputOption & ret.OUTPUT_AS_U32) output_as = "u32";
-			if (ret.currentOutputOption & ret.OUTPUT_AS_AUTO) output_as = "auto";
-			if (ret.currentOutputOption & ret.OUTPUT_AS_U64) output_as = "u64";
-			if (ret.currentOutputOption & ret.OUTPUT_AS_C_ARRAY) output_as = "c array";
+			if (ret.baseOutputOption == ret.OUTPUT_AS_U8) output_as = "u8";
+			if (ret.baseOutputOption == ret.OUTPUT_AS_U16) output_as = "u16";
+			if (ret.baseOutputOption == ret.OUTPUT_AS_U32) output_as = "u32";
+			if (ret.baseOutputOption == ret.OUTPUT_AS_AUTO) output_as = "auto";
+			if (ret.baseOutputOption == ret.OUTPUT_AS_U64) output_as = "u64";
+			if (ret.baseOutputOption == ret.OUTPUT_AS_C_ARRAY) output_as = "c array";
 
 			ret.log("Formatted hex (parse as '" + parse_as + "') (output as '" + output_as + "')");
 		}
@@ -324,7 +324,7 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 document.querySelector("#save-button").onclick = function() {
 	if (ret.mem_buf == null) throw "NULL";	
 	ret.clearLog();
-	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.currentParseOption, ret.currentOutputOption);
+	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.baseParseOption, ret.baseOutputOption);
 	if (rc != 0) {
 		ret.log("Failed to parse bytes");
 	} else {
@@ -356,7 +356,7 @@ document.querySelector("#popup-close").onclick = function() {
 }
 
 {
-	var curr = (ret.currentParseOption & ret.PARSE_AS_MASK);
+	var curr = ret.baseParseOption;
 	var defaultOpt = 0;
 	if (curr == ret.PARSE_AS_AUTO) defaultOpt = 0;
 	if (curr == ret.PARSE_AS_U8) defaultOpt = 1;
@@ -368,12 +368,12 @@ document.querySelector("#popup-close").onclick = function() {
 		if (index == 1) option = ret.PARSE_AS_U8;
 		if (index == 2) option = ret.PARSE_AS_U16;
 		if (index == 3) option = ret.PARSE_AS_U32;
-		ret.currentParseOption = (ret.currentParseOption & (~ret.PARSE_AS_MASK)) | option;
+		ret.baseParseOption = option;
 	});
 }
 
 {
-	var curr = ret.currentOutputOption;
+	var curr = ret.baseOutputOption;
 	var defaultOpt = 0;
 	if (curr == ret.OUTPUT_AS_AUTO) defaultOpt = 0;
 	if (curr == ret.OUTPUT_AS_U8) defaultOpt = 1;
@@ -385,8 +385,7 @@ document.querySelector("#popup-close").onclick = function() {
 		if (index == 1) option = ret.OUTPUT_AS_U8;
 		if (index == 2) option = ret.OUTPUT_AS_U32;
 		if (index == 3) option = ret.OUTPUT_AS_C_ARRAY;
-		ret.currentOutputOption = option; // currently only one option is allowed
-		//ret.currentOutputOption = (ret.currentOutputOption & (~0x1f)) | option;
+		ret.baseOutputOption = option;
 	});
 }
 
@@ -410,13 +409,9 @@ document.querySelector("#popup-close").onclick = function() {
 	});
 }
 
-document.querySelector("#parseccomments").checked = (ret.currentParseOption & ret.PARSE_C_COMMENTS) != 0;
+document.querySelector("#parseccomments").checked = ret.parseCComments;
 document.querySelector("#parseccomments").onchange = function() {
-	if (this.checked) {
-		ret.currentParseOption |= ret.PARSE_C_COMMENTS;
-	} else {
-		ret.currentParseOption &= ~(ret.PARSE_C_COMMENTS);
-	}
+	ret.parseCComments = this.checked;
 }
 
 document.querySelector("#splitbyinst").checked = ret.splitBytesByInstruction;
@@ -426,11 +421,7 @@ document.querySelector("#splitbyinst").onchange = function() {
 
 document.querySelector("#usegodbolt").checked = ret.useGodboltOnAssembler;
 document.querySelector("#usegodbolt").onchange = function() {
-	if (this.checked) {
-		ret.useGodboltOnAssembler = true;
-	} else {
-		ret.useGodboltOnAssembler = false;
-	}
+	ret.useGodboltOnAssembler = this.checked;
 }
 
 function fillExamples() {

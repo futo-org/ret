@@ -9,8 +9,7 @@ const ret = {
 	ARCH_WASM: 6,
 	ARCH_ARM32_THUMB: 7,
 
-	// Hex parser options
-	PARSE_AS_MASK: 0x1f,
+	// Base Hex parser options
 	PARSE_AS_U8: 1 << 0,
 	PARSE_AS_U16: 1 << 1,
 	PARSE_AS_U32: 1 << 2,
@@ -18,6 +17,7 @@ const ret = {
 	PARSE_AS_AUTO: 1 << 4,
 	SKIP_1_AT_START: 1 << 5,
 	SKIP_2_AT_START: 1 << 6,
+	// Additional options
 	PARSE_AS_BASE_10: 1 << 10,
 	PARSE_AS_BIG_ENDIAN: 1 << 11,
 	PARSE_C_COMMENTS: 1 << 12,
@@ -30,6 +30,7 @@ const ret = {
 	OUTPUT_AS_U64: 1 << 4,
 	OUTPUT_AS_U32_BINARY: 1 << 5,
 	OUTPUT_AS_U8_BINARY: 1 << 6,
+	// Additional hex buffer output options (TODO: C Array isn't treated as one)
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 	OUTPUT_AS_BIG_ENDIAN: 1 << 12,
@@ -47,45 +48,57 @@ const ret = {
 
 	// has object with initial URL options
 	urlOptions: null,
-	
+
 	currentArch: 0,
 	currentSyntax: 0,
-	currentBaseOffset: 0,
-	currentParseOption: 0,
-	currentOutputOption: 0,
-	useGodboltOnAssembler: false,
-
 	aggressiveDisasm: false,
+	useGodboltOnAssembler: false,
+	currentBaseOffset: 0,
+	baseParseOption: 0,
+	baseOutputOption: 0,
+	// Parse options
+	parseAsBigEndian: false,
+	parseAsBaseTen: false,
+	parseCComments: false,
+	// Assembly options
 	splitBytesByInstruction: false,
 	splitBytesByFour: true,
 
 	init: function() {
 		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 		ret.currentArch = ret.checkArch();
-		ret.currentParseOption = ret.PARSE_AS_AUTO;
-		ret.currentOutputOption = ret.OUTPUT_AS_AUTO;
+		ret.baseParseOption = ret.PARSE_AS_AUTO;
+		ret.baseOutputOption = ret.OUTPUT_AS_AUTO;
 		ret.currentSyntax = ret.SYNTAX_INTEL;
 		if (ret.urlOptions.hasOwnProperty("useGodboltOnAssembler")) {
 			ret.useGodboltOnAssembler = true;
 		}
-		if (ret.urlOptions.hasOwnProperty("currentParseOption")) {
-			ret.currentParseOption = Number(ret.urlOptions.currentParseOption);
+		if (ret.urlOptions.hasOwnProperty("baseParseOption")) {
+			ret.baseParseOption = Number(ret.urlOptions.baseParseOption);
 		}
-		if (ret.urlOptions.hasOwnProperty("currentOutputOption")) {
-			ret.currentOutputOption = Number(ret.urlOptions.currentOutputOption);
+		if (ret.urlOptions.hasOwnProperty("baseOutputOption")) {
+			ret.baseOutputOption = Number(ret.urlOptions.baseOutputOption);
 		}
 		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
 			ret.currentSyntax = Number(ret.urlOptions.currentSyntax);
 		}
+		if (ret.urlOptions.hasOwnProperty("parseCComments")) ret.parseCComments = true;
+		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
+		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) ret.splitBytesByInstruction = (ret.splitBytesByInstruction == "true");
+		if (ret.urlOptions.hasOwnProperty("splitBytesByFour")) ret.splitBytesByFour = (ret.urlOptions.splitBytesByFour == "true");
 		ret.log("Loading...");
 	},
 	encodeURL: function(allOptions) {
 		var opt = Object.assign({}, ret.urlOptions);
 		opt.code = encodeURIComponent(editor.toString());
 		if (allOptions) {
-			opt.currentParseOption = String(ret.currentParseOption);
-			opt.currentOutputOption = String(ret.currentOutputOption);
+			opt.baseParseOption = String(ret.baseParseOption);
+			opt.baseOutputOption = String(ret.baseOutputOption);
 			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
+			if (ret.parseCComments) opt.parseCComments = "true";
+			if (ret.aggressiveDisasm) opt.aggressiveDisasm = "true";
+			if (ret.splitBytesByInstruction) opt.splitBytesByInstruction = "true";
+			if (ret.splitBytesByFour) opt.splitBytesByFour = "true";
 			opt.currentSyntax = String(ret.currentSyntax);
 		}
 		var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
@@ -169,10 +182,8 @@ const ret = {
 
 		ret.clearLog();
 		ret.log("Ret v4 - Reverse-Engineering Tool");
-		ret.log("A lightweight browser assembler/disassembler/CPU simulator running in WebAssembly.");
-		ret.log("");
 		ret.log("Click the top left button to switch architecture.");
-		ret.log("Click 'Examples' for some quick start demos.");
+		ret.log("Click 'Examples' to get started.");
 
 		if (ret.re_is_arch_supported(ret.currentArch) == 0) {
 			ret.log("ERROR: This architecture was not compiled into the wasm binary.");
@@ -282,8 +293,8 @@ const ret = {
 	},
 
 	assemble: function(code, outBuf, errBuf) {
-		var outputOpt = ret.currentOutputOption;
-		if (ret.splitBytesByInstruction && (ret.currentOutputOption & ret.OUTPUT_AS_AUTO || ret.currentOutputOption & ret.OUTPUT_AS_U8))
+		var outputOpt = ret.baseOutputOption;
+		if (ret.splitBytesByInstruction && (ret.baseOutputOption == ret.OUTPUT_AS_AUTO || ret.baseOutputOption == ret.OUTPUT_AS_U8))
 			outputOpt |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
 
 		if (ret.splitBytesByFour && !ret.splitBytesByInstruction)

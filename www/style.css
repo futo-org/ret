@@ -170,14 +170,6 @@ textarea, #asm {
 	padding: 10px;
 }
 
-
-/* .btn span { */
-/* 	display: block; */
-/* 	margin: 0; */
-/* 	text-align: center; */
-/* 	width: 100%; */
-/* } */
-
 .btn:hover {
 	background: #3d3c3c;
 }
@@ -185,12 +177,6 @@ textarea, #asm {
 .btn:active {
 	background: #3f3f3f;
 }
-
-/* .dropdown { */
-/* 	position: relative; */
-/* 	display: flex; */
-/* 	flex-direction: column; */
-/* } */
 
 .dropdown-content {
 	position: absolute;
@@ -204,21 +190,24 @@ textarea, #asm {
 	cursor: auto;
 }
 
-/* .dropdown-content .btn { */
-/* 	width: 100%; */
-/* } */
-/* .dropdown-content .radio-button { */
-/* 	width: 100%; */
-/* } */
-
 #help-dropdown-box {
 	left: unset;
 	right: 0;
+	padding: 10px;
+	background: #000d19;
+}
+
+#help-dropdown-box li {
+	padding: 2px;
+	font-size: medium;
 }
 
 #help-textarea {
 	width: 500px;
 	height: 200px;
+	overflow: hidden;
+	background: #000d19;
+	border: none;
 }
 
 .right {
