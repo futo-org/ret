@@ -144,6 +144,23 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 	return 0;
 }
 
+struct BreakList {
+	unsigned int length;
+	unsigned int n_filled;
+	struct BreakListMemb {
+		unsigned int of;
+		unsigned int size;
+	}memb[];
+};
+
+static void handler(void *arg, unsigned int of, unsigned int size) {
+	printf("of: %x, size: %x\n", of, size);
+	struct BreakList *list = arg;
+	list->memb[list->n_filled].of = of;
+	list->memb[list->n_filled].size = size;
+	list->n_filled++;
+}
+
 int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
 	if (buf == NULL || err_buf == NULL || input == NULL) return -1;
 	buf->clear(buf);
@@ -152,6 +169,12 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	ks_err err;
 
 	if (re_open_ks(arch, options, err_buf, &ks)) return -1;
+
+	struct BreakList *list = malloc(sizeof(struct BreakList) + (sizeof(struct BreakListMemb) * 100));
+	list->length = 100;
+	list->n_filled = 0;
+
+	ks_set_instruction_stream_handler(ks, handler, list);
 
 	size_t count = 0;
 	unsigned char *encode = NULL;
@@ -170,23 +193,21 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	}
 
 	if (output_options & OUTPUT_SPLIT_BY_INSTRUCTION) {
-		csh cs;
-		if (re_open_cs(arch, options, err_buf, &cs)) return -1;
-		cs_insn *inst = cs_malloc(cs);
-
-		const uint8_t *bytecode = (const uint8_t *)encode;
-		size_t cs_size = size;
-		uint64_t address = base_addr;
-		uint64_t last_address = address;
-		while (cs_disasm_iter(cs, &bytecode, &cs_size, &address, inst)) {
-			uint32_t size_last = address - last_address;
-			buffer_append_mode(buf, bytecode - size_last, size_last, output_options);
-			last_address = address;
+ 		const uint8_t *bytecode = (const uint8_t *)encode;
+		unsigned int last_of = 0;
+		for (unsigned int i = 0; i < list->n_filled; i++) {
+			struct BreakListMemb *curr = &list->memb[i];
+			if (curr->of > last_of) {
+				buffer_append_mode(buf, bytecode + last_of, curr->of - last_of, output_options);
+				buffer_appendf(buf, "\n");
+			}
+			buffer_append_mode(buf, bytecode + curr->of, curr->size, output_options);
 			buffer_appendf(buf, "\n");
+			last_of = curr->of + curr->size;
 		}
 
-		if (cs_size != 0)
-			buffer_append_mode(buf, bytecode, cs_size, output_options);
+		if (last_of < size)
+			buffer_append_mode(buf, bytecode + last_of, size - last_of, output_options);
 	} else {
 		buffer_append_mode(buf, encode, size, output_options);
 	}

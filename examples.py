@@ -23,9 +23,9 @@ add("Exception Levels", "arm64", "arm64-el.S")
 add("SIMD", "arm64", "arm64-simd.S")
 #add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
 
-add("Hello World", "x86gnu", "x86-hello-gnu.asm")
-add("Hello World", "x86nasm", "x86_hello.asm")
-add("Hello World", "x86intel", "x86-hello-gnu.asm")
+add("Hello World", "x86gnu", "x86-hello.asm")
+add("Hello World", "x86nasm", "x86-hello.asm")
+add("Hello World", "x86intel", "x86-hello.asm")
 add("x86 Registers", "x86intel", "x86-regs.asm")
 
 out.close()

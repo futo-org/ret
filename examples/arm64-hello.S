@@ -17,3 +17,5 @@ string:
 .byte 0
 .align 4
 skip:
+nop
+nop
