@@ -15,7 +15,5 @@ UART_DR: .int 0x9000000
 string:
 .ascii "Hello, World\n"
 .byte 0
-.align 4
+.align 2 // align to a power of 2
 skip:
-nop
-nop

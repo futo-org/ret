@@ -154,7 +154,6 @@ struct BreakList {
 };
 
 static void handler(void *arg, unsigned int of, unsigned int size) {
-	printf("of: %x, size: %x\n", of, size);
 	struct BreakList *list = arg;
 	list->memb[list->n_filled].of = of;
 	list->memb[list->n_filled].size = size;
@@ -184,7 +183,6 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	if (err != KS_ERR_OK) {
 		char buffer[128];
 		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
-		printf("%s\n", buffer);
 		err_buf->append(err_buf, buffer, 0);
 		return -1;
 	} else if (size == 0) {

@@ -16,5 +16,5 @@ string_addr: .int string
 string:
 .ascii "Hello, World\n"
 .byte 0
-.align 4
+.align 2
 skip:
