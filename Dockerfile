@@ -28,7 +28,7 @@ RUN cd emsdk ; ./emsdk install latest ; ./emsdk activate latest
 
 RUN make CMAKE=/root/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake config_all -j`nproc` ;  make CMAKE=/root/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake build_all
 
-RUN make deploy
+RUN python3 tool.py --deploy
 
 # Start from a basic nginx image
 FROM nginx:1.27.4-alpine-slim
