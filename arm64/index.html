@@ -3,9 +3,9 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Ret arm64</title>
-	<link rel="icon" href="favicon.ico">
-	<link rel="stylesheet" type="text/css" href="style.css">
-	<link rel="stylesheet" type="text/css" href="lib/sublime.css">
+	<link rel="icon" href="../favicon.ico">
+	<link rel="stylesheet" type="text/css" href="../style.css">
+	<link rel="stylesheet" type="text/css" href="../lib/sublime.css">
 	<meta name="description" content="Online assembler and disassembler. Arm, Thumb, Arm64, x86, and RISC-V. Runs entirely client-side in WebAssembly.">
 	<meta name="keywords" content="arm,arm64,aarch64,x86,x86_64,risc,riscv,risc-v,assembler,disassembler,emulator,simulator,online">
 </head>
@@ -13,7 +13,7 @@
 <div class="container">
 	<div class="menu" id="menu">
 		<div class="btn" id="arch-select">
-			<span id="arch-select-text">ARM64</span><img src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+			<span id="arch-select-text">ARM64</span><img src="../assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 			<div class="dropdown-content" id="arch-dropdown-box">
 				<button class="btn" id="switch-x86">x86</button>
 				<button class="btn" id="switch-arm64">Arm64</button>
@@ -40,14 +40,14 @@
 		</div>
 		<div class="right">
 			<div class="btn" id="examples-dropdown">
-				<span>Examples</span><img src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+				<span>Examples</span><img src="../assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 				<div class="dropdown-content" id="examples-dropdown-box"></div>
 			</div>
 			<div class="btn">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>
-			<div class="btn" id="settings-btn"><img width="24" src="assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
-			<div class="btn" id="share-btn"><img width="24" src="assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="settings-btn"><img width="24" src="../assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="share-btn"><img width="24" src="../assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
 			<div class="btn" id="help-dropdown">
-				<img src="assets/ret.png" width="30">
+				<img src="../assets/ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
 					<textarea readonly="true" spellcheck="false" id="help-textarea">
 ______ _   _ _____ _____ 
@@ -137,9 +137,9 @@ A lightweight browser assembler/disassembler/CPU simulator running in WebAssembl
 	</div>
 </div>
 </body>
-<script src="lib/highlight.min.js"></script>
-<script src="lib/x86asm.js"></script>
-<script src="lib/codejar.js"></script>
+<script src="../lib/highlight.min.js"></script>
+<script src="../lib/x86asm.js"></script>
+<script src="../lib/codejar.js"></script>
 <script>
 var examples = [];
 function addExample(name, arch, data) {
@@ -150,8 +150,8 @@ function addExample(name, arch, data) {
 	});
 }
 </script>
-<script src="examples.js"></script>
-<script src="lib.js"></script>
+<script src="../examples.js"></script>
+<script src="../lib.js"></script>
 <script>
 // emscripten js will merge with (?) this object
 var Module = {
@@ -161,7 +161,6 @@ var Module = {
 };
 </script>
 <script src="build/ret.js"></script>
-<script src="ret.js"></script>
-<script src="ui.js"></script>
+<script src="../ret.js"></script>
+<script src="../ui.js"></script>
 </html>
-
