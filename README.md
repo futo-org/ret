@@ -10,7 +10,7 @@ This tool makes it as easy as possible to disassemble bits of assembly or try ou
 - Incredibly lightweight - no unnecessary JS frameworks, assets, or cookies
 - Ready for self-hosting - unpack a zip of static content into your web server
 
-# Compiling WASM
+## Compiling WASM
 Install emscripten (`sudo apt install emscripten`). It should be installed in `/usr/share/emscripten` on Debian/Ubuntu.  
 If not, then you can install emsdk manually and use the [toolchain file](https://github.com/emscripten-core/emscripten/blob/main/cmake/Modules/Platform/Emscripten.cmake).
 ```
@@ -19,7 +19,12 @@ cmake --build build
 ```
 Run it in a web server that mimicks the deployed version:
 ```
-python3 serve.py
+python3 tool.py --serve
+```
+## Compiling CLI
+```
+cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
+cmake --build buildcli
 ```
 
 The release version bundles 4 different ret binaries compiled for different architectures. This is done mainly to reduce page load times
