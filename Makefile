@@ -1,41 +1,13 @@
 CMAKE ?= /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DCMAKE_BUILD_TYPE=Release
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON
 
 cli_build:
 	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
 
 serve:
 	python3 serve.py
-
-define deploy
-	mkdir -p deploy/$(1)
-	cp -d -r www/* deploy/$(1)
-	rm -rf deploy/$(1)/build && mkdir -p deploy/$(1)/build
-	cp build_$(1)/ret.js deploy/$(1)/build/
-	cp build_$(1)/ret.wasm deploy/$(1)/build/
-	python3 pphtml.py www/index.html $(1) > deploy/$(1)/index.html
-endef
-define deploydefault
-	cp -d -r www/* deploy/
-	rm -rf deploy/build && mkdir -p deploy/build
-	cp build_$(1)/ret.js deploy/build/
-	cp build_$(1)/ret.wasm deploy/build/
-	python3 pphtml.py www/index.html $(1) > deploy/index.html
-endef
-
-.PHONY: deploy
-deploy:
-	rm -rf deploy
-	mkdir -p deploy
-
-	$(call deploydefault,x86)
-	$(call deploy,arm64)
-	$(call deploy,arm32)
-	$(call deploy,riscv)
-
-	zip -r ret.zip deploy
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON

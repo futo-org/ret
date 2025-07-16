@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate static content
         run: |
-          make deploy
+          python3 --deploy
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
