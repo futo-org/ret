@@ -346,9 +346,6 @@ document.querySelector("#settings-btn").onclick = function() {
 	document.querySelector("#popup").style.display = "block";
 }
 document.querySelector("#share-btn").onclick = function() {
-	ret.encodeURL(false);
-}
-document.querySelector("#all-url-options").onclick = function() {
 	ret.encodeURL(true);
 }
 document.querySelector("#popup-close").onclick = function() {

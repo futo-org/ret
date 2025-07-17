@@ -49,7 +49,7 @@
 			<div class="btn" id="help-dropdown">
 				<img src="../assets/ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
-					<textarea readonly="true" spellcheck="false" id="help-textarea">
+					<textarea class="editor-textarea" readonly="true" spellcheck="false" id="help-textarea">
 ______ _   _ _____ _____ 
 |  ___| | | |_   _|  _  |
 | |_  | | | | | | | | | |
@@ -78,11 +78,11 @@ A lightweight browser assembler/disassembler/CPU simulator running in WebAssembl
 			<div id="hseparator"></div>
 			<div class="panel" id="panel2">
 				<button id="save-button">Save as binary file</button>
-				<textarea spellcheck="false" id="bytes" placeholder="Hex goes here"></textarea>
+				<textarea class="editor-textarea" spellcheck="false" id="bytes" placeholder="Machine code goes here"></textarea>
 			</div>
 			<div class="panel" id="panel3">
 				<div id="vseparator"></div>
-				<textarea readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
+				<textarea class="editor-textarea" readonly="true" spellcheck="false" id="log" placeholder="Logs go here"></textarea>
 			</div>
 		</div>
 	</div>
@@ -132,8 +132,6 @@ A lightweight browser assembler/disassembler/CPU simulator running in WebAssembl
 		<!-- 	<input type="checkbox" id="bigendian" name="bigendian" /> -->
 		<!-- 	<label for="bigendian">Big Endian mode</label> -->
 		<!-- </div> -->
-
-		<div class="btn" id="all-url-options">Save settings to URL</div>
 	</div>
 </div>
 </body>

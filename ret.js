@@ -87,7 +87,7 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("parseCComments")) ret.parseCComments = true;
 		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
 		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
-			ret.splitBytesByInstruction = (ret.splitBytesByInstruction == "true");
+			ret.splitBytesByInstruction = (ret.urlOptions.splitBytesByInstruction == "true");
 		} else {
 			switch (ret.currentArch) {
 			case ret.ARCH_X86:
@@ -98,6 +98,7 @@ const ret = {
 				ret.splitBytesByInstruction = true;
 				break;
 			default:
+				ret.splitBytesByInstruction = false;
 				break;
 			}
 		}
