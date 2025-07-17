@@ -132,9 +132,6 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 	document.querySelector("#switch-riscv").onclick = function() {
 		ret.switchArch(ret.ARCH_RISCV64);
 	}
-	document.querySelector("#switch-riscv32").onclick = function() {
-		ret.switchArch(ret.ARCH_RISCV32);
-	}
 }
 
 // Change menu color, syntax, title, etc depending on arch
@@ -391,11 +388,11 @@ document.querySelector("#popup-close").onclick = function() {
 {
 	var syntax = 0;
 	switch (ret.currentSyntax) {
-		case ret.SYNTAX_INTEL: syntax = 0; break;
-		case ret.SYNTAX_ATT: syntax = 1; break;
-		case ret.SYNTAX_NASM: syntax = 2; break;
-		case ret.SYNTAX_MASM: syntax = 3; break;
-		case ret.SYNTAX_GAS: syntax = 4; break;
+	case ret.SYNTAX_INTEL: syntax = 0; break;
+	case ret.SYNTAX_ATT: syntax = 1; break;
+	case ret.SYNTAX_NASM: syntax = 2; break;
+	case ret.SYNTAX_MASM: syntax = 3; break;
+	case ret.SYNTAX_GAS: syntax = 4; break;
 	}
 	setupRadio("x86_syntax", syntax, function(index, value, e) {
 		var option = 0;
@@ -439,7 +436,7 @@ function fillExamples() {
 }
 fillExamples();
 
-// Try to get F9 to trigger assembler
+// Try to get shortcuts working
 document.addEventListener("keydown", keyCapt, false); 
 document.addEventListener("keyup", keyCapt, false);
 document.addEventListener("keypress", keyCapt, false);
@@ -447,7 +444,12 @@ function keyCapt(e) {
 	if (typeof window.event != "undefined") {
 		e = window.event;	
 	}
-	if (e.type == "keydown" && (e.keyCode == 120)) {
+	if (e.type == "keydown" && (e.key == "F1")) {
+		e.preventDefault();
 		document.querySelector("#assemble").click();
+	}
+	if (e.type == "keydown" && (e.key == "F9")) {
+		e.preventDefault();
+		document.querySelector("#run").click();
 	}
 }

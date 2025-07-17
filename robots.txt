@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ret.futo.org/sitemap.xml
