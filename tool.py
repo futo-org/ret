@@ -98,7 +98,6 @@ def examples():
     add("Hello World", "x86nasm", "x86-hello.asm")
     add("Hello World", "x86intel", "x86-hello.asm")
     add("x86 Registers", "x86intel", "x86-regs.asm")
-    add("x86 Registers", "x86intel", "x86-regs.asm")
     add("x86 Functions", "x86intel", "x86-functions.asm")
 
     out.close()
