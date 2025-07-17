@@ -148,12 +148,12 @@ struct Number parser_next(struct HexPars *p) {
 			return eof;
 		}
 	
-		// TODO: Always parse as hex if '0x' is found
+		// TODO: Always parse as hex if '0x' is found, once base 10 option is added
 		if (in[p->of] == '0' && in[p->of + 1] == 'x') {
 			p->of += 2;
 			if (in[p->of] == '\0') return eof;
-			// TODO: Check if following is valid hex, may not be
 		}
+		// TODO: Parse as binary if 0b is found
 		if (p->options & PARSE_C_COMMENTS) {
 			if (in[p->of] == '/' && in[p->of + 1] == '/') {
 				while (in[p->of] != '\n') {

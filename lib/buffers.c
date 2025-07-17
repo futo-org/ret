@@ -1,3 +1,6 @@
+// Ret Buffer/piping layer
+// This allows the assembler/disassembler/parser to input and output in a variety of different
+// ways through a common API.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -83,7 +86,8 @@ static void buffer_append_hex(struct RetBuffer *buf, const void *in, unsigned in
 			read_u16((const uint8_t *)in + i, &b);
 			buf->offset += sprintf(buf->buffer + buf->offset, "%04x%c", b, '\n');
 		} else if (data_type_size == 4) {
-			// u32/u16 be read incrementally to avoid overflowing
+			// each byte of u32 is read incrementally to not overflow.
+			// Ideally len would be a factor of 4. But sometimes it's not.
 			const uint8_t *b = (const uint8_t *)in + i;
 			uint32_t out = 0;
 			if (i + 1 < len + 1) out |= (uint32_t)b[0];

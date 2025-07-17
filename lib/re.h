@@ -11,6 +11,7 @@ enum Arch {
 	ARCH_RISCV64 = 5,
 	ARCH_WASM = 6,
 	ARCH_ARM32_THUMB = 7,
+	ARCH_POWERPC = 7,
 };
 
 enum ParseOptions {
