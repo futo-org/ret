@@ -1,6 +1,7 @@
 const ret = {
-	// Default architecture (root-level) will be x86
+	// Default architecture (root-level) will be x86_64
 	DEFAULT_ARCH: 3,
+
 	// Architectures and variants
 	ARCH_ARM64: 0,
 	ARCH_ARM32: 1,
@@ -51,8 +52,8 @@ const ret = {
 	// has object with initial URL options
 	urlOptions: null,
 
-	currentArch: 0,
-	currentSyntax: 0,
+	currentArch: undefined,
+	currentSyntax: undefined,
 	aggressiveDisasm: false,
 	useGodboltOnAssembler: false,
 	currentBaseOffset: 0,
@@ -66,6 +67,7 @@ const ret = {
 	splitBytesByInstruction: false,
 	splitBytesByFour: true,
 
+	// Initialize this object from URL options or defaults
 	init: function() {
 		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 		ret.currentArch = ret.checkArch();
@@ -89,6 +91,7 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
 			ret.splitBytesByInstruction = (ret.urlOptions.splitBytesByInstruction == "true");
 		} else {
+			// Don't split bytes by instruction on arm32 or arm64.
 			switch (ret.currentArch) {
 			case ret.ARCH_X86:
 			case ret.ARCH_X86_64:
@@ -119,8 +122,9 @@ const ret = {
 			opt.currentSyntax = String(ret.currentSyntax);
 		}
 		var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
-		prompt("Copy", newUrl);
+		prompt("Assembly code and all settings are encoded in this URL:", newUrl);
 	},
+	// TODO: Make this function less dumb
 	checkArch: function() {
 		if (window.location.pathname.includes("arm64")) {
 			return ret.ARCH_ARM64;
@@ -218,7 +222,8 @@ const ret = {
 			ret.log("ERROR: This architecture was not compiled into the wasm binary.");
 		}
 	},
-
+	// Try and use the godbolt API for their assembler.
+	// We get back assembly (not bytes) but their error checking is useful.
 	godbolt: async function(arch, assemblyCode) {
 		var compiler = "";
 		var arguments = "";
