@@ -14,6 +14,10 @@ input:focus {
   outline: none;
 }
 
+button {
+	user-select: none;
+}
+
 .container {
 	display: flex;
 	flex-flow: column;
@@ -41,6 +45,89 @@ input:focus {
 .panel {
 	display: flex;
 	flex: 1;
+}
+
+.btn {
+	user-select: none;
+	height: 40px;
+	margin: 0px;
+	border: none;
+	padding: 0px 10px;
+	background: #292929;
+	color: white;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	white-space: nowrap;
+	font-family: Sans-Serif;
+	font-size: 10pt;
+}
+
+.radio-button {
+	user-select: none;
+	height: 40px;
+	margin: 0px;
+	border: none;
+	padding: 1px 50px;
+	background: #4a4a4a;
+	color: white;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	white-space: nowrap;
+	font-family: Sans-Serif;
+	font-size: 10pt;
+	box-sizing: border-box;
+}
+
+.radio-checked {
+	background: #323232;
+	border: 2px solid black;
+	border-left: none;
+	border-right: none;
+}
+
+.dropdown-text {
+	display: block;
+	padding: 10px;
+}
+
+.btn:hover {
+	background: #3d3c3c;
+}
+
+.btn:active {
+	background: #3f3f3f;
+}
+
+.dropdown-content {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1;
+	display: none;
+	flex-direction: column;
+	background: #292929;
+	border: 3px solid black;
+	cursor: auto;
+}
+
+.editor-textarea {
+	width: 100%;
+	height: 100%;
+	resize: none;
+	outline: none;	
+	font-size: larger;
+	box-sizing: border-box;
+	border: none;
+	tab-size: 4;
+	color: white;
+	background: black;
+	padding: .5em;
 }
 
 #asm {
@@ -89,21 +176,7 @@ input:focus {
 	border: 1px dashed black;
 }
 
-textarea {
-	width: 100%;
-	height: 100%;
-	resize: none;
-	outline: none;	
-	font-size: larger;
-	box-sizing: border-box;
-	border: none;
-	tab-size: 4;
-	color: white;
-	background: black;
-	padding: .5em;
-}
-
-textarea, #asm {
+#bytes, #log, #asm {
     border: 3px solid black;
 }
 
@@ -120,74 +193,6 @@ textarea, #asm {
 	font-family: monospace;
 	font-size: larger;
 	box-sizing: border-box;
-}
-
-.btn {
-	user-select: none;
-	height: 40px;
-	margin: 0px;
-	border: none;
-	padding: 0px 10px;
-	background: #292929;
-	color: white;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	white-space: nowrap;
-	font-family: Sans-Serif;
-	font-size: 10pt;
-	
-}
-
-.radio-button {
-	user-select: none;
-	height: 40px;
-	margin: 0px;
-	border: none;
-	padding: 1px 50px;
-	background: #4a4a4a;
-	color: white;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	white-space: nowrap;
-	font-family: Sans-Serif;
-	font-size: 10pt;
-	box-sizing: border-box;
-}
-
-.radio-checked {
-	background: #323232;
-	border: 2px solid black;
-}
-
-.dropdown-text {
-	display: block;
-	padding: 10px;
-}
-
-.btn:hover {
-	background: #3d3c3c;
-}
-
-.btn:active {
-	background: #3f3f3f;
-}
-
-.dropdown-content {
-	position: absolute;
-	top: 100%;
-	left: 0;
-	z-index: 1;
-	display: none;
-	flex-direction: column;
-	background: #292929;
-	border: 3px solid black;
-	cursor: auto;
 }
 
 #help-dropdown-box {
