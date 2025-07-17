@@ -88,6 +88,8 @@ def examples():
 
     add("Hello World", "arm64", "arm64-hello.S")
     add("Registers", "arm64", "arm64-registers.S")
+    add("Stack", "arm64", "arm64-stack.S")
+    add("Functions", "arm64", "arm64-functions.S")
     add("Exception Levels", "arm64", "arm64-el.S")
     add("SIMD", "arm64", "arm64-simd.S")
     #add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
@@ -96,6 +98,8 @@ def examples():
     add("Hello World", "x86nasm", "x86-hello.asm")
     add("Hello World", "x86intel", "x86-hello.asm")
     add("x86 Registers", "x86intel", "x86-regs.asm")
+    add("x86 Registers", "x86intel", "x86-regs.asm")
+    add("x86 Functions", "x86intel", "x86-functions.asm")
 
     out.close()
     print("updated www/examples.js")

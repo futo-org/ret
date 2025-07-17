@@ -27,9 +27,6 @@ cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=O
 cmake --build buildcli
 ```
 
-The release version bundles 4 different ret binaries compiled for different architectures. This is done mainly to reduce page load times
-(14mb to bundle all architectures, 1-2mb for one).
-
 # Credits
 
 - Unicorn: https://github.com/unicorn-engine/unicorn/blob/master/COPYING

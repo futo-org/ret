@@ -116,6 +116,7 @@ target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/incl
 target_compile_definitions(ret PRIVATE ${RET_DEFINES})
 if(EMSCRIPTEN)
 	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>
+		-sIGNORE_MISSING_MAIN
 		-sEXPORTED_FUNCTIONS=${EXPORT_FUNCS}
 		-sINVOKE_RUN=0
 		-sALLOW_MEMORY_GROWTH
