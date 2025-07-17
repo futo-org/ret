@@ -44,7 +44,25 @@ void fb_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t valu
 }
 
 static void hook_intr(uc_engine *uc, uint32_t intno, void *user_data) {
-	printf("Interrupt\n");
+	struct EmulatorState *state = (struct EmulatorState *)user_data;
+
+	// Emulate PSCI
+	if (state->arch == UC_ARCH_ARM64) {
+		uint64_t x0;
+		uc_reg_read(uc, UC_ARM64_REG_X0, &x0);
+		if (x0 == 0x84000008) { // SYSTEM_OFF
+			uc_emu_stop(uc);
+			buffer_appendf(state->log, "PSCI: Shutting down\n");
+			return;
+		} else if (x0 == 0x84000000) { // PSCI_VERSION
+			x0 = 0x0;
+			uc_reg_write(uc, UC_ARM64_REG_X0, &x0);
+			return;
+		}
+	}
+
+	buffer_appendf(state->log, "Interrupt %d was triggered, stopping emulation\n", intno);
+	uc_emu_stop(uc);
 }
 
 int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_buffer, struct RetBuffer *log) {
@@ -94,11 +112,24 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 
 	{
 		// 100k of stack (grows backwards)
-		uint32_t reg = base_addr + RAM_SIZE;
+		uint64_t reg = base_addr + RAM_SIZE;
 		reg -= (reg % 0x8);
 		if (_uc_arch == UC_ARCH_ARM) {
 			uc_reg_write(uc, UC_ARM_REG_SP, &reg);
+		} else if (_uc_arch == UC_ARCH_ARM64) {
+			uc_reg_write(uc, UC_ARM64_REG_SP, &reg);			
+		} else if (_uc_arch == UC_ARCH_X86) {
+			uc_reg_write(uc, UC_X86_REG_ESP, &reg);			
 		}
+	}
+
+	if (_uc_arch == UC_ARCH_ARM64) {
+		// Enable the FPEN bits
+		// https://developer.arm.com/documentation/ddi0601/2025-06/AArch64-Registers/CPACR-EL1--Architectural-Feature-Access-Control-Register
+		uint64_t cpacr;
+		uc_reg_read(uc, UC_ARM64_REG_CPACR_EL1, &cpacr);
+		cpacr |= (0b11 << 20);
+		uc_reg_write(uc, UC_ARM64_REG_CPACR_EL1, &cpacr);
 	}
 
 	err = uc_mem_write(uc, base_addr, asm_buffer->buffer, asm_buffer->offset);
@@ -119,12 +150,21 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		return 1;
 	}
 
-//	uc_hook trace;
-//	err = uc_hook_add(uc, &trace, UC_HOOK_INTR, (void *)hook_intr, &state, 1, 0, 0);
-//	if (err != UC_ERR_OK) {
-//		buffer_appendf(log, "hook setup error\n", 0);
-//		return 1;
-//	}
+	uc_hook interrupt_hook;
+	err = uc_hook_add(uc, &interrupt_hook, UC_HOOK_INTR, (uc_cb_hookintr_t *)hook_intr, &state, 1, 0, 0);
+	if (err != UC_ERR_OK) {
+		buffer_appendf(log, "hook setup error\n", 0);
+		return 1;
+	}
+
+#if 0
+	uc_hook trace;
+	err = uc_hook_add(uc, &trace, UC_HOOK_INSN_INVALID, (uc_cb_hookinsn_invalid_t *)hook_instr, &state, 1, 0, 0);
+	if (err != UC_ERR_OK) {
+		buffer_appendf(log, "hook setup error\n", 0);
+		return 1;
+	}
+#endif
 
 	if (_uc_mode & UC_MODE_THUMB) {
 		err = uc_emu_start(uc, base_addr | 1, base_addr + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);
