@@ -112,7 +112,7 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		_cs_mode |= CS_MODE_THUMB;
 	} else if (arch == ARCH_RISCV64) {
 		_cs_arch = CS_ARCH_RISCV;
-		_cs_mode |= CS_MODE_RISCV64;
+		_cs_mode |= CS_MODE_RISCV64 | CS_MODE_RISCVC;
 	} else if (arch == ARCH_RISCV32) {
 		_cs_arch = CS_ARCH_RISCV;
 		_cs_mode |= CS_MODE_RISCV32;
