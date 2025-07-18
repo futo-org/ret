@@ -28,12 +28,14 @@ static void buffer_clear(struct RetBuffer *buf) {
 
 static void buffer_append_string(struct RetBuffer *buf, const void *in, unsigned int len) {
 	const char *str = in;
-	unsigned int max_str_len = strlen(str) + 1;
-	if (buf->length < (max_str_len + buf->offset)) {
-		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
+	unsigned int max_str_len = len;
+	if (max_str_len == 0) max_str_len = strlen(str);
+	if (buf->length < (max_str_len + 1 + buf->offset)) {
+		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1 + 1000);
 	}
 	memcpy(buf->buffer + buf->offset, str, max_str_len);
-	buf->offset += max_str_len - 1;
+	buf->offset += max_str_len;
+	buf->buffer[buf->offset] = '\0'; // ensure null termination if len != 0
 }
 
 static void buffer_append_mem(struct RetBuffer *buf, const void *in, unsigned int len) {

@@ -153,11 +153,22 @@ struct BreakList {
 	}memb[];
 };
 
+struct ErrorHandler {
+	struct RetBuffer *err_buf;
+	int has_errored;
+};
+
 static void handler(void *arg, unsigned int of, unsigned int size) {
 	struct BreakList *list = arg;
 	list->memb[list->n_filled].of = of;
 	list->memb[list->n_filled].size = size;
 	list->n_filled++;
+}
+
+static void error_handler(void *arg, const char *string, unsigned int size) {
+	struct ErrorHandler *handler = arg;
+	handler->err_buf->append(handler->err_buf, string, size);
+	handler->has_errored = 1;
 }
 
 int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int output_options) {
@@ -172,8 +183,13 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	struct BreakList *list = malloc(sizeof(struct BreakList) + (sizeof(struct BreakListMemb) * 100));
 	list->length = 100;
 	list->n_filled = 0;
-
 	ks_set_instruction_stream_handler(ks, handler, list);
+
+	struct ErrorHandler handler = {
+		.err_buf = err_buf,
+		.has_errored = 0,
+	};
+	ks_set_error_message_handler(ks, error_handler, &handler);
 
 	size_t count = 0;
 	unsigned char *encode = NULL;
@@ -182,11 +198,12 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	err = ks_asm(ks, input, base_addr, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
 		char buffer[128];
-		snprintf(buffer, sizeof(buffer), "ERROR: failed on ks_asm() with count = %zu, error = '%s' (code = %u)", count, ks_strerror(ks_errno(ks)), ks_errno(ks));
+		snprintf(buffer, sizeof(buffer), "ERROR: %s", ks_strerror(ks_errno(ks)));
 		err_buf->append(err_buf, buffer, 0);
 		return -1;
 	} else if (size == 0) {
-		err_buf->append(err_buf, "ERROR: Assembler returned 0 bytes", 0);
+		if (handler.has_errored == 0)
+			err_buf->append(err_buf, "ERROR: Assembler returned 0 bytes", 0);
 		return -1;
 	}
 
