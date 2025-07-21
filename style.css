@@ -24,6 +24,19 @@ button {
 	height: 100%;
 }
 
+.flex-container {
+	display: flex;
+}
+
+.flex-child-horiz {
+	flex: 1;
+}
+
+.padded-block {
+	display: block;
+	padding: 10px;
+}
+
 .btn img {
 	vertical-align: middle;
 }
@@ -89,11 +102,6 @@ button {
 	border: 2px solid black;
 	border-left: none;
 	border-right: none;
-}
-
-.dropdown-text {
-	display: block;
-	padding: 10px;
 }
 
 .btn:hover {
@@ -242,16 +250,28 @@ button {
 	width: 40%;
 	height: 40%;
 	min-width: 500px;
-	overflow-y: auto;
 	background: #2a3c3f;
 	border: 2px solid black;
 	display: none;
 	user-select: none;
+	flex-flow: column;
 }
 
-.flex-container {
-	display: flex;
+.popup-content {
+	overflow-y: auto;
 }
-.flex-child-horiz {
-	flex: 1;
+
+.popup-bar {
+	display: flex;
+	background: #0f0f0f;
+}
+
+.popup-title {
+	display: flex;
+	height: 40px;
+	padding: 0px;
+	margin: 0px;
+	box-sizing: border-box;
+	align-items: center;
+	padding-left: 10px;
 }

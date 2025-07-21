@@ -5,6 +5,7 @@
 	<title>Ret x86</title>
 	<link rel="icon" href="favicon.ico">
 	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="portrait.css"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" type="text/css" href="lib/sublime.css">
 	<meta name="description" content="Online assembler and disassembler. Arm, Thumb, Arm64, x86, and RISC-V. Runs entirely client-side in WebAssembly.">
 	<meta name="keywords" content="arm,arm64,aarch64,x86,x86_64,risc,riscv,risc-v,assembler,disassembler,emulator,simulator,online">
@@ -28,7 +29,7 @@
 		<div class="btn" id="hex-dropdown">
 			<span>Format Hex</span>
 			<div class="dropdown-content" id="hex-dropdown-box">
-				<span class="dropdown-text">Output as:</span>
+				<span class="padded-block">Output as:</span>
 				<div class="radio-button" name="select_output_as">auto</div>
 				<div class="radio-button" name="select_output_as">u8</div>
 				<div class="radio-button" name="select_output_as">u32</div>
@@ -42,7 +43,7 @@
 				<span>Examples</span><img src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 				<div class="dropdown-content" id="examples-dropdown-box"></div>
 			</div>
-			<div class="btn">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>
+			<div class="btn" id="base-address-box">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>
 			<div class="btn" id="settings-btn"><img width="24" src="assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
 			<div class="btn" id="share-btn"><img width="24" src="assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
 			<div class="btn" id="help-dropdown">
@@ -87,53 +88,54 @@ A lightweight browser assembler/disassembler/CPU simulator running in WebAssembl
 	</div>
 
 	<div id="popup">
-		<!-- <div class="flex-container"> -->
-		<!-- 	<p id="popup-title">Window title</p> -->
-			<div class="btn" id="popup-close">Close</div>
-		<!-- </div> -->
-
-		<div class="flex-container">
-			<div class="flex-child-horiz">
-				<span class="dropdown-text">Parse as:</span>
-				<div class="radio-button" name="select_parse_as">auto</div>
-				<div class="radio-button" name="select_parse_as">u8</div>
-				<div class="radio-button" name="select_parse_as">u16</div>
-				<div class="radio-button" name="select_parse_as">u32</div>
+		<div class="popup-bar">
+			<p class="popup-title">Settings</p>
+			<div class="btn right" id="popup-close">Close</div>
+		</div>
+		<div class="popup-content">
+			<div class="flex-container">
+				<div class="flex-child-horiz">
+					<span class="padded-block">Parse as:</span>
+					<div class="radio-button" name="select_parse_as">auto</div>
+					<div class="radio-button" name="select_parse_as">u8</div>
+					<div class="radio-button" name="select_parse_as">u16</div>
+					<div class="radio-button" name="select_parse_as">u32</div>
+				</div>
+				<div class="flex-child-horiz">
+					<span class="padded-block">X86 Syntax:</span>
+					<div class="radio-button" name="x86_syntax">Intel</div>
+					<div class="radio-button" name="x86_syntax">AT&T</div>
+					<div class="radio-button" name="x86_syntax">NASM</div>
+					<div class="radio-button" name="x86_syntax">MASM</div>
+					<div class="radio-button" name="x86_syntax">GNU GAS</div>
+				</div>
 			</div>
-			<div class="flex-child-horiz">
-				<span class="dropdown-text">X86 Syntax:</span>
-				<div class="radio-button" name="x86_syntax">Intel</div>
-				<div class="radio-button" name="x86_syntax">AT&T</div>
-				<div class="radio-button" name="x86_syntax">NASM</div>
-				<div class="radio-button" name="x86_syntax">MASM</div>
-				<div class="radio-button" name="x86_syntax">GNU GAS</div>
+
+			<!-- <div style="padding: 10px;"> -->
+			<!-- 	<input type="checkbox" id="usebase10" name="usebase10" /> -->
+			<!-- 	<label for="usebase10">Use Base 10?</label> -->
+			<!-- </div> -->
+
+			<div class="padded-block">
+				<input type="checkbox" id="parseccomments" name="parseccomments" />
+				<label for="parseccomments">Parse C comments in hex</label>
 			</div>
+
+			<div class="padded-block">
+				<input type="checkbox" id="splitbyinst" name="splitbyinst" />
+				<label for="splitbyinst">Split hex output by instruction</label>
+			</div>
+
+			<div class="padded-block">
+				<input type="checkbox" id="usegodbolt" name="usegodbolt" />
+				<label for="usegodbolt">Use Godbolt API as first-pass assembler</label>
+			</div>
+
+			<!-- <div style="padding: 10px;"> -->
+			<!-- 	<input type="checkbox" id="bigendian" name="bigendian" /> -->
+			<!-- 	<label for="bigendian">Big Endian mode</label> -->
+			<!-- </div> -->
 		</div>
-
-		<!-- <div style="padding: 10px;"> -->
-		<!-- 	<input type="checkbox" id="usebase10" name="usebase10" /> -->
-		<!-- 	<label for="usebase10">Use Base 10?</label> -->
-		<!-- </div> -->
-
-		<div style="padding: 10px;">
-			<input type="checkbox" id="parseccomments" name="parseccomments" />
-			<label for="parseccomments">Parse C comments in hex</label>
-		</div>
-
-		<div style="padding: 10px;">
-			<input type="checkbox" id="splitbyinst" name="splitbyinst" />
-			<label for="splitbyinst">Split hex output by instruction</label>
-		</div>
-
-		<div style="padding: 10px;">
-			<input type="checkbox" id="usegodbolt" name="usegodbolt" />
-			<label for="usegodbolt">Use Godbolt API as first-pass assembler</label>
-		</div>
-
-		<!-- <div style="padding: 10px;"> -->
-		<!-- 	<input type="checkbox" id="bigendian" name="bigendian" /> -->
-		<!-- 	<label for="bigendian">Big Endian mode</label> -->
-		<!-- </div> -->
 	</div>
 </div>
 </body>

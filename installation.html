@@ -11,16 +11,21 @@
 			color: white;
 			font-family: sans-serif;
 		}
+		.content {
+			max-width: 700px;
+			margin: 0 auto;
+		}
 		a {color: lightblue;}
 		a:visited {color: #719aa6;}
 	</style>
 </head>
 <body>
+<div class="content">
 <h1>How to self-host Ret</h1>
 
 <p>I encourage to self-host Ret on your own web server, and hack on it to make it more useful for yourself.</p>
 
-<p>To self-host Ret, simply download the latest <a href="https://github.com/futo-org/ret/releases">ret.zip</a> and extract it to your web server.
+<p>To self-host Ret, simply download the latest <a href="https://github.com/futo-org/ret/releases">ret.zip</a> and extract it to your web server.<br>
 Ret works <b>entirely client-side</b>, and requires no special CORS policies (other than cross origin requests to load the wasm binary). No matter
 where you host Ret (Nginx, Apache, Github Pages, Cloudflare Pages, Neocities, etc) it should work.
 </p>
@@ -28,6 +33,6 @@ where you host Ret (Nginx, Apache, Github Pages, Cloudflare Pages, Neocities, et
 <p>
 Nightly release builds can be found <a href="https://github.com/futo-org/ret/actions?query=is%3Asuccess+branch%3Amaster">here</a>.
 </p>
-
+</div>
 </body>
 </html>
