@@ -1,3 +1,4 @@
+// ARM64 translation table dumper
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

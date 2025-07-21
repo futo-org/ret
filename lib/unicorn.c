@@ -4,7 +4,7 @@
 #include <unicorn/arm.h>
 #include "re.h"
 
-#define INSTRUCTION_HARD_CAP 100000
+#define INSTRUCTION_HARD_CAP 1000000
 
 #define RAM_SIZE (1024 * 1024)
 

@@ -150,7 +150,7 @@ struct BreakList {
 	struct BreakListMemb {
 		unsigned int of;
 		unsigned int size;
-	}memb[];
+	}*memb;
 };
 
 struct ErrorHandler {
@@ -160,6 +160,10 @@ struct ErrorHandler {
 
 static void handler(void *arg, unsigned int of, unsigned int size) {
 	struct BreakList *list = arg;
+	if (list->n_filled >= list->length) {
+		list->length += 1000;
+		list->memb = realloc(list->memb, sizeof(struct BreakList) + (sizeof(struct BreakListMemb) * list->length));
+	}
 	list->memb[list->n_filled].of = of;
 	list->memb[list->n_filled].size = size;
 	list->n_filled++;
@@ -180,10 +184,11 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 
 	if (re_open_ks(arch, options, err_buf, &ks)) return -1;
 
-	struct BreakList *list = malloc(sizeof(struct BreakList) + (sizeof(struct BreakListMemb) * 100));
-	list->length = 100;
-	list->n_filled = 0;
-	ks_set_instruction_stream_handler(ks, handler, list);
+	struct BreakList list;
+	list.memb = malloc(sizeof(struct BreakListMemb) * 100);
+	list.length = 100;
+	list.n_filled = 0;
+	ks_set_instruction_stream_handler(ks, handler, &list);
 
 	struct ErrorHandler handler = {
 		.err_buf = err_buf,
@@ -210,8 +215,8 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	if (output_options & OUTPUT_SPLIT_BY_INSTRUCTION) {
  		const uint8_t *bytecode = (const uint8_t *)encode;
 		unsigned int last_of = 0;
-		for (unsigned int i = 0; i < list->n_filled; i++) {
-			struct BreakListMemb *curr = &list->memb[i];
+		for (unsigned int i = 0; i < list.n_filled; i++) {
+			struct BreakListMemb *curr = &list.memb[i];
 			if (curr->of > last_of) {
 				buffer_append_mode(buf, bytecode + last_of, curr->of - last_of, output_options);
 				buffer_appendf(buf, "\n");
