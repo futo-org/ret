@@ -24,6 +24,19 @@ button {
 	height: 100%;
 }
 
+.flex-container {
+	display: flex;
+}
+
+.flex-child-horiz {
+	flex: 1;
+}
+
+.padded-block {
+	display: block;
+	padding: 10px;
+}
+
 .btn img {
 	vertical-align: middle;
 }
@@ -89,11 +102,6 @@ button {
 	border: 2px solid black;
 	border-left: none;
 	border-right: none;
-}
-
-.dropdown-text {
-	display: block;
-	padding: 10px;
 }
 
 .btn:hover {
@@ -247,11 +255,4 @@ button {
 	border: 2px solid black;
 	display: none;
 	user-select: none;
-}
-
-.flex-container {
-	display: flex;
-}
-.flex-child-horiz {
-	flex: 1;
 }
