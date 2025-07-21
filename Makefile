@@ -4,12 +4,15 @@ debug_build:
 	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON
 
 cli_build:
-	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
+	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
 
 serve:
 	python3 tool.py --serve
 
 deploy:
+	python3 tool.py --deploy
+
+examples:
 	python3 tool.py --deploy
 
 build_arm64:
@@ -36,4 +39,4 @@ build_all:
 clean:
 	rm -rf build_arm32 build_arm64 build_x86 build build_em buildcli deploy *.zip __pycache__ build_riscv build2
 
-.PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy
+.PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy examples

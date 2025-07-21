@@ -127,7 +127,7 @@ def serve():
             return os.path.join(root, path.lstrip('/'))
 
     print("http://localhost:8000/")
-    HTTPServer(('localhost', 8000), CORSHandler).serve_forever()
+    HTTPServer(('192.168.1.25', 8000), CORSHandler).serve_forever()
 
 def main():
     parser = argparse.ArgumentParser()
