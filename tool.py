@@ -12,6 +12,7 @@ def pphtml(src_html, arch, top_level):
         paths_to_prefix = [
             "favicon.ico",
             "style.css",
+            "portrait.css",
             "lib/sublime.css",
             "assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png",
             "assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png",
@@ -92,6 +93,7 @@ def examples():
     add("Functions", "arm64", "arm64-functions.S")
     add("Exception Levels", "arm64", "arm64-el.S")
     add("SIMD", "arm64", "arm64-simd.S")
+    add("Mandelbrot", "arm64", "arm64-mandelbrot.S")
     #add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
 
     add("Hello World", "x86gnu", "x86-hello.asm")
@@ -127,7 +129,7 @@ def serve():
             return os.path.join(root, path.lstrip('/'))
 
     print("http://localhost:8000/")
-    HTTPServer(('192.168.1.25', 8000), CORSHandler).serve_forever()
+    HTTPServer(('localhost', 8000), CORSHandler).serve_forever()
 
 def main():
     parser = argparse.ArgumentParser()

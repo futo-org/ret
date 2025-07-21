@@ -1,7 +1,7 @@
 CMAKE ?= /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=OFF -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=OFF -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON
 
 cli_build:
 	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
@@ -13,7 +13,7 @@ deploy:
 	python3 tool.py --deploy
 
 examples:
-	python3 tool.py --deploy
+	python3 tool.py --examples
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON
