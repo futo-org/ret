@@ -1,4 +1,4 @@
-@media (max-width: 900px) {
+@media (max-width: 700px) {
 	.panels {
 	    flex-flow: column;
 	}
@@ -8,6 +8,9 @@
 	#hseparator {
 		display: none;
 	}
+	#panel1 {
+		height: 50%;
+	}
 	#right-column {
 		padding-left: unset;
 	}
@@ -15,8 +18,8 @@
 		padding-top: unset;
 	}
 
-	#hex-dropdown {display: none;}
-	#examples-dropdown {display: none;}
+	/* #hex-dropdown {display: none;} */
+	/* #examples-dropdown {display: none;} */
 	#base-address-box {display: none;}
 
 	#bytes, #log, #asm {

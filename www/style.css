@@ -250,9 +250,28 @@ button {
 	width: 40%;
 	height: 40%;
 	min-width: 500px;
-	overflow-y: auto;
 	background: #2a3c3f;
 	border: 2px solid black;
 	display: none;
 	user-select: none;
+	flex-flow: column;
+}
+
+.popup-content {
+	overflow-y: auto;
+}
+
+.popup-bar {
+	display: flex;
+	background: #0f0f0f;
+}
+
+.popup-title {
+	display: flex;
+	height: 40px;
+	padding: 0px;
+	margin: 0px;
+	box-sizing: border-box;
+	align-items: center;
+	padding-left: 10px;
 }

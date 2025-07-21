@@ -340,7 +340,7 @@ document.querySelector("#base-address").onkeyup = function() {
 }
 
 document.querySelector("#settings-btn").onclick = function() {
-	document.querySelector("#popup").style.display = "block";
+	document.querySelector("#popup").style.display = "flex";
 }
 document.querySelector("#share-btn").onclick = function() {
 	ret.encodeURL(true);
