@@ -99,8 +99,9 @@ def examples():
     add("Hello World", "x86gnu", "x86-hello.asm")
     add("Hello World", "x86nasm", "x86-hello.asm")
     add("Hello World", "x86intel", "x86-hello.asm")
-    add("x86 Registers", "x86intel", "x86-regs.asm")
-    add("x86 Functions", "x86intel", "x86-functions.asm")
+    add("Registers", "x86intel", "x86-regs.asm")
+    add("Functions", "x86intel", "x86-functions.asm")
+    add("Sierpinski", "x86intel", "x86-sierpinski.asm")
 
     out.close()
     print("updated www/examples.js")

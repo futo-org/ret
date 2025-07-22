@@ -245,8 +245,8 @@ button {
 
 #popup {
 	position: absolute;
-	top: 25%;
-	right: 25%;
+	top: 30%;
+	right: 30%;
 	width: 40%;
 	height: 40%;
 	min-width: 500px;
@@ -274,4 +274,25 @@ button {
 	box-sizing: border-box;
 	align-items: center;
 	padding-left: 10px;
+}
+
+#copy-popup {
+	position: absolute;
+	top: 40%;
+	right: 40%;
+	width: 20%;
+	height: 20%;
+	background: #2a3c3f;
+	border: 2px solid black;
+	display: none;
+	flex-flow: column;
+}
+
+#copy-popup textarea {
+	outline: none;
+	resize: none;
+	border: none;
+	width: 100%;
+	box-sizing: border-box;
+	flex: 1;
 }
