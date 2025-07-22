@@ -343,10 +343,17 @@ document.querySelector("#settings-btn").onclick = function() {
 	document.querySelector("#popup").style.display = "flex";
 }
 document.querySelector("#share-btn").onclick = function() {
-	ret.encodeURL(true);
+	var txt = document.querySelector("#copy-textarea");
+	document.querySelector("#copy-popup").style.display = "flex";
+	txt.value = ret.encodeURL(true);
+	txt.select();
+	txt.setSelectionRange(0, 99999);
 }
 document.querySelector("#popup-close").onclick = function() {
 	document.querySelector("#popup").style.display = "none";
+}
+document.querySelector("#copy-popup-button").onclick = function() {
+	document.querySelector("#copy-popup").style.display = "none";
 }
 
 {
@@ -451,5 +458,10 @@ function keyCapt(e) {
 	if (e.type == "keydown" && (e.key == "F9")) {
 		e.preventDefault();
 		document.querySelector("#run").click();
+	}
+	if (e.type == "keydown" && (e.key == "Escape")) {
+		e.preventDefault();
+		document.querySelector("#copy-popup").style.display = "none";
+		document.querySelector("#popup").style.display = "none";
 	}
 }

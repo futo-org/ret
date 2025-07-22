@@ -121,8 +121,7 @@ const ret = {
 			if (ret.splitBytesByFour) opt.splitBytesByFour = "true";
 			opt.currentSyntax = String(ret.currentSyntax);
 		}
-		var newUrl = window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
-		prompt("Assembly code and all settings are encoded in this URL:", newUrl);
+		return window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
 	},
 	// TODO: Make this function less dumb
 	checkArch: function() {
