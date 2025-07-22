@@ -4,7 +4,7 @@
 #include <unicorn/arm.h>
 #include "re.h"
 
-#define INSTRUCTION_HARD_CAP 1000000
+#define INSTRUCTION_HARD_CAP 10000000
 
 #define RAM_SIZE (1024 * 1024)
 
@@ -14,7 +14,7 @@
 #define FRAMEBUFFER_SIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4)
 
 // unicorn-wasm patch
-UNICORN_EXPORT int uc_hit_execution_limit(uc_engine* uc);
+UNICORN_EXPORT int uc_hit_execution_limit(uc_engine *uc);
 
 struct EmulatorState {
 	uc_arch arch;
@@ -196,10 +196,10 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 			buffer_appendf(log, " x%d: 0x%llX\n", i, ((uint64_t *)rb)[0]);
 		}
 	} else if (_uc_arch == UC_ARCH_X86) {
-		const char *reg_names[] = {"eax", "ebx", "ecx", "esp", "ebp"};
-		int regs[] = {UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
+		const char *reg_names[] = {"eip", "eax", "ebx", "ecx", "esp", "ebp"};
+		int regs[] = {UC_X86_REG_EIP, UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 6; i++) {
 			uc_reg_read(uc, regs[i], rb);
 			buffer_appendf(log, " %s: 0x%X\n", reg_names[i], ((uint32_t *)rb)[0]);
 		}
