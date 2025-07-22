@@ -80,12 +80,12 @@ def examples():
     add("Hello World", "rv", "rv-hello.S")
     add("Registers", "rv", "rv-regs.S")
 
+    add("Hello World", "arm32", "arm32-hello.S")
     add("Registers", "arm32", "arm32-regs.S")
     add("Jumps", "arm32", "arm32-jumps.S")
     add("Conditions", "arm32", "arm32-conditions.S")
     add("Functions", "arm32", "arm32-functions.S")
     add("Stack", "arm32", "arm32-stack.S")
-    add("Hello World", "arm32", "arm32-hello.S")
 
     add("Hello World", "arm64", "arm64-hello.S")
     add("Registers", "arm64", "arm64-registers.S")
