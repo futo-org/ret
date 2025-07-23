@@ -64,7 +64,7 @@ const ret = {
 	parseAsBaseTen: false,
 	parseCComments: false,
 	// Assembly options
-	splitBytesByInstruction: false,
+	splitBytesByInstruction: true,
 	splitBytesByFour: true,
 
 	// Initialize this object from URL options or defaults
@@ -90,20 +90,6 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
 		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
 			ret.splitBytesByInstruction = (ret.urlOptions.splitBytesByInstruction == "true");
-		} else {
-			// Don't split bytes by instruction on arm32 or arm64.
-			switch (ret.currentArch) {
-			case ret.ARCH_X86:
-			case ret.ARCH_X86_64:
-			case ret.ARCH_RISCV64:
-			case ret.ARCH_RISCV32:
-			case ret.ARCH_ARM32_THUMB:
-				ret.splitBytesByInstruction = true;
-				break;
-			default:
-				ret.splitBytesByInstruction = false;
-				break;
-			}
 		}
 		if (ret.urlOptions.hasOwnProperty("splitBytesByFour")) ret.splitBytesByFour = (ret.urlOptions.splitBytesByFour == "true");
 		ret.log("Loading...");
