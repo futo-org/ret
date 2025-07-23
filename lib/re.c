@@ -365,10 +365,21 @@ int cli_hex(const char *input) {
 
 static int help(void) {
 	printf("ret <arch> <action> <file>\n");
-	printf("--x86, --arm, --arm64, --rv64\n");
+	printf("--x86, --arm, --thumb, --arm64, --rv64\n");
 	printf("--asm <filename>\n");
 	printf("--dis <filename>\n");
 	printf("--hex <string>\n");
+	return 0;
+}
+
+static int test(void) {
+	if (test_buffer()) return -1;
+
+	if (re_assemble(ARCH_ARM64, 0, 0, &re_buf_mirror, &re_buf_err, "mov x0, #0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
+
+	if (re_assemble(ARCH_ARM32, 0, 0, &re_buf_mirror, &re_buf_err, "mov r0, 0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
+	if (re_assemble(ARCH_ARM32_THUMB, 0, 0, &re_buf_mirror, &re_buf_err, "mov r0, 0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
+
 	return 0;
 }
 
@@ -378,17 +389,11 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < argc; i++) {
 		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86_64;
 		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
+		if (!strcmp(argv[i], "--thumb")) arch = ARCH_ARM32_THUMB;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
 		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV64;
 
-		if (!strcmp(argv[i], "--test")) {
-			if (test_buffer()) return -1;
-
-			if (re_assemble(ARCH_ARM64, 0, 0, &re_buf_mirror, &re_buf_err, "mov x0, #0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
-
-			return 0;
-		}
-
+		if (!strcmp(argv[i], "--test")) return test();
 		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--dis")) return cli_disasm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--hex")) return cli_hex(argv[i + 1]);
