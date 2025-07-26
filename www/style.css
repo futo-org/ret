@@ -196,6 +196,12 @@ button {
 	background: #161616;
 }
 
+#base-address {
+	border: none;
+	padding: 5px;
+	margin: 5px;
+}
+
 .editor {
 	tab-size: 4;
 	font-family: monospace;
