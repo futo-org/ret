@@ -33,6 +33,12 @@ struct ARMConfig {
 	void *priv;
 	int (*get_memory)(struct ARMConfig *cfg, uint8_t *buffer, uint64_t offset, uint32_t size);
 
+	// Number of blocks counted in ttbl
+	int block_n;
+
+	// Invalid if block_n == 0
+	struct BlockDescriptor last_block;
+
 	// Combined size of consecutive identical blocks that start and end in the same address
 	uint64_t current_combined_size;
 	// Start address of the combined identical blocks
@@ -71,13 +77,16 @@ static uint64_t get_oa(struct ARMConfig *cfg, uint64_t block, int level) {
 	uint64_t oa_size = get_oa_size(cfg);
 	enum GranuleSize gsize = get_granule_size(cfg);
 
-	// Won't go higher than 47, [50:48] are res0
-	uint64_t mask = (((uint64_t) (47 < 64)) << (47 & 63)) - 1U;
+	// ARM spec says for all descriptors no bits higher than 47
+	// will be used for address
+	uint64_t mask = ((1ULL << 48) - 1) & ~((1ULL << 12) - 1);
+
+//	printf("%lx\n", block);
 
 	// TODO: if FEAT_LPA,
 	// Block descriptor bits[15:12] are bits[51:48] of the OA
 
-	uint64_t oa = ((block & mask) >> 12) << 12;
+	uint64_t oa = ((block & mask));
 	return oa;
 }
 
@@ -139,11 +148,18 @@ const char *get_indent_lvl(int level) {
 	return "";
 }
 
-//static int print_section(struct ARMConfig *cfg, struct BlockDescriptor *last_block, uint64_t base, unit64_t size) {
-//	
-//}
+struct MemorySection {
+	uint32_t upper_attributes;
+	uint32_t lower_attributes;
+	uint64_t base;
+	uint64_t size;
+};
+static void print_section(struct ARMConfig *cfg, int level, struct MemorySection section) {
+	printf("0x%lx - 0x%lx (%x)\n", section.base, section.base + section.size,
+		section.lower_attributes & 0b111);
+}
 
-int walk_level(struct ARMConfig *cfg, uint64_t of, int level, struct BlockDescriptor *last_block) {
+int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
 	if (level > 3) abort();
 
 	struct BlockDescriptor dummy_block;
@@ -161,12 +177,21 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level, struct BlockDescri
 
 		// Check valid bit
 		if ((l & 1) != 1) {
-			if (cfg->current_combined_size != 0) {
-				printf("%sCombined blocks of size 0x%lx\n", get_indent_lvl(level), cfg->current_combined_size);
+			if (cfg->block_n == 0) {
+				// Didn't get a single valid block
+				abort();
 			}
-
-			printf("%sInvalid block (0x%lx) at 0x%lx\n", get_indent_lvl(level), full_block, of);
-
+			if (cfg->current_combined_size != 0) {
+				print_section(cfg, level, (struct MemorySection){
+					.upper_attributes = cfg->last_block.upper_attributes,
+					.lower_attributes = cfg->last_block.lower_attributes,
+					.base = cfg->initial_common_address,
+					.size = cfg->current_combined_size,
+				});
+//				printf("%sCombined blocks 0x%lx - 0x%lx\n", get_indent_lvl(level), cfg->initial_common_address, cfg->initial_common_address + cfg->current_combined_size);
+				cfg->current_combined_size = 0;
+			}
+//			printf("%sInvalid block (0x%lx) at 0x%lx\n", get_indent_lvl(level), full_block, of);
 			break;
 		}
 
@@ -187,40 +212,58 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level, struct BlockDescri
 				.lower_attributes = full_block & 0xfff,
 			};
 
-//			printf("%x %x\n", block.upper_attributes, block.lower_attributes);
-
 			// Block descriptor
 			// temporary hack to compute address in this descriptor
-			if (last_block != NULL) {
-				uint64_t last_block_end = last_block->output_address + last_block->size;
-
-//				printf("%lx vs %lx\n", last_block_end, block.output_address);
+			if (cfg->block_n != 0) {
+				uint64_t last_block_end = cfg->last_block.output_address + cfg->last_block.size;
 
 				int blocks_align = last_block_end == block.output_address;
-				int attrs_same = (block.upper_attributes == last_block->upper_attributes)
-					&& (block.lower_attributes == last_block->lower_attributes);
+				int attrs_same = (block.upper_attributes == cfg->last_block.upper_attributes)
+					&& (block.lower_attributes == cfg->last_block.lower_attributes);
 
 				if (blocks_align && attrs_same) {
 					if (cfg->current_combined_size == 0) {
-						cfg->initial_common_address = last_block->output_address;
+						cfg->initial_common_address = cfg->last_block.output_address;
 					}
-					cfg->current_combined_size += last_block->size + block.size;
+					cfg->current_combined_size += cfg->last_block.size + block.size;
 				} else {
 					if (cfg->current_combined_size != 0) {
-						printf("%sCombined blocks of size 0x%lx\n", get_indent_lvl(level), cfg->current_combined_size);
+						print_section(cfg, level, (struct MemorySection){
+							.upper_attributes = cfg->last_block.upper_attributes,
+							.lower_attributes = cfg->last_block.lower_attributes,
+							.base = cfg->initial_common_address,
+							.size = cfg->current_combined_size,
+						});
+//						printf("%sCombined blocks 0x%lx - 0x%lx\n", get_indent_lvl(level), cfg->initial_common_address, cfg->initial_common_address + cfg->current_combined_size);
 						cfg->current_combined_size = 0;
 					}
 
-					printf("%sBlock descriptor -> 0x%lx\n", get_indent_lvl(level), output_address);
-					printf("%sDescriptor is at 0x%lx\n", get_indent_lvl(level), of);
+//					print_section(cfg, level, (struct MemorySection){
+//						.upper_attributes = block.upper_attributes,
+//						.lower_attributes = block.lower_attributes,
+//						.base = block.output_address,
+//						.size = block.size,
+//					});
+
+//					printf("%sBlock descriptor -> 0x%lx\n", get_indent_lvl(level), block.output_address);
+//					printf("%sDescriptor is at 0x%lx\n", get_indent_lvl(level), of);
 				}
+			} else {
+				print_section(cfg, level, (struct MemorySection){
+					.upper_attributes = block.upper_attributes,
+					.lower_attributes = block.lower_attributes,
+					.base = block.output_address,
+					.size = block.size,
+				});
+//				printf("%sBlock descriptor -> 0x%lx\n", get_indent_lvl(level), output_address);
+//				printf("%sDescriptor is at 0x%lx\n", get_indent_lvl(level), of);
 			}
 
-			dummy_block = block;
-			last_block = &dummy_block;
+			cfg->last_block = block;
+			cfg->block_n++;
 		} else {
-			printf("Page descriptor pointing to 0x%lx\n", output_address);
-			int rc = walk_level(cfg, output_address, level + 1, last_block); // Recurse
+//			printf("Page descriptor pointing to 0x%lx\n", output_address);
+			int rc = walk_level(cfg, output_address, level + 1); // Recurse
 			if (rc) return rc;
 		}
 	}
@@ -229,7 +272,7 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level, struct BlockDescri
 }
 
 int walk_tt(struct ARMConfig *cfg) {
-	return walk_level(cfg, cfg->ttbr0_elx, 1, NULL);
+	return walk_level(cfg, cfg->ttbr0_elx, 1);
 }
 
 int main(void) {
