@@ -140,7 +140,7 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "Arm64";
 		document.querySelector("#menu").style.background = "rgb(23 55 81)";
 		document.title = "Ret Arm64";
-		document.querySelector(".editor").classList.add("language-armasm");
+		document.querySelector(".editor").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
 		document.querySelector("#arch-select-text").innerText = "x86";
 		document.querySelector("#menu").style.background = "rgb(97 36 48)";
@@ -150,22 +150,22 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
 		document.querySelector("#menu").style.background = "rgb(19 73 64)";
 		document.title = "Ret Arm32";
-		document.querySelector(".editor").classList.add("language-armasm");
+		document.querySelector(".editor").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_ARM32_THUMB) {
 		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
 		document.querySelector("#menu").style.background = "rgb(24 91 83)";
 		document.title = "Ret Arm32 Thumb";
-		document.querySelector(".editor").classList.add("language-armasm");
+		document.querySelector(".editor").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_RISCV64) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V";
 		document.querySelector("#menu").style.background = "rgb(170 65 18)";
 		document.title = "Ret RISC-V";
-		document.querySelector(".editor").classList.add("language-armasm");
+		document.querySelector(".editor").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_RISCV32) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V 32";
 		document.querySelector("#menu").style.background = "rgb(165 99 70)";
 		document.title = "Ret RISC-V 32";
-		document.querySelector(".editor").classList.add("language-armasm");
+		document.querySelector(".editor").classList.add("language-armasm2");
 	}
 }
 updatePageArch();
@@ -194,6 +194,11 @@ let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\t'});
 // Set editor text if empty (will not be if window was duplicated)
 if (ret.urlOptions.hasOwnProperty("code")) {
 	editor.updateCode(decodeURIComponent(ret.urlOptions.code));
+}
+if (ret.urlOptions.hasOwnProperty("theme")) {
+	if (ret.urlOptions.theme == "light") {
+		document.querySelector("#themelink").href = "light-theme.css";
+	}
 }
 if (editor.toString() == "") {
 	editor.updateCode(ret.getExample("Hello World"));

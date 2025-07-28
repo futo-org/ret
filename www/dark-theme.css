@@ -1,3 +1,20 @@
+:root {
+    --border: #000000;
+    --text: #ffffff;
+    --btn: #292929;
+    --btn-hover: #3d3c3c;
+    --btn-active: #3f3f3f;
+    --dropdown: #292929;
+    --radio-btn: #4a4a4a;
+    --radio-checked: #323232;
+    --separator: #666;
+    --bytes: #313131;
+    --log: #161616;
+    --help-box: #000d19;
+    --popup: #2a3c3f;
+    --popup-bar: #0f0f0f;
+}
+
 .hljs {
     display: block;
     overflow-x: auto;

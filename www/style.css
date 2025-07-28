@@ -3,7 +3,7 @@ html, body {
 	height: 100%;
 	margin: 0px;
 	background: black;
-	color: white;
+	color: var(--text);
 	font-family: sans-serif;
 }
 
@@ -11,7 +11,7 @@ a {color: lightblue;}
 a:visited {color: #719aa6;}
 
 input:focus {
-  outline: none;
+	outline: none;
 }
 
 button {
@@ -66,8 +66,8 @@ button {
 	margin: 0px;
 	border: none;
 	padding: 0px 10px;
-	background: #292929;
-	color: white;
+	background: var(--btn);
+	color: var(--text);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -84,8 +84,8 @@ button {
 	margin: 0px;
 	border: none;
 	padding: 1px 50px;
-	background: #4a4a4a;
-	color: white;
+	background: var(--radio-btn);
+	color: var(--text);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -98,18 +98,18 @@ button {
 }
 
 .radio-checked {
-	background: #323232;
-	border: 2px solid black;
+	background: var(--radio-checked);
+	border: 2px solid var(--border);
 	border-left: none;
 	border-right: none;
 }
 
 .btn:hover {
-	background: #3d3c3c;
+	background: var(--btn-hover);
 }
 
 .btn:active {
-	background: #3f3f3f;
+	background: var(--btn-active);
 }
 
 .dropdown-content {
@@ -119,8 +119,8 @@ button {
 	z-index: 1;
 	display: none;
 	flex-direction: column;
-	background: #292929;
-	border: 3px solid black;
+	background: var(--dropdown);
+	border: 3px solid var(--border);
 	cursor: auto;
 }
 
@@ -133,8 +133,7 @@ button {
 	box-sizing: border-box;
 	border: none;
 	tab-size: 4;
-	color: white;
-	background: black;
+	color: var(--text);
 	padding: .5em;
 }
 
@@ -162,12 +161,12 @@ button {
 	left: 0;
 	width: 8px;
 	height: 100%;
-	background-color: #666;
+	background-color: var(--separator);
 	cursor: col-resize;	
 	box-sizing: border-box;
 }
 #hseparator:hover {
-	border: 1px dashed black;
+	border: 1px dashed var(--border);
 }
 
 #vseparator {
@@ -176,24 +175,24 @@ button {
 	left: 0;
 	height: 8px;
 	width: 100%;
-	background-color: #666;
+	background-color: var(--separator);
 	cursor: row-resize;	
 	box-sizing: border-box;
 }
 #vseparator:hover {
-	border: 1px dashed black;
+	border: 1px dashed var(--border);
 }
 
 #bytes, #log, #asm {
-    border: 3px solid black;
+    border: 3px solid var(--border);
 }
 
 #bytes {
-	background: #313131;
-	color: white;
+	background: var(--bytes);
+	color: var(--text);
 }
 #log {
-	background: #161616;
+	background: var(--log);
 }
 
 #base-address {
@@ -213,7 +212,7 @@ button {
 	left: unset;
 	right: 0;
 	padding: 10px;
-	background: #000d19;
+	background: var(--help-box);
 }
 
 #help-dropdown-box li {
@@ -223,9 +222,9 @@ button {
 
 #help-textarea {
 	width: 500px;
-	height: 200px;
+	height: 300px;
 	overflow: hidden;
-	background: #000d19;
+	background: var(--help-box);
 	border: none;
 }
 
@@ -256,8 +255,8 @@ button {
 	width: 40%;
 	height: 40%;
 	min-width: 500px;
-	background: #2a3c3f;
-	border: 2px solid black;
+	background: var(--popup);
+	border: 2px solid var(--border);
 	display: none;
 	user-select: none;
 	flex-flow: column;
@@ -269,7 +268,7 @@ button {
 
 .popup-bar {
 	display: flex;
-	background: #0f0f0f;
+	background: var(--popup-bar);
 }
 
 .popup-title {
@@ -288,7 +287,7 @@ button {
 	right: 40%;
 	width: 20%;
 	height: 20%;
-	background: #2a3c3f;
+	background: var(--popup);
 	border: 2px solid black;
 	display: none;
 	flex-flow: column;

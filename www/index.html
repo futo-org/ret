@@ -6,7 +6,7 @@
 	<link rel="icon" href="favicon.ico">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" type="text/css" href="portrait.css"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" type="text/css" href="lib/sublime.css">
+	<link rel="stylesheet" type="text/css" href="dark-theme.css" id="themelink">
 	<meta name="description" content="Online assembler and disassembler. Arm, Thumb, Arm64, x86, and RISC-V. Runs entirely client-side in WebAssembly.">
 	<meta name="keywords" content="arm,arm64,aarch64,x86,x86_64,risc,riscv,risc-v,assembler,disassembler,emulator,simulator,online">
 </head>
@@ -14,7 +14,7 @@
 <div class="container">
 	<div class="menu" id="menu">
 		<div class="btn" id="arch-select">
-			<span id="arch-select-text">ARM64</span><img src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+			<span id="arch-select-text">ARM64</span><img class="icon" src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 			<div class="dropdown-content" id="arch-dropdown-box">
 				<button class="btn" id="switch-x86">x86</button>
 				<button class="btn" id="switch-arm64">Arm64</button>
@@ -40,12 +40,12 @@
 		</div>
 		<div class="right">
 			<div class="btn" id="examples-dropdown">
-				<span>Examples</span><img src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+				<span>Examples</span><img class="icon" src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 				<div class="dropdown-content" id="examples-dropdown-box"></div>
 			</div>
 			<div class="btn" id="base-address-box">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>
-			<div class="btn" id="settings-btn"><img width="24" src="assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
-			<div class="btn" id="share-btn"><img width="24" src="assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="settings-btn"><img width="24" class="icon" src="assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="share-btn"><img width="24" class="icon" src="assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
 			<div class="btn" id="help-dropdown">
 				<img src="assets/ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
@@ -58,6 +58,10 @@ ______ _   _ _____ _____
 \_|    \___/  \_/  \___/ 
     Ret version RET_VERSION
 A lightweight browser assembler/disassembler/CPU simulator running in WebAssembly.
+
+Shortcuts:
+F1: Assemble
+ESC: Close popup
 					</textarea>
 					<ul>
 						<li><a target="_blank" href="https://github.com/futo-org/ret">Source code</a></li>
@@ -149,6 +153,7 @@ A lightweight browser assembler/disassembler/CPU simulator running in WebAssembl
 </body>
 <script src="lib/highlight.min.js"></script>
 <script src="lib/x86asm.js"></script>
+<script src="lib/armasm.js"></script>
 <script src="lib/codejar.js"></script>
 <script>
 var examples = [];
