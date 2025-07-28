@@ -10,6 +10,7 @@ inline static int read_u32(const void *buf, uint32_t *out) {
 }
 
 struct BlockDescriptor {
+	// TODO: Virtual address
 	uint64_t output_address;
 	uint64_t size;
 	uint32_t upper_attributes;
@@ -43,6 +44,9 @@ struct ARMConfig {
 	uint64_t current_combined_size;
 	// Start address of the combined identical blocks
 	uint64_t initial_common_address;
+	uint64_t initial_virtual_address;
+
+	uint64_t current_virtual_address;
 };
 
 enum GranuleSize {
@@ -149,14 +153,15 @@ const char *get_indent_lvl(int level) {
 }
 
 struct MemorySection {
+	uint64_t vaddr;
 	uint32_t upper_attributes;
 	uint32_t lower_attributes;
 	uint64_t base;
 	uint64_t size;
 };
 static void print_section(struct ARMConfig *cfg, int level, struct MemorySection section) {
-	printf("0x%lx - 0x%lx (%x)\n", section.base, section.base + section.size,
-		section.lower_attributes & 0b111);
+	printf("0x%lx-0x%lx -> 0x%lx-0x%lx (%x)\n", section.vaddr, section.vaddr + section.size, section.base, section.base + section.size,
+		(section.lower_attributes >> 2) & 0b111);
 }
 
 int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
@@ -164,7 +169,6 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
 
 	struct BlockDescriptor dummy_block;
 
-	int n_block = 0;
 	while (1) {
 		// Read the block
 		uint8_t buffer[8];
@@ -185,6 +189,7 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
 				print_section(cfg, level, (struct MemorySection){
 					.upper_attributes = cfg->last_block.upper_attributes,
 					.lower_attributes = cfg->last_block.lower_attributes,
+					.vaddr = cfg->initial_virtual_address,
 					.base = cfg->initial_common_address,
 					.size = cfg->current_combined_size,
 				});
@@ -211,9 +216,8 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
 				.upper_attributes = full_block >> 47,
 				.lower_attributes = full_block & 0xfff,
 			};
+			//printf("%lx %lx\n", output_address, block.size);
 
-			// Block descriptor
-			// temporary hack to compute address in this descriptor
 			if (cfg->block_n != 0) {
 				uint64_t last_block_end = cfg->last_block.output_address + cfg->last_block.size;
 
@@ -221,22 +225,29 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
 				int attrs_same = (block.upper_attributes == cfg->last_block.upper_attributes)
 					&& (block.lower_attributes == cfg->last_block.lower_attributes);
 
+				// If the last and current block start and end at the same place and have identical
+				// attributes, then start a memory section (or add to it)
 				if (blocks_align && attrs_same) {
 					if (cfg->current_combined_size == 0) {
 						cfg->initial_common_address = cfg->last_block.output_address;
 					}
-					cfg->current_combined_size += cfg->last_block.size + block.size;
+					cfg->current_combined_size += block.size;
 				} else {
+					// We have broken the last memory section with a different start/attribute, so print it
 					if (cfg->current_combined_size != 0) {
 						print_section(cfg, level, (struct MemorySection){
 							.upper_attributes = cfg->last_block.upper_attributes,
 							.lower_attributes = cfg->last_block.lower_attributes,
+							.vaddr = cfg->initial_virtual_address,
 							.base = cfg->initial_common_address,
-							.size = cfg->current_combined_size,
+							.size = cfg->initial_virtual_address,
 						});
 //						printf("%sCombined blocks 0x%lx - 0x%lx\n", get_indent_lvl(level), cfg->initial_common_address, cfg->initial_common_address + cfg->current_combined_size);
-						cfg->current_combined_size = 0;
 					}
+
+					cfg->initial_common_address = block.output_address;
+					cfg->current_combined_size = block.size;
+					cfg->initial_virtual_address = cfg->current_virtual_address;
 
 //					print_section(cfg, level, (struct MemorySection){
 //						.upper_attributes = block.upper_attributes,
@@ -249,20 +260,26 @@ int walk_level(struct ARMConfig *cfg, uint64_t of, int level) {
 //					printf("%sDescriptor is at 0x%lx\n", get_indent_lvl(level), of);
 				}
 			} else {
-				print_section(cfg, level, (struct MemorySection){
-					.upper_attributes = block.upper_attributes,
-					.lower_attributes = block.lower_attributes,
-					.base = block.output_address,
-					.size = block.size,
-				});
+				// Start off if this is the first block in the table
+				cfg->initial_common_address = block.output_address;
+				cfg->current_combined_size = block.size;
+				cfg->initial_virtual_address = cfg->current_virtual_address;
+
+				//print_section(cfg, level, (struct MemorySection){
+				//	.upper_attributes = block.upper_attributes,
+				//	.lower_attributes = block.lower_attributes,
+				//	.base = block.output_address,
+				//	.size = block.size,
+				//});
 //				printf("%sBlock descriptor -> 0x%lx\n", get_indent_lvl(level), output_address);
 //				printf("%sDescriptor is at 0x%lx\n", get_indent_lvl(level), of);
 			}
 
 			cfg->last_block = block;
 			cfg->block_n++;
+			cfg->current_virtual_address += block.size;
 		} else {
-//			printf("Page descriptor pointing to 0x%lx\n", output_address);
+			// We have a table descriptor
 			int rc = walk_level(cfg, output_address, level + 1); // Recurse
 			if (rc) return rc;
 		}
