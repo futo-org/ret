@@ -99,7 +99,7 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 	}
 }
 
-{ // Setup widgets
+function setupWidgets() {
 	setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
 	setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
 	setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
@@ -133,6 +133,7 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 		ret.switchArch(ret.ARCH_RISCV64);
 	}
 }
+setupWidgets();
 
 // Change menu color, syntax, title, etc depending on arch
 function updatePageArch() {
@@ -140,32 +141,32 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "Arm64";
 		document.querySelector("#menu").style.background = "rgb(23 55 81)";
 		document.title = "Ret Arm64";
-		document.querySelector(".editor").classList.add("language-armasm2");
-	} else if (ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64) {
-		document.querySelector("#arch-select-text").innerText = "x86";
+		document.querySelector("#asm").classList.add("language-armasm2");
+	} else if (ret.currentArch == ret.ARCH_X86_64) {
+		document.querySelector("#arch-select-text").innerText = "x86_64";
 		document.querySelector("#menu").style.background = "rgb(97 36 48)";
-		document.title = "Ret x86";
-		document.querySelector(".editor").classList.add("language-x86asm2");
+		document.title = "Ret x86_64";
+		document.querySelector("#asm").classList.add("language-x86asm2");
 	} else if (ret.currentArch == ret.ARCH_ARM32) {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
 		document.querySelector("#menu").style.background = "rgb(19 73 64)";
 		document.title = "Ret Arm32";
-		document.querySelector(".editor").classList.add("language-armasm2");
+		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_ARM32_THUMB) {
 		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
 		document.querySelector("#menu").style.background = "rgb(24 91 83)";
 		document.title = "Ret Arm32 Thumb";
-		document.querySelector(".editor").classList.add("language-armasm2");
+		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_RISCV64) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V";
 		document.querySelector("#menu").style.background = "rgb(170 65 18)";
 		document.title = "Ret RISC-V";
-		document.querySelector(".editor").classList.add("language-armasm2");
+		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_RISCV32) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V 32";
 		document.querySelector("#menu").style.background = "rgb(165 99 70)";
 		document.title = "Ret RISC-V 32";
-		document.querySelector(".editor").classList.add("language-armasm2");
+		document.querySelector("#asm").classList.add("language-armasm2");
 	}
 }
 updatePageArch();
@@ -174,6 +175,7 @@ function escape_html(s) {
 	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// The highlight function runs on every keypress - it should be fast
 const highlight = editor => {
 	delete editor.dataset.highlighted;
 	editor.innerHTML = escape_html(editor.textContent);
@@ -185,11 +187,10 @@ const highlight = editor => {
 			/(https?:\/\/[^\s<\"]+)/g,
 			url => `<a href="${url}" contenteditable="false" target="_blank" rel="noopener noreferrer">${url}</a>`
 		);
-
 	}
 };
 
-let editor = CodeJar(document.querySelector(".editor"), highlight, {tab: '\t'});
+let editor = CodeJar(document.querySelector("#asm"), highlight, {tab: '\t'});
 
 // Set editor text if empty (will not be if window was duplicated)
 if (ret.urlOptions.hasOwnProperty("code")) {
@@ -222,7 +223,7 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 		(async function() {
 			var x = await ret.godbolt(ret.currentArch, code);
 			if (x != null) {
-				// This has to be done because of godbolt policy - we can't get JSON output
+				// This has to be done because of a godbolt CORS policy - we can't get JSON output
 				var split = x.split("\nStandard error:\n");
 				if (split.length == 1) {
 					ret.log("No errors from Godbolt API.");
@@ -262,7 +263,8 @@ document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
 	var then = Date.now();
-	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf, document.querySelector("#bytes").value, ret.getParseOption(), ret.getOptionOption());
+	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf,
+		document.querySelector("#bytes").value, ret.getParseOption(), ret.getOptionOption());
 	var now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));

@@ -86,6 +86,9 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
 			ret.currentSyntax = Number(ret.urlOptions.currentSyntax);
 		}
+		if (ret.urlOptions.hasOwnProperty("currentBaseOffset")) {
+			ret.currentBaseOffset = Number(ret.urlOptions.currentBaseOffset);
+		}
 		if (ret.urlOptions.hasOwnProperty("parseCComments")) ret.parseCComments = true;
 		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
 		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
@@ -100,6 +103,7 @@ const ret = {
 		if (allOptions) {
 			opt.baseParseOption = String(ret.baseParseOption);
 			opt.baseOutputOption = String(ret.baseOutputOption);
+			opt.currentBaseOffset = Number(ret.currentBaseOffset);
 			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
 			if (ret.parseCComments) opt.parseCComments = "true";
 			if (ret.aggressiveDisasm) opt.aggressiveDisasm = "true";
