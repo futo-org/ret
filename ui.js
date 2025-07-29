@@ -198,7 +198,9 @@ if (ret.urlOptions.hasOwnProperty("code")) {
 }
 if (ret.urlOptions.hasOwnProperty("theme")) {
 	if (ret.urlOptions.theme == "light") {
-		document.querySelector("#themelink").href = "light-theme.css";
+		var prefix = "";
+		if (ret.currentArch != ret.DEFAULT_ARCH) prefix = "../";
+		document.querySelector("#themelink").href = prefix + "light-theme.css";
 	}
 }
 if (editor.toString() == "") {
