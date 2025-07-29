@@ -217,6 +217,9 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		unsigned int last_of = 0;
 		for (unsigned int i = 0; i < list.n_filled; i++) {
 			struct BreakListMemb *curr = &list.memb[i];
+			if (base_addr > curr->of) continue;
+			curr->of -= base_addr;
+			if (curr->of > size) continue;
 			if (curr->of > last_of) {
 				buffer_append_mode(buf, bytecode + last_of, curr->of - last_of, output_options);
 				buffer_appendf(buf, "\n");
@@ -314,7 +317,7 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0, RET_SYNTAX_INTEL, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
+	int rc = re_assemble(arch, 0x1000, RET_SYNTAX_INTEL, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
 	if (rc) {
 		printf("%s\n", re_buf_err.buffer);
 	} else {
