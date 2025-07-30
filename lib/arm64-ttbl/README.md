@@ -1,5 +1,7 @@
 # Ret Arm64 MMU page table decoder
 
+***UNFINISHED***
+
 This is a work in progress tool that will use the [FileReader](https://developer.mozilla.org/en-US/docs/Web/API/FileReader) API to decode Arm64 MMU translation tables and create
 a nice looking memory map that can be shared with a URL.
 
@@ -40,7 +42,6 @@ Use web APIs to get equivalent to fopen/fseek/fread
 - Allow additional section notes to be added by user
   - MMU devices
 - Share memory map as URL
-
 
 *Examples:*  
 - https://wiki.osdev.org/Memory_Map_(x86)
