@@ -161,6 +161,8 @@ function createTable(reg, value, maker) {
 		var e = maker.addBit(i);
 		if ((value & (1 << i)) != 0) {
 			e.className = "bit-high";
+		} else {
+			e.className = "bit-low";
 		}
 		e.innerText = String(i);
 	}
@@ -209,7 +211,13 @@ function update() {
 	try {
 		let reg = parseLanguage(document.querySelector("#lang").value);
 
-		var maker = document.querySelector("#table-orientation").checked ? VerticalTableMaker() : HorizontalTableMaker();
+		var isVertical = document.querySelector("#table-orientation").checked;
+		if (isVertical) {
+			document.querySelector("#bitbox").className = "bitbox-vertical";
+		} else {
+			document.querySelector("#bitbox").className = "";
+		}
+		var maker = isVertical ? VerticalTableMaker() : HorizontalTableMaker();
 		var val = Number(document.querySelector("#reg-value").value);
 		var table = createTable(reg, val, maker);
 		document.querySelector("#bitbox").appendChild(table);

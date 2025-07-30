@@ -43,7 +43,14 @@ th {
 }
 
 .bit-high {
+	cursor: pointer;
+	user-select: none;
 	background: green;
+}
+.bit-low {
+	cursor: pointer;
+	user-select: none;
+	background: #272727;
 }
 .bitfield {
 	background: #4f2e40;
@@ -69,4 +76,17 @@ textarea {
 
 #reg-value {
 	font-size: 15pt;
+}
+
+.bitbox-vertical {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	height: 100%;
+	width: 50%;
+	overflow-y: scroll;
+}
+
+.bitbox-vertical table {
+	width: 100%;
 }
