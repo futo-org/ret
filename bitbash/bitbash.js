@@ -14,6 +14,12 @@ var tcrel3reg = {
 	]
 }
 
+function bitmask(hi, lo) {
+	let w = hi - lo + 1;
+	if (w >= 32) return 0xFFFFFFFF >>> 0;
+	return ((1 << w) - 1) << lo >>> 0;
+}
+
 function parseLanguage(code) {
 	var reg = {
 		"size": 32,
@@ -59,36 +65,65 @@ function parseLanguage(code) {
 				"value": match[3],
 			});
 		}
+		match = split[i].match(reg_size);
+		if (match) {
+			reg.size = Number(match[1]);
+		}
 		//console.log(match);
 	}
 
 	return reg;
 }
 
-const horizontalTableMaker = {
-	create: function() {
-		this.tbl = document.createElement("table");
-		this.bits = document.createElement("tr");
-		this.tbl.appendChild(this.bits);
-		this.fields = document.createElement("tr");
-		this.tbl.appendChild(this.fields);
-		this.tbl.width = "100%";
-	},
-	addBit: function(bit) {
-		var th = document.createElement("th");
-		this.bits.appendChild(th);
-		return th;
-	},
-	addField: function(top, bottom) {
-		var th = document.createElement("th");
-		this.tbl.appendChild(th);
-		return th;
-	}
-};
+function HorizontalTableMaker() {
+	return {
+		tbl: document.createElement("table"),
+		bits: document.createElement("tr"),
+		fields: document.createElement("tr"),
+		init: function(size) {
+			this.tbl.appendChild(this.bits);
+			this.tbl.appendChild(this.fields);
+			this.tbl.width = "100%";
+		},
+		addBit: function(bit) {
+			var th = document.createElement("th");
+			this.bits.appendChild(th);
+			return th;
+		},
+		addField: function(top, bottom) {
+			var th = document.createElement("th");
+			th.colSpan = top - bottom + 1;
+			this.tbl.appendChild(th);
+			return th;
+		}
+	};
+}
 
-function createTable(reg, value) {
-	let maker = horizontalTableMaker;
-	maker.create();
+function VerticalTableMaker() {
+	return {
+		tbl: document.createElement("table"),
+		init: function(size) {
+			this.tbl.setAttribute("cellspacing", "0");
+			this.tbl.setAttribute("cellpadding", "4");
+		},
+		addBit: function(bit) {
+			var tr = document.createElement("tr");
+			this.tbl.appendChild(tr);
+			var th = document.createElement("th");
+			tr.appendChild(th);
+			return th;
+		},
+		addField: function(top, bottom) {
+			var th = document.createElement("th");
+			th.rowSpan = top - bottom + 1;
+			this.tbl.children[this.tbl.children.length - top - 1].appendChild(th);
+			return th;
+		}
+	};
+}
+
+function createTable(reg, value, maker) {
+	maker.init(reg.size);
 	reg.fields.sort((a, b) => b.top - a.top);
 
 	for (let i = reg.size - 1; i >= 0; i--) {
@@ -102,16 +137,20 @@ function createTable(reg, value) {
 	var lastPos = reg.size - 1;
 	for (let i = 0; i < reg.fields.length; i++) {
 		var field = reg.fields[i];
-		var e = maker.addField(field.top, field.bottom);
+		if (field.top > reg.size) continue;
 		// Insert reserved blank entries
 		if (lastPos > field.top) {
-			e.colSpan = lastPos - field.top
+			var e = maker.addField(lastPos, field.top + 1);
 			i--;
 			lastPos = field.bottom - 1;
 			continue;
 		}
-		e.colSpan = field.top - field.bottom + 1;
-		e.innerText = field.name;
+		var e = maker.addField(field.top, field.bottom);
+
+		var fieldValue = (value & bitmask(field.top, field.bottom)) >>> field.bottom;
+
+		e.innerHTML = field.name + "<br>" + "0x" + fieldValue.toString(16);		
+
 		lastPos = field.bottom - 1;
 	}
 	return maker.tbl;
@@ -127,13 +166,17 @@ size 32
 if INDEX == 0b00: "Mode A"
 if INDEX == 0b01: "Mode B"
 `.trim();
+document.querySelector("#reg-value").value = "0x80000000";
 function update() {
 	let reg = parseLanguage(document.querySelector("#lang").value);
-	// console.log(reg);
 	if (document.querySelector("#bitbox").children.length != 0) {
 		document.querySelector("#bitbox").children[0].remove();
 	}
-	document.querySelector("#bitbox").appendChild(createTable(reg, 0x80000000));
+	var maker = document.querySelector("#table-orientation").checked ? VerticalTableMaker() : HorizontalTableMaker();
+	var val = Number(document.querySelector("#reg-value").value);
+	document.querySelector("#bitbox").appendChild(createTable(reg, val, maker));
 }
+document.querySelector("#table-orientation").onchange = update;
+document.querySelector("#reg-value").oninput = update;
 document.querySelector("#lang").oninput = update;
 update();
