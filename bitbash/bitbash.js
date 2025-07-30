@@ -30,7 +30,7 @@ function parseLanguage(code) {
 		for (let i in reg.fields) {
 			if (reg.fields[i].name == name) return reg.fields[i];
 		}
-		throw "Didn't find field";
+		throw "Didn't find field '" + name + "'";
 	}
 	
 	var split = code.split("\n");
@@ -48,6 +48,7 @@ function parseLanguage(code) {
 				"bottom": Number(match[2]),
 				"descriptions": [],
 			});
+			continue;
 		}
 		match = split[i].match(set_bitfield_name_bit);
 		if (match) {
@@ -57,6 +58,7 @@ function parseLanguage(code) {
 				"bottom": Number(match[1]),
 				"descriptions": [],
 			});
+			continue;
 		}
 		match = split[i].match(case_bitfield_value);
 		if (match) {
@@ -64,11 +66,22 @@ function parseLanguage(code) {
 				"equals": Number(match[2]),
 				"value": match[3],
 			});
+			continue;
 		}
 		match = split[i].match(reg_size);
 		if (match) {
 			reg.size = Number(match[1]);
+			if (reg.size > 512) {
+				throw "Unsupported register size";
+			}
+			continue;
 		}
+		match = split[i].match(reg_name);
+		if (match) {
+			reg.name = match[1];
+			continue;
+		}
+		//throw "Error on line: '" + split[i] + "'";
 		//console.log(match);
 	}
 
@@ -80,10 +93,14 @@ function HorizontalTableMaker() {
 		tbl: document.createElement("table"),
 		bits: document.createElement("tr"),
 		fields: document.createElement("tr"),
+		fieldsBitMasks: document.createElement("tr"),
 		init: function(size) {
 			this.tbl.appendChild(this.bits);
 			this.tbl.appendChild(this.fields);
+			this.tbl.appendChild(this.fieldsBitMasks);
 			this.tbl.width = "100%";
+			this.tbl.setAttribute("cellspacing", "0");
+			this.tbl.setAttribute("cellpadding", "4");
 		},
 		addBit: function(bit) {
 			var th = document.createElement("th");
@@ -93,9 +110,15 @@ function HorizontalTableMaker() {
 		addField: function(top, bottom) {
 			var th = document.createElement("th");
 			th.colSpan = top - bottom + 1;
-			this.tbl.appendChild(th);
+			this.fields.appendChild(th);
 			return th;
-		}
+		},
+		addFieldBitMask: function(top, bottom) {
+			var th = document.createElement("th");
+			th.colSpan = top - bottom + 1;
+			this.fieldsBitMasks.appendChild(th);
+			return th;
+		},
 	};
 }
 
@@ -118,6 +141,9 @@ function VerticalTableMaker() {
 			th.rowSpan = top - bottom + 1;
 			this.tbl.children[this.tbl.children.length - top - 1].appendChild(th);
 			return th;
+		},
+		addFieldBitMask: function(top, bottom) {
+			return this.addField(top, bottom);
 		}
 	};
 }
@@ -125,6 +151,11 @@ function VerticalTableMaker() {
 function createTable(reg, value, maker) {
 	maker.init(reg.size);
 	reg.fields.sort((a, b) => b.top - a.top);
+
+	function setupBitMaskEntry(e, top, bottom) {
+		e.className = "bitfield";
+		e.innerText = "0x" + bitmask(top, bottom).toString(16);
+	}
 
 	for (let i = reg.size - 1; i >= 0; i--) {
 		var e = maker.addBit(i);
@@ -134,22 +165,25 @@ function createTable(reg, value, maker) {
 		e.innerText = String(i);
 	}
 
-	var lastPos = reg.size - 1;
+	let lastPos = reg.size - 1;
 	for (let i = 0; i < reg.fields.length; i++) {
-		var field = reg.fields[i];
+		let field = reg.fields[i];
 		if (field.top > reg.size) continue;
 		// Insert reserved blank entries
 		if (lastPos > field.top) {
-			var e = maker.addField(lastPos, field.top + 1);
+			let e = maker.addField(lastPos, field.top + 1);
+			setupBitMaskEntry(maker.addFieldBitMask(lastPos, field.top + 1), lastPos, field.top + 1);
 			i--;
 			lastPos = field.bottom - 1;
 			continue;
 		}
-		var e = maker.addField(field.top, field.bottom);
+		let e = maker.addField(field.top, field.bottom);
 
-		var fieldValue = (value & bitmask(field.top, field.bottom)) >>> field.bottom;
+		let fieldValue = (value & bitmask(field.top, field.bottom)) >>> field.bottom;
 
 		e.innerHTML = field.name + "<br>" + "0x" + fieldValue.toString(16);		
+
+		setupBitMaskEntry(maker.addFieldBitMask(field.top, field.bottom), field.top, field.bottom);
 
 		lastPos = field.bottom - 1;
 	}
@@ -161,20 +195,27 @@ name REGISTER
 size 32
 [31] = RESET
 [5:1] = INDEX
-[0:0] = ENABLE
-[9:8] = INTR
 if INDEX == 0b00: "Mode A"
 if INDEX == 0b01: "Mode B"
+[0:0] = ENABLE
+[9:8] = INTR
 `.trim();
 document.querySelector("#reg-value").value = "0x80000000";
 function update() {
-	let reg = parseLanguage(document.querySelector("#lang").value);
 	if (document.querySelector("#bitbox").children.length != 0) {
 		document.querySelector("#bitbox").children[0].remove();
 	}
-	var maker = document.querySelector("#table-orientation").checked ? VerticalTableMaker() : HorizontalTableMaker();
-	var val = Number(document.querySelector("#reg-value").value);
-	document.querySelector("#bitbox").appendChild(createTable(reg, val, maker));
+
+	try {
+		let reg = parseLanguage(document.querySelector("#lang").value);
+
+		var maker = document.querySelector("#table-orientation").checked ? VerticalTableMaker() : HorizontalTableMaker();
+		var val = Number(document.querySelector("#reg-value").value);
+		var table = createTable(reg, val, maker);
+		document.querySelector("#bitbox").appendChild(table);
+	} catch(e) {
+		document.querySelector("#bitbox").innerHTML = "<h3>" + e.toString() + "</h3>";
+	}
 }
 document.querySelector("#table-orientation").onchange = update;
 document.querySelector("#reg-value").oninput = update;

@@ -41,8 +41,12 @@ table, th, td {
 th {
 	overflow: hidden;
 }
+
 .bit-high {
 	background: green;
+}
+.bitfield {
+	background: #4f2e40;
 }
 
 textarea {
