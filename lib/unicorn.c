@@ -103,8 +103,9 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		return -1;
 	}
 
-	// Map dedicated RAM
-	err = uc_mem_map(uc, base_addr, RAM_SIZE, UC_PROT_ALL);
+	// Map dedicated RAM, aligned to unicorn requirements
+	unsigned int aligned_base_addr = (base_addr / 0x400) * 0x400;
+	err = uc_mem_map(uc, aligned_base_addr, RAM_SIZE, UC_PROT_ALL);
 	if (err != UC_ERR_OK) {
 		buffer_appendf(log, "Failed to map memory\n", 0);
 		return -1;
