@@ -41,8 +41,34 @@ table, th, td {
 th {
 	overflow: hidden;
 }
+
 .bit-high {
-	background: green;
+	cursor: pointer;
+	user-select: none;
+	background: #299041;
+}
+.bit-high:hover {
+	background: #43634a;
+}
+.bit-low {
+	cursor: pointer;
+	user-select: none;
+	background: #272727;
+}
+.bit-low:hover {
+	background: #43634a;
+}
+.field-name {
+	font-style: italic;
+}
+.field-value {
+	font-family: monospace;
+	font-size: 15pt;
+}
+.bitmask {
+	background: #1d2727;
+	font-size: 10pt;
+    font-family: monospace;
 }
 
 textarea {
@@ -65,4 +91,25 @@ textarea {
 
 #reg-value {
 	font-size: 15pt;
+}
+
+.bitbox-vertical {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	height: 100%;
+	width: 50%;
+	overflow-y: scroll;
+}
+
+.bitbox-vertical table {
+	float: right;
+	margin: 20px;
+}
+
+.bitbox-vertical .field-name {
+	min-width: 200px;
+}
+.bitbox-vertical .field-value {
+	min-width: 100px;
 }
