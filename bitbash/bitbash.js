@@ -1,4 +1,4 @@
-var tcrel3reg = {
+let tcrel3reg = {
 	"reg": "TCR_EL3",
 	"size": 64,
 	"fields": [
@@ -21,7 +21,7 @@ function bitmask(hi, lo) {
 }
 
 function parseLanguage(code) {
-	var reg = {
+	let reg = {
 		"size": 32,
 		"fields": []
 	};
@@ -33,14 +33,14 @@ function parseLanguage(code) {
 		throw "Didn't find field '" + name + "'";
 	}
 	
-	var split = code.split("\n");
-	var reg_name = /name (.+)/;
-	var reg_size = /size (.+)/;
-	var set_bitfield_name = /\[([0-9]+):([0-9]+)\] = (.+)/;
-	var set_bitfield_name_bit = /\[([0-9]+)\] = (.+)/;
-	var case_bitfield_value = /if (.+) == ([xb0-9a-zA-Z]+): "(.+)"/;
+	let split = code.split("\n");
+	let reg_name = /name (.+)/;
+	let reg_size = /size (.+)/;
+	let set_bitfield_name = /\[([0-9]+):([0-9]+)\] = (.+)/;
+	let set_bitfield_name_bit = /\[([0-9]+)\] = (.+)/;
+	let case_bitfield_value = /if (.+) == ([xb0-9a-zA-Z]+): "(.+)"/;
 	for (let i = 0; i < split.length; i++) {
-		var match = split[i].match(set_bitfield_name);
+		let match = split[i].match(set_bitfield_name);
 		if (match) {
 			reg.fields.push({
 				"name": match[3],
@@ -81,6 +81,7 @@ function parseLanguage(code) {
 			reg.name = match[1];
 			continue;
 		}
+		if (match.startsWith("//")) continue;
 		//throw "Error on line: '" + split[i] + "'";
 		//console.log(match);
 	}
@@ -92,33 +93,29 @@ function HorizontalTableMaker() {
 	return {
 		tbl: document.createElement("table"),
 		bits: document.createElement("tr"),
-		fields: document.createElement("tr"),
-		fieldsBitMasks: document.createElement("tr"),
+		levels: [],
 		init: function(size) {
 			this.tbl.appendChild(this.bits);
-			this.tbl.appendChild(this.fields);
-			this.tbl.appendChild(this.fieldsBitMasks);
-			this.tbl.width = "100%";
+			//this.tbl.width = "100%";
 			this.tbl.setAttribute("cellspacing", "0");
 			this.tbl.setAttribute("cellpadding", "4");
 		},
 		addBit: function(bit) {
-			var th = document.createElement("th");
+			let th = document.createElement("th");
 			this.bits.appendChild(th);
 			return th;
 		},
-		addField: function(top, bottom) {
-			var th = document.createElement("th");
+		addBox: function(top, bottom, level) {
+			let th = document.createElement("th");
 			th.colSpan = top - bottom + 1;
-			this.fields.appendChild(th);
+			// Maintain a list of columns to add to for each level
+			if (this.levels[level] == undefined) {
+				this.levels[level] = document.createElement("tr");
+				this.tbl.appendChild(this.levels[level]);
+			}
+			this.levels[level].appendChild(th);
 			return th;
-		},
-		addFieldBitMask: function(top, bottom) {
-			var th = document.createElement("th");
-			th.colSpan = top - bottom + 1;
-			this.fieldsBitMasks.appendChild(th);
-			return th;
-		},
+		}
 	};
 }
 
@@ -130,20 +127,17 @@ function VerticalTableMaker() {
 			this.tbl.setAttribute("cellpadding", "4");
 		},
 		addBit: function(bit) {
-			var tr = document.createElement("tr");
+			let tr = document.createElement("tr");
 			this.tbl.appendChild(tr);
-			var th = document.createElement("th");
+			let th = document.createElement("th");
 			tr.appendChild(th);
 			return th;
 		},
-		addField: function(top, bottom) {
-			var th = document.createElement("th");
+		addBox: function(top, bottom, level) {
+			let th = document.createElement("th");
 			th.rowSpan = top - bottom + 1;
 			this.tbl.children[this.tbl.children.length - top - 1].appendChild(th);
 			return th;
-		},
-		addFieldBitMask: function(top, bottom) {
-			return this.addField(top, bottom);
 		}
 	};
 }
@@ -152,13 +146,31 @@ function createTable(reg, value, maker) {
 	maker.init(reg.size);
 	reg.fields.sort((a, b) => b.top - a.top);
 
-	function setupBitMaskEntry(e, top, bottom) {
-		e.className = "bitfield";
+	//var resCounter = 0;
+
+	const LEVEL_CHECKBOXES = 0;
+	const LEVEL_NAME = 1;
+	const LEVEL_VALUE = 2;
+	const LEVEL_BITMASK = 3;
+
+	function setupBitMaskEntry(top, bottom) {
+		let e = maker.addBox(top, bottom, LEVEL_BITMASK);
+		e.ondragstart = function(e) {
+			e.preventDefault();
+		}
+		e.className = "bitmask";
 		e.innerText = "0x" + bitmask(top, bottom).toString(16);
 	}
 
+	function setupFieldValueEntry(top, bottom) {
+		let e = maker.addBox(top, bottom, LEVEL_VALUE);
+		e.className = "field-value";
+		let fieldValue = (value & bitmask(top, bottom)) >>> bottom;
+		e.innerHTML = "0x" + fieldValue.toString(16);
+	}
+
 	for (let i = reg.size - 1; i >= 0; i--) {
-		var e = maker.addBit(i);
+		let e = maker.addBit(i);
 		if ((value & (1 << i)) != 0) {
 			e.className = "bit-high";
 		} else {
@@ -167,25 +179,33 @@ function createTable(reg, value, maker) {
 		e.innerText = String(i);
 	}
 
+	// for (let i = reg.size - 1; i >= 0; i--) {
+	// 	let e = maker.addBox(i, i, LEVEL_CHECKBOXES);
+	// 	e.innerHTML = "<input type='checkbox'>";
+	// }
+
 	let lastPos = reg.size - 1;
 	for (let i = 0; i < reg.fields.length; i++) {
 		let field = reg.fields[i];
 		if (field.top > reg.size) continue;
 		// Insert reserved blank entries
 		if (lastPos > field.top) {
-			let e = maker.addField(lastPos, field.top + 1);
-			setupBitMaskEntry(maker.addFieldBitMask(lastPos, field.top + 1), lastPos, field.top + 1);
+			setupBitMaskEntry(lastPos, field.top + 1);
+			let e = maker.addBox(lastPos, field.top + 1, LEVEL_NAME);
+			//e.innerText = "RES" + resCounter++;
+			setupFieldValueEntry(lastPos, field.top + 1);
 			i--;
 			lastPos = field.bottom - 1;
 			continue;
 		}
-		let e = maker.addField(field.top, field.bottom);
 
-		let fieldValue = (value & bitmask(field.top, field.bottom)) >>> field.bottom;
+		setupBitMaskEntry(field.top, field.bottom);
 
-		e.innerHTML = field.name + "<br>" + "0x" + fieldValue.toString(16);		
+		let e = maker.addBox(field.top, field.bottom, LEVEL_NAME);
+		e.className = "field-name";
+		e.innerHTML = field.name;
 
-		setupBitMaskEntry(maker.addFieldBitMask(field.top, field.bottom), field.top, field.bottom);
+		setupFieldValueEntry(field.top, field.bottom);
 
 		lastPos = field.bottom - 1;
 	}
@@ -193,16 +213,21 @@ function createTable(reg, value, maker) {
 }
 
 document.querySelector("#lang").value = `
-name REGISTER
+name CR0
 size 32
-[31] = RESET
-[5:1] = INDEX
-if INDEX == 0b00: "Mode A"
-if INDEX == 0b01: "Mode B"
-[0:0] = ENABLE
-[9:8] = INTR
+[31] = PG
+[30] = CD
+[29] = NW
+[16] = WP
+[5] = NE
+[4] = ET
+[3] = TS
+[2] = EM
+[1] = MP
+[0] = PE
 `.trim();
-document.querySelector("#reg-value").value = "0x80000000";
+document.querySelector("#reg-value").value = "0x11";
+document.querySelector("#table-orientation").checked = false;
 function update() {
 	if (document.querySelector("#bitbox").children.length != 0) {
 		document.querySelector("#bitbox").children[0].remove();
@@ -211,15 +236,15 @@ function update() {
 	try {
 		let reg = parseLanguage(document.querySelector("#lang").value);
 
-		var isVertical = document.querySelector("#table-orientation").checked;
+		let isVertical = document.querySelector("#table-orientation").checked;
 		if (isVertical) {
 			document.querySelector("#bitbox").className = "bitbox-vertical";
 		} else {
 			document.querySelector("#bitbox").className = "";
 		}
-		var maker = isVertical ? VerticalTableMaker() : HorizontalTableMaker();
-		var val = Number(document.querySelector("#reg-value").value);
-		var table = createTable(reg, val, maker);
+		let maker = isVertical ? VerticalTableMaker() : HorizontalTableMaker();
+		let val = Number(document.querySelector("#reg-value").value);
+		let table = createTable(reg, val, maker);
 		document.querySelector("#bitbox").appendChild(table);
 	} catch(e) {
 		document.querySelector("#bitbox").innerHTML = "<h3>" + e.toString() + "</h3>";

@@ -1,0 +1,71 @@
+name CR4
+size 32
+[24] = PKS
+[23] = CET
+[22] = PKE
+[21] = SMAP
+[20] = SMEP
+[18] = OSXSAVE
+[17] = PCIDE
+[16] = FSGSBASE
+[14] = SMXE
+[13] = VMXE
+[12] = LA57
+[11] = UMIP
+[10] = OSXMMEXCPT
+[9] = OSFXSR
+[8] = PCE
+[7] = PGE
+[6] = MCE
+[5] = PAE
+[4] = PSE
+[3] = DE
+[2] = TSD
+[1] = PVI
+[0] = VME
+if PKS == 0b0: "Protection Keys Supervisor disabled"
+if PKS == 0b1: "Protection Keys Supervisor enabled"
+if CET == 0b0: "Control-flow Enforcement Technology disabled"
+if CET == 0b1: "Control-flow Enforcement Technology enabled"
+if PKE == 0b0: "Protection Keys disabled"
+if PKE == 0b1: "Protection Keys enabled"
+if SMAP == 0b0: "Supervisor Mode Access Prevention disabled"
+if SMAP == 0b1: "Supervisor Mode Access Prevention enabled"
+if SMEP == 0b0: "Supervisor Mode Exec Protection disabled"
+if SMEP == 0b1: "Supervisor Mode Exec Protection enabled"
+if OSXSAVE == 0b0: "XSAVE disabled"
+if OSXSAVE == 0b1: "XSAVE enabled"
+if PCIDE == 0b0: "PCID disabled"
+if PCIDE == 0b1: "PCID enabled"
+if FSGSBASE == 0b0: "FSGSBASE disabled"
+if FSGSBASE == 0b1: "FSGSBASE enabled"
+if SMXE == 0b0: "SMX disabled"
+if SMXE == 0b1: "SMX enabled"
+if VMXE == 0b0: "VMX disabled"
+if VMXE == 0b1: "VMX enabled"
+if LA57 == 0b0: "4-level paging"
+if LA57 == 0b1: "5-level paging"
+if UMIP == 0b0: "User-Mode Instruction Prevention disabled"
+if UMIP == 0b1: "User-Mode Instruction Prevention enabled"
+if OSXMMEXCPT == 0b0: "Unmasked SIMD FP exceptions disabled"
+if OSXMMEXCPT == 0b1: "Unmasked SIMD FP exceptions enabled"
+if OSFXSR == 0b0: "FXSAVE/FXRSTOR disabled"
+if OSFXSR == 0b1: "FXSAVE/FXRSTOR enabled"
+if PCE == 0b0: "Performance monitoring disabled"
+if PCE == 0b1: "Performance monitoring enabled"
+if PGE == 0b0: "Page global disabled"
+if PGE == 0b1: "Page global enabled"
+if MCE == 0b0: "Machine Check Exception disabled"
+if MCE == 0b1: "Machine Check Exception enabled"
+if PAE == 0b0: "Physical Address Extension disabled"
+if PAE == 0b1: "Physical Address Extension enabled"
+if PSE == 0b0: "Page size extension disabled"
+if PSE == 0b1: "Page size extension enabled"
+if DE == 0b0: "Debugging extensions disabled"
+if DE == 0b1: "Debugging extensions enabled"
+if TSD == 0b0: "Time stamp disabled"
+if TSD == 0b1: "Time stamp enabled"
+if PVI == 0b0: "Protected-mode virtual interrupts disabled"
+if PVI == 0b1: "Protected-mode virtual interrupts enabled"
+if VME == 0b0: "Virtual 8086 mode extensions disabled"
+if VME == 0b1: "Virtual 8086 mode extensions enabled"

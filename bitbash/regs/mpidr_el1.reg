@@ -1,0 +1,10 @@
+name MPIDR_EL1
+size 64
+[39:32] = Aff3
+[30] = U
+if U == 0b0: "MultiprocessorSystem"
+if U == 0b1: "UniprocessorSystem"
+[24] = MT
+[23:16] = Aff2
+[15:8] = Aff1
+[7:0] = Aff0
