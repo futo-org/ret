@@ -1,19 +1,3 @@
-let tcrel3reg = {
-	"reg": "TCR_EL3",
-	"size": 64,
-	"fields": [
-		{
-			"top": 5,
-			"bottom": 0,
-			"name": "T0SZ",
-			"descriptions": [
-				{"equals": 0, "value": "Normal memory, Inner Non-cacheable."},
-				{"equals": 1, "value": "Normal memory, Inner Write-Back Read-Allocate Write-Allocate Cacheable."}
-			]
-		}
-	]
-}
-
 function bitmask(hi, lo) {
 	let w = hi - lo + 1;
 	if (w >= 32) return 0xFFFFFFFF >>> 0;

@@ -15,6 +15,10 @@
     --popup-bar: #0f0f0f;
 }
 
+body {
+	background: #23241f;
+}
+
 .hljs {
     display: block;
     overflow-x: auto;

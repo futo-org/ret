@@ -74,8 +74,8 @@ function setupDropDown(hoverButton, box, hideOnMouseUp = false, onlyShowOnClick 
 }
 
 function setupRadio(elementName, initialOptionIndex, callback) {
-	var names = document.getElementsByName(elementName);
-	for (var i = 0; i < names.length; i++) {
+	let names = document.getElementsByName(elementName);
+	for (let i = 0; i < names.length; i++) {
 		if (i == initialOptionIndex) {
 			names[i].checked = true;
 			names[i].classList.add("radio-checked");
@@ -88,7 +88,7 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 				this.checked = true;
 				this.classList.add("radio-checked");
 			}
-			for (var x = 0; x < names.length; x++) {
+			for (let x = 0; x < names.length; x++) {
 				if (x != this.index) {
 					names[x].checked = false;
 					names[x].classList.remove("radio-checked");
@@ -181,8 +181,8 @@ const highlight = editor => {
 	editor.innerHTML = escape_html(editor.textContent);
 	hljs.highlightElement(editor);
 	// Only read/write innerHTML on hljs-comment elements to improve performance
-	var comments = editor.getElementsByClassName("hljs-comment");
-	for (var i = 0; i < comments.length; i++) {
+	let comments = editor.getElementsByClassName("hljs-comment");
+	for (let i = 0; i < comments.length; i++) {
 		comments[i].innerHTML = comments[i].innerHTML.replace(
 			/(https?:\/\/[^\s<\"]+)/g,
 			url => `<a href="${url}" contenteditable="false" target="_blank" rel="noopener noreferrer">${url}</a>`
@@ -198,7 +198,7 @@ if (ret.urlOptions.hasOwnProperty("code")) {
 }
 if (ret.urlOptions.hasOwnProperty("theme")) {
 	if (ret.urlOptions.theme == "light") {
-		var prefix = "";
+		let prefix = "";
 		if (ret.currentArch != ret.DEFAULT_ARCH) prefix = "../";
 		document.querySelector("#themelink").href = prefix + "light-theme.css";
 	}
@@ -223,14 +223,14 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 	if (ret.useGodboltOnAssembler) {
 		ret.log("Sending code to Godbolt...");
 		(async function() {
-			var x = await ret.godbolt(ret.currentArch, code);
+			let x = await ret.godbolt(ret.currentArch, code);
 			if (x != null) {
 				// This has to be done because of a godbolt CORS policy - we can't get JSON output
-				var split = x.split("\nStandard error:\n");
+				let split = x.split("\nStandard error:\n");
 				if (split.length == 1) {
 					ret.log("No errors from Godbolt API.");
 					// TODO: Feed in new code
-					var t = ret.assemble(code, outBuf, errBuf);
+					let t = ret.assemble(code, outBuf, errBuf);
 					doneCallback(t[0], t[1]);
 				} else {
 					ret.log("Error message from Godbolt API:");
@@ -241,7 +241,7 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 			}
 		})();
 	} else {
-		var t = ret.assemble(code, outBuf, errBuf);
+		let t = ret.assemble(code, outBuf, errBuf);
 		doneCallback(t[0], t[1]);
 	}
 }
@@ -249,7 +249,7 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 document.querySelector("#assemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";
 	ret.clearLog();
-	var code = editor.toString();
+	let code = editor.toString();
 	fullAssembler(code, ret.hex_buf, ret.err_buf, function(rc, time) {
 		if (rc != 0) {
 			ret.log(ret.get_buffer_contents(ret.err_buf));
@@ -264,10 +264,10 @@ document.querySelector("#assemble").onclick = function() {
 document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
-	var then = Date.now();
-	var rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf,
+	let then = Date.now();
+	let rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf,
 		document.querySelector("#bytes").value, ret.getParseOption(), ret.getOptionOption());
-	var now = Date.now();
+	let now = Date.now();
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
@@ -283,7 +283,7 @@ document.querySelector("#run").onclick = function() {
 		ret.log("This target doesn't have Unicorn VM support.");
 		return;
 	}
-	var code = editor.toString();
+	let code = editor.toString();
 
 	fullAssembler(code, ret.hex_mem_mirror_buf, ret.err_buf, function(rc) {
 		if (rc != 0) {
@@ -302,12 +302,12 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 	if (!document.querySelector("#hex-dropdown-box").contains(e.target)) {
 		if (ret.hex_buf == null) throw "NULL";	
 		ret.clearLog();
-		var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.getParseOption(), ret.getOptionOption() | ret.OUTPUT_SPLIT_BY_FOUR);
+		let rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.hex_buf, ret.getParseOption(), ret.getOptionOption() | ret.OUTPUT_SPLIT_BY_FOUR);
 		if (rc != 0) {
 			ret.log("Failed to parse bytes");
 		} else {
 			setBytes(ret.hex_buf);
-			var output_as = "auto", parse_as = "auto";
+			let output_as = "auto", parse_as = "auto";
 			if (ret.baseParseOption == ret.PARSE_AS_U8) parse_as = "u8";
 			if (ret.baseParseOption == ret.PARSE_AS_U16) parse_as = "u16";
 			if (ret.baseParseOption == ret.PARSE_AS_U32) parse_as = "u32";
@@ -330,12 +330,12 @@ document.querySelector("#hex-dropdown").onclick = function(e) {
 document.querySelector("#save-button").onclick = function() {
 	if (ret.mem_buf == null) throw "NULL";	
 	ret.clearLog();
-	var rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.getParseOption(), ret.getOptionOption());
+	let rc = ret.parser_to_buf(document.querySelector("#bytes").value, ret.mem_buf, ret.getParseOption(), ret.getOptionOption());
 	if (rc != 0) {
 		ret.log("Failed to parse bytes");
 	} else {
-		var ptr = ret.get_buffer_contents_raw(ret.mem_buf);
-		var len = ret.get_buffer_data_length(ret.mem_buf);
+		let ptr = ret.get_buffer_contents_raw(ret.mem_buf);
+		let len = ret.get_buffer_data_length(ret.mem_buf);
 		// Latest emsdk seems to not put HEAPU8 in Module (?)
 		ret.downloadFile(HEAPU8.subarray(ptr, ptr + len));
 	}
@@ -352,7 +352,7 @@ document.querySelector("#settings-btn").onclick = function() {
 	document.querySelector("#popup").style.display = "flex";
 }
 document.querySelector("#share-btn").onclick = function() {
-	var txt = document.querySelector("#copy-textarea");
+	let txt = document.querySelector("#copy-textarea");
 	document.querySelector("#copy-popup").style.display = "flex";
 	txt.value = ret.encodeURL(true);
 	txt.select();
@@ -366,14 +366,14 @@ document.querySelector("#copy-popup-button").onclick = function() {
 }
 
 {
-	var curr = ret.baseParseOption;
-	var defaultOpt = 0;
+	let curr = ret.baseParseOption;
+	let defaultOpt = 0;
 	if (curr == ret.PARSE_AS_AUTO) defaultOpt = 0;
 	if (curr == ret.PARSE_AS_U8) defaultOpt = 1;
 	if (curr == ret.PARSE_AS_U16) defaultOpt = 2;
 	if (curr == ret.PARSE_AS_U32) defaultOpt = 3;
 	setupRadio("select_parse_as", defaultOpt, function(index, value, e) {
-		var option = 0;
+		let option = 0;
 		if (index == 0) option = ret.PARSE_AS_AUTO;
 		if (index == 1) option = ret.PARSE_AS_U8;
 		if (index == 2) option = ret.PARSE_AS_U16;
@@ -383,15 +383,15 @@ document.querySelector("#copy-popup-button").onclick = function() {
 }
 
 {
-	var curr = ret.baseOutputOption;
-	var defaultOpt = 0;
+	let curr = ret.baseOutputOption;
+	let defaultOpt = 0;
 	if (curr == ret.OUTPUT_AS_AUTO) defaultOpt = 0;
 	if (curr == ret.OUTPUT_AS_U8) defaultOpt = 1;
 	if (curr == ret.OUTPUT_AS_U32) defaultOpt = 2;
 	if (curr == ret.OUTPUT_AS_C_ARRAY) defaultOpt = 3;
 	if (curr == ret.OUTPUT_AS_U8_BINARY) defaultOpt = 4;
 	setupRadio("select_output_as", defaultOpt, function(index, value, e) {
-		var option = 0;
+		let option = 0;
 		if (index == 0) option = ret.OUTPUT_AS_AUTO;
 		if (index == 1) option = ret.OUTPUT_AS_U8;
 		if (index == 2) option = ret.OUTPUT_AS_U32;
@@ -402,7 +402,7 @@ document.querySelector("#copy-popup-button").onclick = function() {
 }
 
 {
-	var syntax = 0;
+	let syntax = 0;
 	switch (ret.currentSyntax) {
 	case ret.SYNTAX_INTEL: syntax = 0; break;
 	case ret.SYNTAX_ATT: syntax = 1; break;
@@ -411,7 +411,7 @@ document.querySelector("#copy-popup-button").onclick = function() {
 	case ret.SYNTAX_GAS: syntax = 4; break;
 	}
 	setupRadio("x86_syntax", syntax, function(index, value, e) {
-		var option = 0;
+		let option = 0;
 		if (index == 0) option = ret.SYNTAX_INTEL;
 		if (index == 1) option = ret.SYNTAX_ATT;
 		if (index == 2) option = ret.SYNTAX_NASM;
@@ -438,9 +438,9 @@ document.querySelector("#usegodbolt").onchange = function() {
 
 function fillExamples() {
 	document.querySelector("#examples-dropdown-box").innerHTML = "";
-	var examples = ret.getExamples();
-	for (var i = 0; i < examples.length; i++) {
-		var el = document.createElement("div");
+	let examples = ret.getExamples();
+	for (let i = 0; i < examples.length; i++) {
+		let el = document.createElement("div");
 		el.className = "btn";
 		el.exampleName = examples[i].name;
 		el.onclick = function() {
