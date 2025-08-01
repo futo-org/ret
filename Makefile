@@ -6,6 +6,9 @@ debug_build:
 cli_build:
 	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=OFF
 
+pages-deploy:
+	git tag -f 0.4.0-rc && git push -f origin 0.4.0-rc
+
 serve:
 	python3 tool.py --serve
 

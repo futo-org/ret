@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 
+# Process HTML file so it can be placed in a subdirectory and reference
+# files from above directory
 def pphtml(src_html, arch, top_level):
     with open(src_html) as f:
         data = f.read()

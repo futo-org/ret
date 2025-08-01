@@ -19,7 +19,9 @@ endif()
 set(CMAKE_C_FLAGS_RELEASE -Os)
 set(CMAKE_CXX_FLAGS_RELEASE -Os)
 set(CMAKE_C_FLAGS_DEBUG -g)
+set(CMAKE_CXX_FLAGS_DEBUG -g)
 set(CMAKE_C_FLAGS_RELWITHDEBUG -g)
+set(CMAKE_CXX_FLAGS_RELWITHDEBUG -g)
 
 if(EMSCRIPTEN AND SUPPORT_MULTITHREADING)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -matomics -mbulk-memory")
@@ -123,6 +125,7 @@ if(EMSCRIPTEN)
 		-sALLOW_TABLE_GROWTH
 		-sEXPORTED_RUNTIME_METHODS=addFunction,ccall,cwrap
 		$<$<BOOL:${SUPPORT_MULTITHREADING}>:-sUSE_PTHREADS=1 -sPTHREAD_POOL_SIZE=2 -pthread>
+		#-gsource-map
 	)
 else()
 	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>)
