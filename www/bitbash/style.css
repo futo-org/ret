@@ -53,10 +53,10 @@ th {
 .bit-low {
 	cursor: pointer;
 	user-select: none;
-	background: #272727;
+	background: black;
 }
 .bit-low:hover {
-	background: #43634a;
+	background: #382126;
 }
 .field-name {
 	font-style: italic;
