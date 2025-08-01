@@ -237,6 +237,7 @@ function populateExamples() {
 	}
 	document.querySelector("#examples").onchange = function(e) {
 		document.querySelector("#lang").value = examples[this.selectedIndex];
+		update();
 	}
 }
 populateExamples();
@@ -254,9 +255,9 @@ function update() {
 
 		let isVertical = document.querySelector("#table-orientation").checked;
 		if (isVertical) {
-			document.querySelector("#bitbox").className = "bitbox-vertical";
+			document.querySelector("#app").className = "app-vertical";
 		} else {
-			document.querySelector("#bitbox").className = "";
+			document.querySelector("#app").className = "app";
 		}
 		let maker = isVertical ? VerticalTableMaker() : HorizontalTableMaker();
 		let val = Number(document.querySelector("#reg-value").value);
