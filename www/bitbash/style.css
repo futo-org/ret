@@ -73,6 +73,12 @@ th {
 	font-size: 10pt;
     font-family: monospace;
 }
+.field-value-desc {
+	display: block;
+	overflow-wrap: anywhere;
+	color: yellow;
+	font-style: italic;
+}
 
 textarea {
 	width: 100%;

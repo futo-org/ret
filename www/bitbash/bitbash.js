@@ -151,8 +151,6 @@ function createTable(reg, value, maker) {
 	maker.init(reg.size);
 	reg.fields.sort((a, b) => b.top - a.top);
 
-	//var resCounter = 0;
-
 	const LEVEL_CHECKBOXES = 0;
 	const LEVEL_NAME = 1;
 	const LEVEL_VALUE = 2;
@@ -167,11 +165,19 @@ function createTable(reg, value, maker) {
 		e.innerText = "0x" + bitmask(top, bottom).toString(16);
 	}
 
-	function setupFieldValueEntry(top, bottom) {
+	function setupFieldValueEntry(top, bottom, field) {
 		let e = maker.addBox(top, bottom, LEVEL_VALUE);
 		e.className = "field-value";
 		let fieldValue = (value & bitmask(top, bottom)) >>> bottom;
 		e.innerHTML = "0x" + fieldValue.toString(16);
+		if (field != null) {
+			for (i in field.descriptions) {
+				if (field.descriptions[i].equals == fieldValue) {
+					e.innerHTML += "<span class='field-value-desc'>" + field.descriptions[i].value + "</span>";
+					break;
+				}
+			}
+		}
 	}
 
 	for (let i = reg.size - 1; i >= 0; i--) {
@@ -200,9 +206,8 @@ function createTable(reg, value, maker) {
 		// Insert reserved blank entries
 		if (lastPos > field.top) {
 			setupBitMaskEntry(lastPos, field.top + 1);
-			let e = maker.addBox(lastPos, field.top + 1, LEVEL_NAME);
-			//e.innerText = "RES" + resCounter++;
-			setupFieldValueEntry(lastPos, field.top + 1);
+			maker.addBox(lastPos, field.top + 1, LEVEL_NAME);
+			setupFieldValueEntry(lastPos, field.top + 1, null);
 			i--;
 			lastPos = field.bottom - 1;
 			continue;
@@ -214,7 +219,9 @@ function createTable(reg, value, maker) {
 		e.className = "field-name";
 		e.innerHTML = field.name;
 
-		setupFieldValueEntry(field.top, field.bottom);
+		let desc = null;
+
+		setupFieldValueEntry(field.top, field.bottom, field);
 
 		lastPos = field.bottom - 1;
 	}
@@ -244,7 +251,7 @@ populateExamples();
 
 document.querySelector("#lang").value = examples[0];
 document.querySelector("#reg-value").value = "0x11";
-document.querySelector("#table-orientation").checked = false;
+document.querySelector("#table-orientation").checked = true;
 function update() {
 	if (document.querySelector("#bitbox").children.length != 0) {
 		document.querySelector("#bitbox").children[0].remove();
@@ -274,3 +281,6 @@ document.querySelector("#table-orientation").onchange = update;
 document.querySelector("#reg-value").oninput = update;
 document.querySelector("#lang").oninput = update;
 update();
+
+// TODO: save url with
+// history.pushState({}, null, "https://ret.futo.org/bitbash/?asdasd");
