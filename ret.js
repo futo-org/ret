@@ -98,7 +98,7 @@ const ret = {
 		ret.log("Loading...");
 	},
 	encodeURL: function(allOptions) {
-		var opt = Object.assign({}, ret.urlOptions);
+		let opt = Object.assign({}, ret.urlOptions);
 		opt.code = encodeURIComponent(editor.toString());
 		if (allOptions) {
 			opt.baseParseOption = String(ret.baseParseOption);
@@ -152,7 +152,7 @@ const ret = {
 			}
 			return;
 		}
-		var prefix = "../";
+		let prefix = "../";
 		if (ret.currentArch == ret.DEFAULT_ARCH) {
 			prefix = "";
 		}
@@ -214,9 +214,9 @@ const ret = {
 	// Try and use the godbolt API for their assembler.
 	// We get back assembly (not bytes) but their error checking is useful.
 	godbolt: async function(arch, assemblyCode) {
-		var compiler = "";
-		var arguments = "";
-		var useIntel = false;
+		let compiler = "";
+		let arguments = "";
+		let useIntel = false;
 		if (arch == ret.ARCH_ARM64) {
 			compiler = "gnuasarm64g1510";
 		} else if (arch == ret.ARCH_ARM32) {
@@ -239,7 +239,7 @@ const ret = {
 		} else {
 			throw "Error";
 		}
-		var res = await fetch('https://godbolt.org/api/compiler/' + compiler + '/compile', {
+		let res = await fetch('https://godbolt.org/api/compiler/' + compiler + '/compile', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -260,8 +260,8 @@ const ret = {
 		return await res.text();
 	},
 	getExamples: function() {
-		var selected = [];
-		for (var i = 0; i < examples.length; i++) {
+		let selected = [];
+		for (let i = 0; i < examples.length; i++) {
 			const isArm = ret.currentArch == ret.ARCH_ARM32 || ret.currentArch == ret.ARCH_ARM32_THUMB;
 			const isX86 = ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64;
 			if (examples[i].arch == "arm32" && isArm) {
@@ -283,8 +283,8 @@ const ret = {
 		return selected;
 	},
 	getExample: function(name) {
-		var selected = ret.getExamples();
-		for (var i = 0; i < selected.length; i++) {
+		let selected = ret.getExamples();
+		for (let i = 0; i < selected.length; i++) {
 			if (selected[i].name == name) {
 				return selected[i].data;
 			}
@@ -293,7 +293,7 @@ const ret = {
 	},
 
 	downloadFile: function(blob) {
-		var a = document.createElement("a");
+		let a = document.createElement("a");
 		document.body.appendChild(a);
 		a.download = "binary.dat";
 		a.href = window.URL.createObjectURL(new Blob([blob], {
@@ -304,12 +304,12 @@ const ret = {
 	},
 
 	getParseOption: function() {
-		var v = ret.baseParseOption;
+		let v = ret.baseParseOption;
 		if (ret.parseCComments) v |= ret.PARSE_C_COMMENTS;
 		return v;
 	},
 	getOptionOption: function() {
-		var v = ret.baseOutputOption;
+		let v = ret.baseOutputOption;
 		if (ret.splitBytesByInstruction && (ret.baseOutputOption != ret.OUTPUT_AS_U32 || ret.baseOutputOption == ret.OUTPUT_AS_U16))
 			v |= ret.OUTPUT_SPLIT_BY_INSTRUCTION;
 		if (ret.splitBytesByFour && !ret.splitBytesByInstruction)
@@ -318,9 +318,9 @@ const ret = {
 	},
 
 	assemble: function(code, outBuf, errBuf) {
-		var then = Date.now();
-		var rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.getOptionOption());
-		var now = Date.now();
+		let then = Date.now();
+		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.getOptionOption());
+		let now = Date.now();
 		return [rc, now - then];
 	},
 };

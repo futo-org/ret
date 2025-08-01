@@ -35,7 +35,6 @@
 				<div class="radio-button" name="select_output_as">u32</div>
 				<div class="radio-button" name="select_output_as">C array</div>
 				<div class="radio-button" name="select_output_as">Binary (u8)</div>
-				<!-- <div class="btn" id="save-button">Save As File</div> -->
 			</div>
 		</div>
 		<div class="right">
@@ -167,8 +166,10 @@ function addExample(name, arch, data) {
 </script>
 <script src="../examples.js"></script>
 <script src="../lib.js"></script>
+<script src="../ret.js"></script>
+<script src="../ui.js"></script>
 <script>
-// emscripten js will merge with (?) this object
+// emscripten js will merge with this object
 var Module = {
 	onRuntimeInitialized: function() {
 		ret.main();
@@ -176,6 +177,4 @@ var Module = {
 };
 </script>
 <script src="build/ret.js"></script>
-<script src="../ret.js"></script>
-<script src="../ui.js"></script>
 </html>

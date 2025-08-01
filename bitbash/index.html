@@ -7,14 +7,21 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+<div id="app" class="app">
 	<div class="form">
 		<input type="checkbox" id="table-orientation" name="table-orientation">
 		<label for="table-orientation"> Vertical Orientation</label><br>
+		<label for="examples">Set from example:</label>
+		<select name="examples" id="examples">
+		</select>
+		<br>
+
 		<textarea id="lang" spellcheck="false"></textarea>
 		<br>
 		<span>Register value: </span><input spellcheck="false" id="reg-value" type="text">
 	</div>
 	<div id="bitbox"></div>
+</div>
 </body>
 <script src="bitbash.js">
 </script>

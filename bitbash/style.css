@@ -24,6 +24,9 @@ html, body {
 	background: #23241f;
 }
 
+input, label {
+	user-select: none;
+}
 input:focus {
 	outline: none;
 }
@@ -53,10 +56,10 @@ th {
 .bit-low {
 	cursor: pointer;
 	user-select: none;
-	background: #272727;
+	background: black;
 }
 .bit-low:hover {
-	background: #43634a;
+	background: #382126;
 }
 .field-name {
 	font-style: italic;
@@ -70,9 +73,15 @@ th {
 	font-size: 10pt;
     font-family: monospace;
 }
+.field-value-desc {
+	display: block;
+	overflow-wrap: anywhere;
+	color: yellow;
+	font-style: italic;
+}
 
 textarea {
-	width: 500px;
+	width: 100%;
 	height: 500px;
 	resize: none;
 	outline: none;	
@@ -86,30 +95,33 @@ textarea {
 }
 
 .form {
-	padding: 10px;
+	flex: 1;
+    margin: 10px;
+}
+
+.app {
+	display: flex;
+	flex-flow: column;
+}
+.app-vertical {
+	display: flex;
+	flex-flow: row;
+	height: 100%;
 }
 
 #reg-value {
 	font-size: 15pt;
 }
 
-.bitbox-vertical {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	height: 100%;
-	width: 50%;
+#bitbox {
+	flex: 2;
+	display: flex;
+	padding: 10px;
+}
+#bitbox table {
+	flex: 1;
+}
+
+.app-vertical #bitbox {
 	overflow-y: scroll;
-}
-
-.bitbox-vertical table {
-	float: right;
-	margin: 20px;
-}
-
-.bitbox-vertical .field-name {
-	min-width: 200px;
-}
-.bitbox-vertical .field-value {
-	min-width: 100px;
 }
