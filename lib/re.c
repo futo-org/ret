@@ -317,7 +317,7 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0x1000, RET_SYNTAX_INTEL, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
+	int rc = re_assemble(arch, 0x0, RET_SYNTAX_INTEL, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
 	if (rc) {
 		printf("%s\n", re_buf_err.buffer);
 	} else {
