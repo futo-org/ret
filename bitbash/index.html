@@ -12,8 +12,9 @@
 		<input type="checkbox" id="table-orientation" name="table-orientation">
 		<label for="table-orientation"> Vertical Orientation</label><br>
 		<label for="examples">Set from example:</label>
-		<select name="examples" id="examples">
-		</select>
+		<select name="examples" id="examples"></select>
+		<br>
+		<button id="save-state">Save state (in URL bar)</button>
 		<br>
 
 		<textarea id="lang" spellcheck="false"></textarea>
@@ -21,8 +22,23 @@
 		<span>Register value: </span><input spellcheck="false" id="reg-value" type="text">
 	</div>
 	<div id="bitbox"></div>
+	<table id="legend">
+		<tr>
+		<th><input type="checkbox"></th><th>Click to flip a bit</th>
+		</tr>
+		<tr>
+		<th><div class="legend-box field-name"></div></th><th>Field name</th>
+		</tr>
+		<tr>
+		<th><div class="legend-box bitmask"></div></th><th>Field bitmasks</th>
+		</tr>
+		<tr>
+		<th><div class="legend-box field-value"></div></th><th>Field value</th>
+		</tr>
+	</table>
 </div>
 </body>
-<script src="bitbash.js">
+<script src="examples.js"></script>
+<script src="bitbash.js"></script>
 </script>
 </html>

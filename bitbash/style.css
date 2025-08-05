@@ -1,18 +1,13 @@
 :root {
+	/* Imported from ret */
     --border: #000000;
     --text: #ffffff;
     --btn: #292929;
     --btn-hover: #3d3c3c;
     --btn-active: #3f3f3f;
-    --dropdown: #292929;
-    --radio-btn: #4a4a4a;
-    --radio-checked: #323232;
-    --separator: #666;
     --bytes: #313131;
-    --log: #161616;
-    --help-box: #000d19;
-    --popup: #2a3c3f;
-    --popup-bar: #0f0f0f;
+
+	--border-size: 1px;
 }
 
 html, body {
@@ -34,39 +29,27 @@ input:focus {
 a {color: lightblue;}
 a:visited {color: #719aa6;}
 
-table, th, td {
-	font-size: 20pt;
-	border: 2px solid white;
+.bit-table {
 	background: black;
+	font-size: 20pt;
+}
+.bit-table, .bit-table th, .bit-table tr {
+	border: var(--border-size) solid white;
 	border-collapse: collapse;
 	font-weight: normal;
-}
-th {
 	overflow: hidden;
 }
-
-.bit-high {
-	cursor: pointer;
+.bit {
 	user-select: none;
-	background: #299041;
-}
-.bit-high:hover {
-	background: #43634a;
-}
-.bit-low {
-	cursor: pointer;
-	user-select: none;
-	background: black;
-}
-.bit-low:hover {
-	background: #382126;
 }
 .field-name {
 	font-style: italic;
+	background: #335769;
 }
 .field-value {
 	font-family: monospace;
 	font-size: 15pt;
+	background: #2b552f;
 }
 .bitmask {
 	background: #1d2727;
@@ -85,7 +68,7 @@ textarea {
 	height: 500px;
 	resize: none;
 	outline: none;	
-	font-size: larger;
+	font-size: 14pt;
 	box-sizing: border-box;
 	border: none;
 	tab-size: 4;
@@ -97,6 +80,9 @@ textarea {
 .form {
 	flex: 1;
     margin: 10px;
+	border: var(--border-size) solid white;
+	padding: 10px;
+	background: black;
 }
 
 .app {
@@ -124,4 +110,31 @@ textarea {
 
 .app-vertical #bitbox {
 	overflow-y: scroll;
+}
+.app-vertical .bit-table {
+	table-layout: fixed;
+}
+.app-vertical .bit-checkbox {
+	width: 50px;
+}
+.app-vertical .bit {
+	width: 50px;
+}
+
+#legend {
+	max-width: 300px;
+	align-self: flex-start;
+	background: #333333;
+}
+#legend, #legend tr, #legend th {
+	border: var(--border-size) solid white;
+	border-collapse: collapse;
+	margin: 10px;
+	padding: 5px;
+}
+
+.legend-box {
+	border: var(--border-size) solid white;
+	display: inline-block;
+	padding: 15px;
 }

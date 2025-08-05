@@ -1,0 +1,15 @@
+name CPACR_EL1
+size 64
+[28] = TTA
+if TTA == 0b0: "NoTrap"
+if TTA == 0b1: "TrapTrace"
+[21:20] = FPEN
+if FPEN == 0b00: "TrapEl0El1"
+if FPEN == 0b01: "TrapEl0"
+if FPEN == 0b10: "TrapEl1El0"
+if FPEN == 0b11: "TrapNothing"
+[17:16] = ZEN
+if ZEN == 0b00: "TrapEl0El1"
+if ZEN == 0b01: "TrapEl0"
+if ZEN == 0b10: "TrapEl1El0"
+if ZEN == 0b11: "TrapNothing"
