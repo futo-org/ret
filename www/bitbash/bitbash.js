@@ -85,6 +85,7 @@ function HorizontalTableMaker() {
 		bits: document.createElement("tr"),
 		levels: [],
 		init: function(size) {
+			this.tbl.className = "bit-table";
 			this.tbl.appendChild(this.bits);
 			//this.tbl.width = "100%";
 			this.tbl.setAttribute("cellspacing", "0");
@@ -113,6 +114,7 @@ function VerticalTableMaker() {
 	return {
 		tbl: document.createElement("table"),
 		init: function(size) {
+			this.tbl.className = "bit-table";
 			this.tbl.setAttribute("cellspacing", "0");
 			this.tbl.setAttribute("cellpadding", "4");
 
@@ -182,22 +184,23 @@ function createTable(reg, value, maker) {
 
 	for (let i = reg.size - 1; i >= 0; i--) {
 		let e = maker.addBit(i);
-		if ((value & (1 << i)) != 0) {
-			e.className = "bit-high";
-		} else {
-			e.className = "bit-low";
-		}
+		e.className = "bit";
+		e.innerText = String(i);
+	}
+
+	for (let i = reg.size - 1; i >= 0; i--) {
+		let e = maker.addBox(i, i, LEVEL_CHECKBOXES);
+
+		var chk = document.createElement("input");
+		chk.type = "checkbox";
+		chk.checked = (value & (1 << i)) != 0;
+		// Make the entire box clickable, not just checkbox
 		e.onclick = function() {
 			this.bit = i;
 			flipBit(this.bit);
 		}
-		e.innerText = String(i);
+		e.appendChild(chk);
 	}
-
-	// for (let i = reg.size - 1; i >= 0; i--) {
-	// 	let e = maker.addBox(i, i, LEVEL_CHECKBOXES);
-	// 	e.innerHTML = "<input type='checkbox'>";
-	// }
 
 	let lastPos = reg.size - 1;
 	for (let i = 0; i < reg.fields.length; i++) {
@@ -251,7 +254,7 @@ populateExamples();
 
 document.querySelector("#lang").value = examples[0];
 document.querySelector("#reg-value").value = "0x11";
-document.querySelector("#table-orientation").checked = true;
+document.querySelector("#table-orientation").checked = false;
 function update() {
 	if (document.querySelector("#bitbox").children.length != 0) {
 		document.querySelector("#bitbox").children[0].remove();
