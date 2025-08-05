@@ -266,13 +266,19 @@ const ret = {
 			const isX86 = ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64;
 			if (examples[i].arch == "arm32" && isArm) {
 				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86gnu" && isX86 && ret.currentSyntax == ret.SYNTAX_GAS) {
+			} else if (isX86 && examples[i].arch.startsWith("x86")) {
 				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86nasm" && isX86 && ret.currentSyntax == ret.SYNTAX_NASM) {
-				selected.push(examples[i]);
-			} else if (examples[i].arch == "x86intel" && isX86 && ret.currentSyntax == ret.SYNTAX_INTEL) {
-				selected.push(examples[i]);
-			} else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
+			}
+			// TODO: This doesn't really work yet because we don't have x86 examples for every syntax, and UI doesn't update after switching it
+			//else if (examples[i].arch == "x86gnu" && isX86 && ret.currentSyntax == ret.SYNTAX_GAS) {
+			//	selected.push(examples[i]);
+			//} else if (examples[i].arch == "x86nasm" && isX86 && ret.currentSyntax == ret.SYNTAX_NASM) {
+			//	selected.push(examples[i]);
+			//} else if (examples[i].arch == "x86intel" && isX86 && ret.currentSyntax == ret.SYNTAX_INTEL) {
+			//	selected.push(examples[i]);
+			//}
+
+			else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
 				selected.push(examples[i]);
 			} else if ((examples[i].arch == "rv32" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV32) {
 				selected.push(examples[i]);
