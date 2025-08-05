@@ -45,6 +45,7 @@ a:visited {color: #719aa6;}
 .field-name {
 	font-style: italic;
 	background: #335769;
+	font-family: auto;
 }
 .field-value {
 	font-family: monospace;
