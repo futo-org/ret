@@ -1,0 +1,23 @@
+name SCR_EL3
+size 64
+[10] = RW
+if RW == 0b0: "AllLowerELsAreAarch32"
+if RW == 0b1: "NextELIsAarch64"
+[8] = HCE
+if HCE == 0b0: "HvcDisabled"
+if HCE == 0b1: "HvcEnabled"
+[7] = SMD
+if SMD == 0b0: "SmcEnabled"
+if SMD == 0b1: "SmcDisabled"
+[3] = EA
+if EA == 0b0: "NotTaken"
+if EA == 0b1: "Taken"
+[2] = FIQ
+if FIQ == 0b0: "NotTaken"
+if FIQ == 0b1: "Taken"
+[1] = IRQ
+if IRQ == 0b0: "NotTaken"
+if IRQ == 0b1: "Taken"
+[0] = NS
+if NS == 0b0: "Secure"
+if NS == 0b1: "NonSecure"

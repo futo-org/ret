@@ -1,0 +1,50 @@
+name SCTLR_EL1
+size 64
+[26] = UCI
+if UCI == 0b0: "Trap"
+if UCI == 0b1: "DontTrap"
+[25] = EE
+if EE == 0b0: "LittleEndian"
+if EE == 0b1: "BigEndian"
+[24] = E0E
+if E0E == 0b0: "LittleEndian"
+if E0E == 0b1: "BigEndian"
+[19] = WXN
+if WXN == 0b0: "Disable"
+if WXN == 0b1: "Enable"
+[18] = NTWE
+if NTWE == 0b0: "Trap"
+if NTWE == 0b1: "DontTrap"
+[16] = NTWI
+if NTWI == 0b0: "Trap"
+if NTWI == 0b1: "DontTrap"
+[15] = UCT
+if UCT == 0b0: "Trap"
+if UCT == 0b1: "DontTrap"
+[14] = DZE
+if DZE == 0b0: "Trap"
+if DZE == 0b1: "DontTrap"
+[12] = I
+if I == 0b0: "NonCacheable"
+if I == 0b1: "Cacheable"
+[9] = UMA
+if UMA == 0b0: "Trap"
+if UMA == 0b1: "DontTrap"
+[6] = NAA
+if NAA == 0b0: "Disable"
+if NAA == 0b1: "Enable"
+[4] = SA0
+if SA0 == 0b0: "Disable"
+if SA0 == 0b1: "Enable"
+[3] = SA
+if SA == 0b0: "Disable"
+if SA == 0b1: "Enable"
+[2] = C
+if C == 0b0: "NonCacheable"
+if C == 0b1: "Cacheable"
+[1] = A
+if A == 0b0: "Disable"
+if A == 0b1: "Enable"
+[0] = M
+if M == 0b0: "Disable"
+if M == 0b1: "Enable"

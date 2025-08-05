@@ -5,15 +5,7 @@
     --btn: #292929;
     --btn-hover: #3d3c3c;
     --btn-active: #3f3f3f;
-    --dropdown: #292929;
-    --radio-btn: #4a4a4a;
-    --radio-checked: #323232;
-    --separator: #666;
     --bytes: #313131;
-    --log: #161616;
-    --help-box: #000d19;
-    --popup: #2a3c3f;
-    --popup-bar: #0f0f0f;
 
 	--border-size: 1px;
 }
@@ -39,9 +31,9 @@ a:visited {color: #719aa6;}
 
 .bit-table {
 	background: black;
+	font-size: 20pt;
 }
 .bit-table, .bit-table th, .bit-table tr {
-	font-size: 20pt;
 	border: var(--border-size) solid white;
 	border-collapse: collapse;
 	font-weight: normal;
@@ -76,7 +68,7 @@ textarea {
 	height: 500px;
 	resize: none;
 	outline: none;	
-	font-size: larger;
+	font-size: 14pt;
 	box-sizing: border-box;
 	border: none;
 	tab-size: 4;
@@ -119,12 +111,18 @@ textarea {
 .app-vertical #bitbox {
 	overflow-y: scroll;
 }
-
-#legend {
-	max-width: 300px;
+.app-vertical .bit-table {
+	table-layout: fixed;
+}
+.app-vertical .bit-checkbox {
+	width: 50px;
+}
+.app-vertical .bit {
+	width: 50px;
 }
 
 #legend {
+	max-width: 300px;
 	align-self: flex-start;
 	background: #333333;
 }
@@ -138,6 +136,5 @@ textarea {
 .legend-box {
 	border: var(--border-size) solid white;
 	display: inline-block;
-	width: 15px;
-	height: 15px;
+	padding: 15px;
 }

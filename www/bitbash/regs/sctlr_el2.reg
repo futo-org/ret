@@ -1,0 +1,32 @@
+name SCTLR_EL2
+size 64
+[25] = EE
+if EE == 0b0: "Little"
+if EE == 0b1: "Big"
+[22] = EIS
+if EIS == 0b0: "IsNotSynch"
+if EIS == 0b1: "IsSynch"
+[21] = IESB
+if IESB == 0b0: "Disable"
+if IESB == 0b1: "Enable"
+[19] = WXN
+if WXN == 0b0: "Disable"
+if WXN == 0b1: "Enable"
+[12] = I
+if I == 0b0: "NonCacheable"
+if I == 0b1: "Cacheable"
+[11] = EOS
+if EOS == 0b0: "IsNotSynch"
+if EOS == 0b1: "IsSynch"
+[3] = SA
+if SA == 0b0: "Disable"
+if SA == 0b1: "Enable"
+[2] = C
+if C == 0b0: "NonCacheable"
+if C == 0b1: "Cacheable"
+[1] = A
+if A == 0b0: "Disable"
+if A == 0b1: "Enable"
+[0] = M
+if M == 0b0: "Disable"
+if M == 0b1: "Enable"
