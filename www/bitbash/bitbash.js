@@ -23,6 +23,7 @@ function parseLanguage(code) {
 	let set_bitfield_name_bit = /\[([0-9]+)\] = (.+)/;
 	let case_bitfield_value = /if (.+) == ([xb0-9a-zA-Z]+): "(.+)"/;
 	for (let i = 0; i < split.length; i++) {
+		if (split[i].startsWith("//")) continue;
 		let match = split[i].match(set_bitfield_name);
 		if (match) {
 			if (Number(match[2]) > Number(match[1])) {
@@ -67,7 +68,6 @@ function parseLanguage(code) {
 			reg.name = match[1];
 			continue;
 		}
-		if (split[i].startsWith("//")) continue;
 		//throw "Error on line: '" + split[i] + "'";
 		//console.log(match);
 	}
