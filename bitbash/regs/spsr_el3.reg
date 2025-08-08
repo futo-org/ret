@@ -1,0 +1,28 @@
+name SPSR_EL3
+size 64
+[31] = N
+[30] = Z
+[29] = C
+[28] = V
+[21] = SS
+[20] = IL
+[9] = D
+if D == 0b0: "Unmasked"
+if D == 0b1: "Masked"
+[8] = A
+if A == 0b0: "Unmasked"
+if A == 0b1: "Masked"
+[7] = I
+if I == 0b0: "Unmasked"
+if I == 0b1: "Masked"
+[6] = F
+if F == 0b0: "Unmasked"
+if F == 0b1: "Masked"
+[3:0] = M
+if M == 0b0000: "EL0t"
+if M == 0b0100: "EL1t"
+if M == 0b0101: "EL1h"
+if M == 0b1000: "EL2t"
+if M == 0b1001: "EL2h"
+if M == 0b1100: "EL3t"
+if M == 0b1101: "EL3h"

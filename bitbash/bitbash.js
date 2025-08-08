@@ -3,7 +3,7 @@ function bitmask(hi, lo) {
 	return ((1n << w) - 1n) << BigInt(lo);
 }
 
-function parseLanguage(code) {
+function parseLanguage(code, value) {
 	let reg = {
 		"size": 32,
 		"fields": []
@@ -15,6 +15,8 @@ function parseLanguage(code) {
 		}
 		throw "Didn't find field '" + name + "'";
 	}
+
+	let conditions = [true];
 	
 	let split = code.split("\n");
 	let reg_name = /name (.+)/;
@@ -22,6 +24,10 @@ function parseLanguage(code) {
 	let set_bitfield_name = /\[([0-9]+):([0-9]+)\] = (.+)/;
 	let set_bitfield_name_bit = /\[([0-9]+)\] = (.+)/;
 	let case_bitfield_value = /if (.+) == ([xb0-9a-zA-Z]+): "(.+)"/;
+	let case_bitfield_block = /if (.+) == ([xb0-9a-zA-Z]+) {/;
+	//let case_bits_block = /if \[([0-9]+):([0-9]+)\] == ([xb0-9a-zA-Z]+) {/;
+	let end_block = /}$/;
+	let end_else_block = /} else {$/;
 	for (let i = 0; i < split.length; i++) {
 		if (split[i].startsWith("//")) continue;
 		let match = split[i].match(set_bitfield_name);
@@ -29,34 +35,64 @@ function parseLanguage(code) {
 			if (Number(match[2]) > Number(match[1])) {
 				throw "Incorrect bit format. Must be high:low. For example [5:0]."
 			}
+			let fieldValue = (BigInt(value) & bitmask(Number(match[1]), Number(match[2]))) >> BigInt(Number(match[2]));
+			if (conditions.at(-1) == false) continue;
 			reg.fields.push({
 				"name": match[3],
 				"top": Number(match[1]),
 				"bottom": Number(match[2]),
-				"descriptions": [],
+				"fieldValue": fieldValue,
+				"description": "",
 			});
 			continue;
 		}
 		match = split[i].match(set_bitfield_name_bit);
 		if (match) {
+			if (conditions.at(-1) == false) continue;
+			let fieldValue = (BigInt(value) & bitmask(Number(match[1]), Number(match[1]))) >> BigInt(Number(match[1]));
 			reg.fields.push({
 				"name": match[2],
 				"top": Number(match[1]),
 				"bottom": Number(match[1]),
-				"descriptions": [],
+				"fieldValue": fieldValue,
+				"description": "",
 			});
 			continue;
 		}
 		match = split[i].match(case_bitfield_value);
 		if (match) {
-			findField(match[1]).descriptions.push({
-				"equals": Number(match[2]),
-				"value": match[3],
-			});
+			if (conditions.at(-1) == false) continue;
+			let field = findField(match[1]);
+			if (field.fieldValue == Number(match[2])) {
+				field.description = match[3];
+			}
+			continue;
+		}
+		match = split[i].match(case_bitfield_block);
+		if (match) {
+			if (conditions.at(-1) == false) {
+				conditions.push(false);
+			} else {
+				conditions.push(findField(match[1]).fieldValue == Number(match[2]));
+			}
+			continue;
+		}
+		match = split[i].match(end_block);
+		if (match) {
+			conditions.pop();
+			if (conditions.length == 0) {
+				throw "Misplaced brace";
+			}
+			continue;
+		}
+		match = split[i].match(end_else_block);
+		if (match) {
+			conditions.push(!conditions.pop());
 			continue;
 		}
 		match = split[i].match(reg_size);
 		if (match) {
+			if (conditions.at(-1) == false) continue;
 			reg.size = Number(match[1]);
 			if (reg.size > 512) {
 				throw "Unsupported register size";
@@ -65,11 +101,10 @@ function parseLanguage(code) {
 		}
 		match = split[i].match(reg_name);
 		if (match) {
+			if (conditions.at(-1) == false) continue;
 			reg.name = match[1];
 			continue;
 		}
-		//throw "Error on line: '" + split[i] + "'";
-		//console.log(match);
 	}
 
 	return reg;
@@ -171,12 +206,7 @@ function createTable(reg, value, maker) {
 		let fieldValue = (BigInt(value) & bitmask(top, bottom)) >> BigInt(bottom);
 		e.innerHTML = "0x" + fieldValue.toString(16);
 		if (field != null) {
-			for (i in field.descriptions) {
-				if (field.descriptions[i].equals == fieldValue) {
-					e.innerHTML += "<span class='field-value-desc'>" + field.descriptions[i].value + "</span>";
-					break;
-				}
-			}
+			e.innerHTML += "<span class='field-value-desc'>" + field.description + "</span>";
 		}
 	}
 
@@ -243,7 +273,7 @@ function flipBit(b) {
 
 function populateExamples() {
 	for (let i = 0; i < examples.length; i++) {
-		let reg = parseLanguage(examples[i]);
+		let reg = parseLanguage(examples[i], 0x0);
 		let s = document.createElement("option");
 		s.innerText = reg.name;
 		document.querySelector("#examples").appendChild(s);
@@ -287,7 +317,8 @@ function update() {
 	}
 
 	try {
-		let reg = parseLanguage(document.querySelector("#lang").value);
+		let val = Number(document.querySelector("#reg-value").value);
+		let reg = parseLanguage(document.querySelector("#lang").value, val);
 
 		let isVertical = document.querySelector("#table-orientation").checked;
 		if (isVertical) {
@@ -296,7 +327,6 @@ function update() {
 			document.querySelector("#app").className = "app";
 		}
 		let maker = isVertical ? VerticalTableMaker() : HorizontalTableMaker();
-		let val = Number(document.querySelector("#reg-value").value);
 		if (isNaN(val)) {
 			throw "NaN";
 		}
