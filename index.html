@@ -1,14 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Ret x86</title>
 	<link rel="icon" href="favicon.ico">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<title>Ret - Online Assembler & Disassembler | ARM64, x86, RISC-V WebAssembly Tool</title>
+	<meta name="title" content="Ret - Online Assembler & Disassembler | ARM64, x86, RISC-V WebAssembly Tool">
+	<meta name="description" content="Online assembler and disassembler supporting ARM, ARM64, x86, Thumb, and RISC-V architectures. Runs entirely client-side in WebAssembly.">
+	<meta name="keywords" content="online assembler,disassembler,ARM,ARM64,x86,x86_64,RISCV,RISC-V,WebAssembly,CPU simulator,assembly language,machine code,developer tools,Thumb">
+	<meta name="author" content="Daniel Cook">
+	<meta name="robots" content="index, follow">
+	
+	<link rel="canonical" href="https://ret.futo.org/">
+	<meta name="application-name" content="Ret">
+
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://ret.futo.org/">
+	<meta property="og:title" content="Ret - Online Assembler & Disassembler | ARM64, x86, RISC-V WebAssembly Tool">
+	<meta property="og:description" content="Online assembler and disassembler supporting ARM64, x86, Thumb, and RISC-V architectures. Runs entirely client-side in WebAssembly.">
+	<meta property="og:image" content="https://ret.futo.org/assets/screen_preview.png">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	<meta property="og:site_name" content="Ret">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:url" content="https://ret.futo.org/">
+	<meta name="twitter:title" content="Ret - Online Assembler & Disassembler | ARM64, x86, RISC-V WebAssembly Tool">
+	<meta name="twitter:description" content="Online assembler and disassembler supporting ARM64, x86, Thumb, and RISC-V architectures. Runs entirely client-side in WebAssembly.">
+	<meta name="twitter:image" content="https://ret.futo.org/assets/screen_preview.png">
+	<meta name="twitter:creator" content="@danielcdev">
+	<meta name="twitter:site" content="@danielcdev">
+
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebApplication",
+			"name": "Ret",
+			"alternateName": "Ret Assembler Disassembler",
+			"description": "Online assembler and disassembler supporting ARM64, x86, Thumb, and RISC-V architectures. Runs entirely client-side in WebAssembly.",
+			"url": "https://ret.futo.org/",
+			"applicationCategory": "DeveloperApplication",
+			"operatingSystem": "Web Browser",
+			"browserRequirements": "Requires WebAssembly support",
+			"softwareVersion": "1.0",
+			"author": {
+				"@type": "Organization",
+				"name": "FUTO",
+				"url": "https://futo.org/"
+			},
+			"featureList": [
+				"ARM64 assembly and disassembly",
+				"x86 assembly and disassembly",
+				"Thumb assembly and disassembly",
+				"RISC-V assembly and disassembly",
+				"CPU simulation and execution",
+				"Multiple output formats",
+				"Client-side WebAssembly execution",
+				"No server required"
+			],
+			"screenshot": "https://ret.futo.org/assets/screen_preview.png"
+		}
+		</script>
+
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" type="text/css" href="portrait.css"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" type="text/css" href="dark-theme.css" id="themelink">
-	<meta name="description" content="Online assembler and disassembler. Arm, Thumb, Arm64, x86, and RISC-V. Runs entirely client-side in WebAssembly.">
-	<meta name="keywords" content="arm,arm64,aarch64,x86,x86_64,risc,riscv,risc-v,assembler,disassembler,emulator,simulator,online">
+
+
 </head>
 <body>
 <div class="container">
