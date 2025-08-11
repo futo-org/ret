@@ -39,6 +39,7 @@ jobs:
       - name: Generate static content
         run: |
           make deploy
+          echo "google-site-verification: google38b8ae97460b2987.html" > deploy/google38b8ae97460b2987.html
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
