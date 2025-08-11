@@ -286,7 +286,12 @@ let urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).
 if (urlOptions.hasOwnProperty("text")) {
 	document.querySelector("#lang").value = decodeURIComponent(urlOptions.text);
 } else {
-	document.querySelector("#lang").value = examples[0];
+	if (urlOptions.hasOwnProperty("example")) {
+		document.querySelector("#examples").value = urlOptions.example;
+		document.querySelector("#lang").value = examples[document.querySelector("#examples").selectedIndex];
+	} else {
+		document.querySelector("#lang").value = examples[0];
+	}
 }
 if (urlOptions.hasOwnProperty("regValue")) {
 	document.querySelector("#reg-value").value = urlOptions.regValue;
@@ -300,7 +305,11 @@ if (urlOptions.hasOwnProperty("orientation")) {
 }
 
 document.querySelector("#save-state").onclick = function() {
-	urlOptions.text = encodeURIComponent(document.querySelector("#lang").value);
+	if (examples[document.querySelector("#examples").selectedIndex] === document.querySelector("#lang").value) {
+		urlOptions.example = document.querySelector("#examples").value;
+	} else {
+		urlOptions.text = encodeURIComponent(document.querySelector("#lang").value);
+	}
 	urlOptions.orientation = String(document.querySelector("#table-orientation").checked);
 	urlOptions.regValue = String(document.querySelector("#reg-value").value);
 
