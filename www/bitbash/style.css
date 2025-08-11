@@ -101,6 +101,7 @@ textarea {
 }
 
 #bitbox {
+	overflow: auto;
 	flex: 2;
 	display: flex;
 	padding: 10px;

@@ -16,50 +16,42 @@ function parseLanguage(code, value) {
 		throw "Didn't find field '" + name + "'";
 	}
 
+	function addField(name, top, bottom) {
+		let fieldValue = (BigInt(value) & bitmask(top, bottom)) >> BigInt(bottom);
+		reg.fields.push({
+			"name": name,
+			"top": top,
+			"bottom": bottom,
+			"fieldValue": fieldValue,
+			"description": "",
+		});
+	}
+
+	// Block parsing stack
 	let conditions = [true];
-	
+
 	let split = code.split("\n");
-	let reg_name = /name (.+)/;
-	let reg_size = /size (.+)/;
-	let set_bitfield_name = /\[([0-9]+):([0-9]+)\] = (.+)/;
-	let set_bitfield_name_bit = /\[([0-9]+)\] = (.+)/;
-	let case_bitfield_value = /if (.+) == ([xb0-9a-zA-Z]+): "(.+)"/;
-	let case_bitfield_block = /if (.+) == ([xb0-9a-zA-Z]+) {/;
-	//let case_bits_block = /if \[([0-9]+):([0-9]+)\] == ([xb0-9a-zA-Z]+) {/;
-	let end_block = /}$/;
-	let end_else_block = /} else {$/;
 	for (let i = 0; i < split.length; i++) {
 		if (split[i].startsWith("//")) continue;
-		let match = split[i].match(set_bitfield_name);
+		// [0:0] = X
+		let match = split[i].match(/\[([0-9]+):([0-9]+)\] = (.+)/);
 		if (match) {
 			if (Number(match[2]) > Number(match[1])) {
 				throw "Incorrect bit format. Must be high:low. For example [5:0]."
 			}
-			let fieldValue = (BigInt(value) & bitmask(Number(match[1]), Number(match[2]))) >> BigInt(Number(match[2]));
 			if (conditions.at(-1) == false) continue;
-			reg.fields.push({
-				"name": match[3],
-				"top": Number(match[1]),
-				"bottom": Number(match[2]),
-				"fieldValue": fieldValue,
-				"description": "",
-			});
+			addField(match[3], Number(match[1]), Number(match[2]));
 			continue;
 		}
-		match = split[i].match(set_bitfield_name_bit);
+		// [0] = X
+		match = split[i].match(/\[([0-9]+)\] = (.+)/);
 		if (match) {
 			if (conditions.at(-1) == false) continue;
-			let fieldValue = (BigInt(value) & bitmask(Number(match[1]), Number(match[1]))) >> BigInt(Number(match[1]));
-			reg.fields.push({
-				"name": match[2],
-				"top": Number(match[1]),
-				"bottom": Number(match[1]),
-				"fieldValue": fieldValue,
-				"description": "",
-			});
+			addField(match[2], Number(match[1]), Number(match[1]));
 			continue;
 		}
-		match = split[i].match(case_bitfield_value);
+		// if X == 0xb123ABCabc: "..."
+		match = split[i].match(/if (.+) == ([xb0-9a-zA-Z]+): "(.+)"/);
 		if (match) {
 			if (conditions.at(-1) == false) continue;
 			let field = findField(match[1]);
@@ -68,7 +60,8 @@ function parseLanguage(code, value) {
 			}
 			continue;
 		}
-		match = split[i].match(case_bitfield_block);
+		// if X == 0xb123ABCabc {
+		match = split[i].match(/if (.+) == ([xb0-9a-zA-Z]+) {/);
 		if (match) {
 			if (conditions.at(-1) == false) {
 				conditions.push(false);
@@ -77,7 +70,8 @@ function parseLanguage(code, value) {
 			}
 			continue;
 		}
-		match = split[i].match(end_block);
+		// }
+		match = split[i].match(/}$/);
 		if (match) {
 			conditions.pop();
 			if (conditions.length == 0) {
@@ -85,12 +79,14 @@ function parseLanguage(code, value) {
 			}
 			continue;
 		}
-		match = split[i].match(end_else_block);
+		// } else {
+		match = split[i].match(/} else {$/);
 		if (match) {
 			conditions.push(!conditions.pop());
 			continue;
 		}
-		match = split[i].match(reg_size);
+		// size X
+		match = split[i].match(/size (.+)/);
 		if (match) {
 			if (conditions.at(-1) == false) continue;
 			reg.size = Number(match[1]);
@@ -99,7 +95,8 @@ function parseLanguage(code, value) {
 			}
 			continue;
 		}
-		match = split[i].match(reg_name);
+		// name X
+		match = split[i].match(/name (.+)/);
 		if (match) {
 			if (conditions.at(-1) == false) continue;
 			reg.name = match[1];
@@ -340,3 +337,14 @@ document.querySelector("#table-orientation").onchange = update;
 document.querySelector("#reg-value").oninput = update;
 document.querySelector("#lang").oninput = update;
 update();
+
+// Horizontal wheel scrolling for bitbox
+var item = document.getElementById("bitbox");
+item.addEventListener("wheel", function (e) {
+	if (!document.querySelector("#table-orientation").checked) {
+		e.preventDefault();
+		if (e.deltaY > 0) item.scrollLeft += 100;
+		else item.scrollLeft -= 100;
+	}
+}, { passive: false });
+
