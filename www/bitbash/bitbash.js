@@ -17,7 +17,7 @@ function parseLanguage(code, value) {
 	}
 
 	function addField(name, top, bottom) {
-		let fieldValue = (BigInt(value) & bitmask(top, bottom)) >> BigInt(bottom);
+		let fieldValue = (value & bitmask(top, bottom)) >> BigInt(bottom);
 		reg.fields.push({
 			"name": name,
 			"top": top,
@@ -200,7 +200,7 @@ function createTable(reg, value, maker) {
 	function setupFieldValueEntry(top, bottom, field) {
 		let e = maker.addBox(top, bottom, LEVEL_VALUE);
 		e.className = "field-value";
-		let fieldValue = (BigInt(value) & bitmask(top, bottom)) >> BigInt(bottom);
+		let fieldValue = (value & bitmask(top, bottom)) >> BigInt(bottom);
 		e.innerHTML = "0x" + fieldValue.toString(16);
 		if (field != null) {
 			e.innerHTML += "<span class='field-value-desc'>" + field.description + "</span>";
@@ -219,7 +219,7 @@ function createTable(reg, value, maker) {
 
 		let chk = document.createElement("input");
 		chk.type = "checkbox";
-		chk.checked = (BigInt(value) & (1n << BigInt(i))) != 0n;
+		chk.checked = (value & (1n << BigInt(i))) != 0n;
 		chk.id = "checkbox_" + String(i);
 		// Make the entire box clickable, not just checkbox
 		e.onclick = function() {
@@ -262,15 +262,14 @@ function createTable(reg, value, maker) {
 }
 
 function flipBit(b) {
-	let n = Number(document.querySelector("#reg-value").value);
-	n = BigInt(n) ^ (1n << BigInt(b));
+	let n = BigInt(document.querySelector("#reg-value").value) ^ (1n << BigInt(b));
 	document.querySelector("#reg-value").value = "0x" + n.toString(16);
 	update();
 }
 
 function populateExamples() {
 	for (let i = 0; i < examples.length; i++) {
-		let reg = parseLanguage(examples[i], 0x0);
+		let reg = parseLanguage(examples[i], 0n);
 		let s = document.createElement("option");
 		s.innerText = reg.name;
 		document.querySelector("#examples").appendChild(s);
@@ -323,7 +322,10 @@ function update() {
 	}
 
 	try {
-		let val = Number(document.querySelector("#reg-value").value);
+		if (isNaN(document.querySelector("#reg-value").value)) {
+			throw "NaN";
+		}
+		let val = BigInt(document.querySelector("#reg-value").value);
 		let reg = parseLanguage(document.querySelector("#lang").value, val);
 
 		let isVertical = document.querySelector("#table-orientation").checked;
@@ -333,9 +335,6 @@ function update() {
 			document.querySelector("#app").className = "app";
 		}
 		let maker = isVertical ? VerticalTableMaker() : HorizontalTableMaker();
-		if (isNaN(val)) {
-			throw "NaN";
-		}
 		let table = createTable(reg, val, maker);
 		document.querySelector("#bitbox").appendChild(table);
 	} catch(e) {
