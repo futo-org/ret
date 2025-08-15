@@ -12,6 +12,7 @@ def pphtml(src_html, arch, top_level):
     data = data.replace('<title>Ret</title>', f'<title>Ret {arch}</title>')
     if not top_level:
         paths_to_prefix = [
+            "./bitbash",
             "favicon.ico",
             "style.css",
             "portrait.css",
