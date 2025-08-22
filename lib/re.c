@@ -164,6 +164,7 @@ static void handler(void *arg, unsigned int of, unsigned int size) {
 		list->length += 1000;
 		list->memb = realloc(list->memb, sizeof(struct BreakList) + (sizeof(struct BreakListMemb) * list->length));
 	}
+	//printf("%u %u\n", of, size);
 	list->memb[list->n_filled].of = of;
 	list->memb[list->n_filled].size = size;
 	list->n_filled++;
@@ -205,10 +206,12 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		char buffer[128];
 		snprintf(buffer, sizeof(buffer), "ERROR: %s", ks_strerror(ks_errno(ks)));
 		err_buf->append(err_buf, buffer, 0);
+		free(list.memb);
 		return -1;
 	} else if (size == 0) {
 		if (handler.has_errored == 0)
 			err_buf->append(err_buf, "ERROR: Assembler returned 0 bytes", 0);
+		free(list.memb);
 		return -1;
 	}
 
@@ -220,6 +223,9 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 			if (base_addr > curr->of) continue;
 			curr->of -= base_addr;
 			if (curr->of > size) continue;
+			if (curr->of > base_addr) {
+				err_buf->append(err_buf, "ERROR: Assembly splitter is broken", 0);
+			}
 			if (curr->of > last_of) {
 				buffer_append_mode(buf, bytecode + last_of, curr->of - last_of, output_options);
 				buffer_appendf(buf, "\n");
@@ -236,6 +242,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	}
 
 	ks_free(encode);
+	free(list.memb);
 
 	return 0;
 }
@@ -386,6 +393,43 @@ static int test(void) {
 	return 0;
 }
 
+static int test_emu(enum Arch arch, const char *filename) {
+	FILE *f = fopen(filename, "rb");
+	if (!f) {
+		printf("Error opening %s\n", filename);
+		return -1;
+	}
+
+	fseek(f, 0, SEEK_END);
+	size_t sz = ftell(f);
+	rewind(f);
+
+	char *input = malloc(sz + 1);
+
+	if (fread(input, 1, sz, f) != sz) {
+		free(input);
+		fclose(f);
+		return -1;
+	}
+
+	fclose(f);
+	input[sz] = '\0';
+
+	if (re_assemble(arch, 0, 0, &re_buf_mem, &re_buf_err, input, 0)) {
+		printf("%s\n", re_buf_err.buffer);
+		return -1;
+	}
+
+	if (re_emulator(arch, 0x0, &re_buf_mem, &re_buf_err)) {
+		printf("%s\n", re_buf_err.buffer);
+		return -1;
+	}
+
+	printf("%s\n", re_buf_err.buffer);
+
+	return 0;
+}
+
 int main(int argc, char **argv) {
 	re_init_globals();
 	enum Arch arch = ARCH_ARM64;
@@ -400,6 +444,7 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--dis")) return cli_disasm(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--hex")) return cli_hex(argv[i + 1]);
+		if (!strcmp(argv[i], "--emu")) return test_emu(arch, argv[i + 1]);
 		if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) return help();
 	}
 

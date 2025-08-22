@@ -14,7 +14,10 @@
 #define FRAMEBUFFER_SIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * 4)
 
 // unicorn-wasm patch
-UNICORN_EXPORT int uc_hit_execution_limit(uc_engine *uc);
+__attribute__((weak))
+UNICORN_EXPORT int uc_hit_execution_limit(uc_engine *uc) {
+	return 0;
+}
 
 struct EmulatorState {
 	uc_arch arch;
@@ -86,6 +89,9 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_THUMB;
+	} else if (arch == ARCH_RISCV64) {
+		_uc_arch = UC_ARCH_RISCV;
+		_uc_mode |= UC_MODE_RISCV64;
 	} else {
 		buffer_appendf(log, "Unknown architecture\n");
 		return -1;
@@ -99,7 +105,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 
 	err = uc_open(_uc_arch, _uc_mode, &uc);
 	if (err != UC_ERR_OK) {
-		buffer_appendf(log, "Failed to setup emulator\n", 0);
+		buffer_appendf(log, "Failed to setup emulator (%s)\n", uc_strerror(err));
 		return -1;
 	}
 
@@ -107,7 +113,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 	unsigned int aligned_base_addr = (base_addr / 0x400) * 0x400;
 	err = uc_mem_map(uc, aligned_base_addr, RAM_SIZE, UC_PROT_ALL);
 	if (err != UC_ERR_OK) {
-		buffer_appendf(log, "Failed to map memory\n", 0);
+		buffer_appendf(log, "Failed to map memory\n");
 		return -1;
 	}
 
@@ -135,7 +141,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 
 	err = uc_mem_write(uc, base_addr, asm_buffer->buffer, asm_buffer->offset);
 	if (err != UC_ERR_OK) {
-		buffer_appendf(log, "Failed to write data\n", 0);
+		buffer_appendf(log, "Failed to write data\n");
 		return -1;
 	}
 
@@ -215,6 +221,17 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 		for (int i = 0; i < 5; i++) {
 			uc_reg_read(uc, x0_reg + i, &reg);
 			buffer_appendf(log, " r%d: 0x%X\n", i, reg);
+		}
+	} else if (_uc_arch == UC_ARCH_RISCV) {
+		int pc_reg = UC_RISCV_REG_PC;
+		int a0_reg = UC_RISCV_REG_A0;
+
+		uc_reg_read(uc, pc_reg, rb);
+		buffer_appendf(log, " PC: 0x%llX\n", ((uint64_t *)rb)[0]);
+	
+		for (int i = 0; i < 5; i++) {
+			uc_reg_read(uc, a0_reg + i, rb);
+			buffer_appendf(log, " a%d: 0x%llX\n", i, ((uint64_t *)rb)[0]);
 		}
 	}
 	

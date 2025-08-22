@@ -1,8 +1,12 @@
-// Note: RISC-V doesn't work in the web-based emulator yet.
-// RISC-V Resources: https://msyksphinz-self.github.io/riscv-isadoc
-
-li x0, 0x9000000
-li x1, 'X'
-sw x1, 0(x0) // Store word x1 into address at x0 at offset 0
-li x1, '\n'
-sw x1, 0(x0)
+li a0, 0x9000000
+li a1, 'h'
+sw a1, 0(a0)
+li a1, 'e'
+sw a1, 0(a0)
+li a1, 'l'
+sw a1, 0(a0)
+sw a1, 0(a0)
+li a1, 'o'
+sw a1, 0(a0)
+li a1, '\n'
+sw a1, 0(a0)

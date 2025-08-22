@@ -7,3 +7,7 @@
 [submodule "unicorn-wasm"]
 	path = unicorn-wasm
 	url = https://github.com/petabyt/unicorn-wasm.git
+[submodule "unicorn"]
+	path = unicorn
+	url = https://github.com/petabyt/unicorn.git
+	branch = tci-emscripten

@@ -114,6 +114,8 @@ int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, i
 
 int test_buffer(void);
 
+int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_buffer, struct RetBuffer *log);
+
 inline static int write_u8(void *buf, uint8_t out) {
 	((uint8_t *)buf)[0] = out;
 	return 1;

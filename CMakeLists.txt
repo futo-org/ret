@@ -7,8 +7,9 @@ option(SUPPORT_ARM64 "arm v8+" OFF)
 option(SUPPORT_ARM32 "arm and arm thumb" OFF)
 option(SUPPORT_X86 "x86 and x86_64" OFF)
 option(SUPPORT_RISCV "rv64 and rv32" OFF)
+option(UNICORN_SUPPORT "Compile Unicorn-wasm" ON)
+
 if(EMSCRIPTEN)
-	option(UNICORN_SUPPORT "Compile Unicorn-wasm" ON)
 	option(SUPPORT_MULTITHREADING "Support emscripten multithreading" OFF)
 endif()
 
@@ -82,24 +83,27 @@ option(BUILD_LIBS_ONLY "Only build keystone library" 1)
 set(CMAKE_CROSSCOMPILING OFF) # Fix weird issue where keystone tries to configure top level again (???)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/keystone ${CMAKE_CURRENT_BINARY_DIR}/keystone)
 
-if(EMSCRIPTEN AND UNICORN_SUPPORT)
-	set(temp_targets "")
+if(UNICORN_SUPPORT)
+	set(temp_targets)
 	if(SUPPORT_ARM64)
-		set(temp_targets "${temp_targets} AArch64")
+		list(APPEND temp_targets aarch64)
 	endif()
 	if(SUPPORT_ARM32)
-		set(temp_targets "${temp_targets} ARM")
+		list(APPEND temp_targets arm)
 	endif()
 	if(SUPPORT_X86)
-		set(temp_targets "${temp_targets} X86")
+		list(APPEND temp_targets x86)
 	endif()
-	# Note: No risc support yet
-	set(UNICORN_ARCH ${temp_targets} CACHE STRING "Supported architectures")
+	if(SUPPORT_RISCV)
+		list(APPEND temp_targets riscv)
+	endif()
+
+	set(UNICORN_ARCH ${temp_targets} CACHE STRING "Supported architectures" FORCE)
 	option(BUILD_SHARED_LIBS "" OFF)
 	option(UNICORN_BUILD_SAMPLES "" OFF)
 	option(UNICORN_INSTALL "" OFF)
 	option(UNICORN_INTERPRETER "Use interpreter mode" ON)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/unicorn-wasm ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
+	add_subdirectory(/home/daniel/Documents/unicorn ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
 endif()
 
 add_executable(ret
@@ -125,7 +129,7 @@ if(EMSCRIPTEN)
 		-sALLOW_TABLE_GROWTH
 		-sEXPORTED_RUNTIME_METHODS=addFunction,ccall,cwrap
 		$<$<BOOL:${SUPPORT_MULTITHREADING}>:-sUSE_PTHREADS=1 -sPTHREAD_POOL_SIZE=2 -pthread>
-		#-gsource-map
+		-gsource-map
 	)
 else()
 	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>)
