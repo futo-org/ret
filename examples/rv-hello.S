@@ -9,4 +9,5 @@ bne a1, zero, top
 
 j skip
 string: .string "Hello World"
+.align 1
 skip:

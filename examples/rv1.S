@@ -3,3 +3,8 @@ x:
 auipc a0, %pcrel_hi(asd)
 addi a0, a0, %pcrel_lo(x)
 asd:
+
+// This works:
+// auipc a0, %pcrel_hi(target)
+// addi a0, a0, %pcrel_lo(target) + 4
+// target:
