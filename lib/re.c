@@ -215,6 +215,8 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		return -1;
 	}
 
+	int rc = 0;
+
 	if (output_options & OUTPUT_SPLIT_BY_INSTRUCTION) {
  		const uint8_t *bytecode = (const uint8_t *)encode;
 		unsigned int last_of = 0;
@@ -223,8 +225,9 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 			if (base_addr > curr->of) continue;
 			curr->of -= base_addr;
 			if (curr->of > size) continue;
-			if (curr->of > base_addr) {
-				err_buf->append(err_buf, "ERROR: Assembly splitter is broken", 0);
+			if (curr->of < last_of) {
+				err_buf->append(err_buf, "BUG: Assembly splitter is broken", 0);
+				continue;
 			}
 			if (curr->of > last_of) {
 				buffer_append_mode(buf, bytecode + last_of, curr->of - last_of, output_options);
@@ -244,7 +247,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	ks_free(encode);
 	free(list.memb);
 
-	return 0;
+	return rc;
 }
 
 int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {

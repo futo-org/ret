@@ -7,7 +7,7 @@ option(SUPPORT_ARM64 "arm v8+" OFF)
 option(SUPPORT_ARM32 "arm and arm thumb" OFF)
 option(SUPPORT_X86 "x86 and x86_64" OFF)
 option(SUPPORT_RISCV "rv64 and rv32" OFF)
-option(UNICORN_SUPPORT "Compile Unicorn-wasm" ON)
+option(USE_UNICORN_WASM "Use older unicorn-wasm branch instead of Unicorn2" OFF)
 
 if(EMSCRIPTEN)
 	option(SUPPORT_MULTITHREADING "Support emscripten multithreading" OFF)
@@ -30,9 +30,7 @@ if(EMSCRIPTEN AND SUPPORT_MULTITHREADING)
 endif()
 
 set(RET_DEFINES "")
-if(UNICORN_SUPPORT)
-	set(RET_DEFINES ${RET_DEFINES} -DRET_SUPPORT_UNICORN=1)
-endif()
+set(RET_DEFINES ${RET_DEFINES} -DRET_SUPPORT_UNICORN=1)
 
 # Import capstone disassembly framework
 option(BUILD_LIBS_ONLY "" ON)
@@ -83,7 +81,24 @@ option(BUILD_LIBS_ONLY "Only build keystone library" 1)
 set(CMAKE_CROSSCOMPILING OFF) # Fix weird issue where keystone tries to configure top level again (???)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/keystone ${CMAKE_CURRENT_BINARY_DIR}/keystone)
 
-if(UNICORN_SUPPORT)
+if(USE_UNICORN_WASM)
+	set(temp_targets "")
+	if(SUPPORT_ARM64)
+		set(temp_targets "${temp_targets} AArch64")
+	endif()
+	if(SUPPORT_ARM32)
+		set(temp_targets "${temp_targets} ARM")
+	endif()
+	if(SUPPORT_X86)
+		set(temp_targets "${temp_targets} X86")
+	endif()
+	# Note: No risc support yet
+	set(UNICORN_ARCH ${temp_targets} CACHE STRING "Supported architectures")
+	option(BUILD_SHARED_LIBS "" OFF)
+	option(UNICORN_BUILD_SAMPLES "" OFF)
+	option(UNICORN_INSTALL "" OFF)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/unicorn-wasm ${CMAKE_CURRENT_BINARY_DIR}/unicorn)	
+else()
 	set(temp_targets)
 	if(SUPPORT_ARM64)
 		list(APPEND temp_targets aarch64)
@@ -103,14 +118,14 @@ if(UNICORN_SUPPORT)
 	option(UNICORN_BUILD_SAMPLES "" OFF)
 	option(UNICORN_INSTALL "" OFF)
 	option(UNICORN_INTERPRETER "Use interpreter mode" ON)
-	add_subdirectory(/home/daniel/Documents/unicorn ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/unicorn ${CMAKE_CURRENT_BINARY_DIR}/unicorn)
 endif()
 
 add_executable(ret
 	lib/buffers.c
 	lib/parser.c
 	lib/re.c
-	$<$<BOOL:${UNICORN_SUPPORT}>:lib/unicorn.c>
+	lib/unicorn.c
 )
 
 set(EXPORT_FUNCS _re_is_arch_supported,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_buffer_get_contents,_parser_to_buf,_re_is_unicorn_supported,_buffer_to_buffer,_buffer_get_data_length,_re_get_hex_mem_mirror_buffer)
@@ -121,7 +136,7 @@ endif()
 target_include_directories(ret PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/keystone/include)
 target_compile_definitions(ret PRIVATE ${RET_DEFINES})
 if(EMSCRIPTEN)
-	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>
+	target_link_libraries(ret PUBLIC capstone_static keystone unicorn
 		-sIGNORE_MISSING_MAIN
 		-sEXPORTED_FUNCTIONS=${EXPORT_FUNCS}
 		-sINVOKE_RUN=0
@@ -132,5 +147,5 @@ if(EMSCRIPTEN)
 		-gsource-map
 	)
 else()
-	target_link_libraries(ret PUBLIC capstone_static keystone $<$<BOOL:${UNICORN_SUPPORT}>:unicorn>)
+	target_link_libraries(ret PUBLIC capstone_static keystone unicorn)
 endif()

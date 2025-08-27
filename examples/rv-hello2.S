@@ -1,0 +1,12 @@
+li a0, 0x9000000
+li a1, 'h'
+sw a1, 0(a0)
+li a1, 'e'
+sw a1, 0(a0)
+li a1, 'l'
+sw a1, 0(a0)
+sw a1, 0(a0)
+li a1, 'o'
+sw a1, 0(a0)
+li a1, '\n'
+sw a1, 0(a0)

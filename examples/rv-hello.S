@@ -1,12 +1,12 @@
-li a0, 0x9000000
-li a1, 'h'
-sw a1, 0(a0)
-li a1, 'e'
-sw a1, 0(a0)
-li a1, 'l'
-sw a1, 0(a0)
-sw a1, 0(a0)
-li a1, 'o'
-sw a1, 0(a0)
-li a1, '\n'
-sw a1, 0(a0)
+la a0, string
+li a2, 0x9000000
+
+top:
+lbu a1, 0(a0)
+sw a1, 0(a2)
+addi a0, a0, 1
+bne a1, zero, top
+
+j skip
+string: .string "Hello World"
+skip:
