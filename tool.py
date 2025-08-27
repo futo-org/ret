@@ -3,13 +3,26 @@ import os
 import shutil
 import subprocess
 
+def niceName(arch):
+    match arch:
+        case "x86":
+            return "x86"
+        case "arm64":
+            return "Arm64"
+        case "arm32":
+            return "Arm"
+        case "riscv":
+            return "RISC-V"
+
 # Process HTML file so it can be placed in a subdirectory and reference
 # files from above directory
 def pphtml(src_html, arch, top_level):
     with open(src_html) as f:
         data = f.read()
+    
     data = data.replace('RET_VERSION', 'v4.0')
-    data = data.replace('<title>Ret</title>', f'<title>Ret {arch}</title>')
+    data = data.replace('{{TITLE}}', 'Ret - Online ' + niceName(arch) + ' Assembler and Disassembler')
+    data = data.replace('{{DESCRIPTION}}', "Online assembler and disassembler supporting ARM64, x86, ARM, Thumb, and RISC-V. Runs entirely client-side in WebAssembly.")
     if not top_level:
         paths_to_prefix = [
             "./bitbash",
