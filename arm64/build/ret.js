@@ -660,6 +660,16 @@ async function createWasm() {
   var ___assert_fail = (condition, filename, line, func) =>
       abort(`Assertion failed: ${UTF8ToString(condition)}, at: ` + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
 
+  /** @type {WebAssembly.Table} */
+  var wasmTable;
+  /** @suppress{checkTypes} */
+  var getWasmTableEntry = (funcPtr) => {
+      // In -Os and -Oz builds, do not implement a JS side wasm table mirror for small
+      // code size, but directly access wasmTable, which is a bit slower as uncached.
+      return wasmTable.get(funcPtr);
+    };
+  var ___call_sighandler = (fp, sig) => getWasmTableEntry(fp)(sig);
+
   class ExceptionInfo {
       // excPtr - Thrown object pointer to wrap. Metadata pointer is calculated from it.
       constructor(excPtr) {
@@ -3319,6 +3329,16 @@ async function createWasm() {
   var __abort_js = () =>
       abort('');
 
+  var runtimeKeepaliveCounter = 0;
+  var __emscripten_runtime_keepalive_clear = () => {
+      noExitRuntime = false;
+      runtimeKeepaliveCounter = 0;
+    };
+
+  var __emscripten_throw_longjmp = () => {
+      throw Infinity;
+    };
+
   
   
   
@@ -3364,6 +3384,39 @@ async function createWasm() {
   }
   ;
   }
+
+  var _emscripten_get_now = () => performance.now();
+  
+  var _emscripten_date_now = () => Date.now();
+  
+  var nowIsMonotonic = 1;
+  
+  var checkWasiClock = (clock_id) => clock_id >= 0 && clock_id <= 3;
+  
+  function _clock_time_get(clk_id, ignored_precision, ptime) {
+    ignored_precision = bigintToI53Checked(ignored_precision);
+  
+  
+      if (!checkWasiClock(clk_id)) {
+        return 28;
+      }
+      var now;
+      // all wasi clocks but realtime are monotonic
+      if (clk_id === 0) {
+        now = _emscripten_date_now();
+      } else if (nowIsMonotonic) {
+        now = _emscripten_get_now();
+      } else {
+        return 52;
+      }
+      // "now" is in ms, and wasi times are in ns.
+      var nsec = Math.round(now * 1000 * 1000);
+      HEAP64[((ptime)>>3)] = BigInt(nsec);
+      return 0;
+    ;
+  }
+
+
 
   var getHeapMax = () =>
       // Stay one Wasm page short of 4GB: while e.g. Chrome is able to allocate
@@ -3496,7 +3549,6 @@ async function createWasm() {
     };
 
   
-  var runtimeKeepaliveCounter = 0;
   var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
   var _proc_exit = (code) => {
       EXITSTATUS = code;
@@ -3658,6 +3710,8 @@ async function createWasm() {
   }
   }
 
+
+
   var uleb128EncodeWithLen = (arr) => {
       const n = arr.length;
       // Note: this LEB128 length encoding produces extra byte for n < 128,
@@ -3712,14 +3766,6 @@ async function createWasm() {
       return wrappedFunc;
     };
   
-  /** @type {WebAssembly.Table} */
-  var wasmTable;
-  /** @suppress{checkTypes} */
-  var getWasmTableEntry = (funcPtr) => {
-      // In -Os and -Oz builds, do not implement a JS side wasm table mirror for small
-      // code size, but directly access wasmTable, which is a bit slower as uncached.
-      return wasmTable.get(funcPtr);
-    };
   
   var updateTableMap = (offset, count) => {
       if (functionsInTableMap) {
@@ -3934,6 +3980,7 @@ var _buffer_get_contents,
   _re_is_unicorn_supported,
   _re_assemble,
   _re_disassemble,
+  _re_emulator,
   __ZNK7llvm_ks6MCExpr4dumpEv,
   __ZN7llvm_ks10MCFragment4dumpEv,
   __ZN7llvm_ks11MCAssembler4dumpEv,
@@ -3967,6 +4014,7 @@ function assignWasmExports(wasmExports) {
   Module['_re_is_unicorn_supported'] = _re_is_unicorn_supported = wasmExports['re_is_unicorn_supported'];
   Module['_re_assemble'] = _re_assemble = wasmExports['re_assemble'];
   Module['_re_disassemble'] = _re_disassemble = wasmExports['re_disassemble'];
+  Module['_re_emulator'] = _re_emulator = wasmExports['re_emulator'];
   Module['__ZNK7llvm_ks6MCExpr4dumpEv'] = __ZNK7llvm_ks6MCExpr4dumpEv = wasmExports['_ZNK7llvm_ks6MCExpr4dumpEv'];
   Module['__ZN7llvm_ks10MCFragment4dumpEv'] = __ZN7llvm_ks10MCFragment4dumpEv = wasmExports['_ZN7llvm_ks10MCFragment4dumpEv'];
   Module['__ZN7llvm_ks11MCAssembler4dumpEv'] = __ZN7llvm_ks11MCAssembler4dumpEv = wasmExports['_ZN7llvm_ks11MCAssembler4dumpEv'];
@@ -3988,6 +4036,8 @@ var wasmImports = {
   /** @export */
   __assert_fail: ___assert_fail,
   /** @export */
+  __call_sighandler: ___call_sighandler,
+  /** @export */
   __cxa_throw: ___cxa_throw,
   /** @export */
   __syscall_fstat64: ___syscall_fstat64,
@@ -4004,9 +4054,19 @@ var wasmImports = {
   /** @export */
   _abort_js: __abort_js,
   /** @export */
+  _emscripten_runtime_keepalive_clear: __emscripten_runtime_keepalive_clear,
+  /** @export */
+  _emscripten_throw_longjmp: __emscripten_throw_longjmp,
+  /** @export */
   _mmap_js: __mmap_js,
   /** @export */
   _munmap_js: __munmap_js,
+  /** @export */
+  clock_time_get: _clock_time_get,
+  /** @export */
+  emscripten_date_now: _emscripten_date_now,
+  /** @export */
+  emscripten_get_now: _emscripten_get_now,
   /** @export */
   emscripten_resize_heap: _emscripten_resize_heap,
   /** @export */
@@ -4026,10 +4086,142 @@ var wasmImports = {
   /** @export */
   fd_seek: _fd_seek,
   /** @export */
-  fd_write: _fd_write
+  fd_write: _fd_write,
+  /** @export */
+  invoke_ii,
+  /** @export */
+  invoke_iii,
+  /** @export */
+  invoke_iiiiiii,
+  /** @export */
+  invoke_iij,
+  /** @export */
+  invoke_iijjii,
+  /** @export */
+  invoke_vi,
+  /** @export */
+  invoke_vii,
+  /** @export */
+  invoke_viii,
+  /** @export */
+  invoke_viiii,
+  /** @export */
+  invoke_vij,
+  /** @export */
+  proc_exit: _proc_exit
 };
 var wasmExports;
 createWasm();
+
+function invoke_ii(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iij(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iijjii(index,a1,a2,a3,a4,a5) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vij(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
 
 
 // include: postamble.js
