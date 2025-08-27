@@ -297,3 +297,10 @@ button {
 	display: flex;
 	margin-left: auto;
 }
+
+.link-bitbash {
+	text-decoration: none;
+}
+.link-bitbash .btn {
+	width: 100%;
+}
