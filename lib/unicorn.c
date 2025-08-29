@@ -127,6 +127,8 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 			uc_reg_write(uc, UC_ARM64_REG_SP, &reg);			
 		} else if (_uc_arch == UC_ARCH_X86) {
 			uc_reg_write(uc, UC_X86_REG_ESP, &reg);			
+		} else if (_uc_arch == UC_ARCH_RISCV) {
+			uc_reg_write(uc, UC_RISCV_REG_SP, &reg);
 		}
 	}
 
