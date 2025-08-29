@@ -215,6 +215,177 @@ var isFileURI = (filename) => filename.startsWith('file://');
 // end include: runtime_exceptions.js
 // include: runtime_debug.js
 // end include: runtime_debug.js
+var wasmOffsetConverter;
+// include: wasm_offset_converter.js
+class WasmOffsetConverter {
+  // This class parses a WASM binary file, and constructs a mapping from
+  // function indices to the start of their code in the binary file, as well
+  // as parsing the name section to allow conversion of offsets to function names.
+  //
+  // The main purpose of this module is to enable the conversion of function
+  // index and offset from start of function to an offset into the WASM binary.
+  // This is needed to look up the WASM source map as well as generate
+  // consistent program counter representations given v8's non-standard
+  // WASM stack trace format.
+  //
+  // v8 bug: https://crbug.com/v8/9172
+  //
+  // This code is also used to check if the candidate source map offset is
+  // actually part of the same function as the offset we are looking for,
+  // as well as providing the function names for a given offset.
+
+  // map from function index to byte offset in WASM binary
+  offset_map = {};
+  func_starts = [];
+
+  // map from function index to names in WASM binary
+  name_map = {};
+
+  // number of imported functions this module has
+  import_functions = 0;
+
+  constructor(wasmBytes, wasmModule) {
+    // the buffer unsignedLEB128 will read from.
+    var buffer = wasmBytes;
+
+    // current byte offset into the WASM binary, as we parse it
+    // the first section starts at offset 8.
+    var offset = 8;
+
+    // the index of the next function we see in the binary
+    var funcidx = 0;
+
+    function unsignedLEB128() {
+      // consumes an unsigned LEB128 integer starting at `offset`.
+      // changes `offset` to immediately after the integer
+      var result = 0;
+      var shift = 0;
+      do {
+        var byte = buffer[offset++];
+        result += (byte & 0x7F) << shift;
+        shift += 7;
+      } while (byte & 0x80);
+      return result;
+    }
+
+    function skipLimits() {
+      var flags = unsignedLEB128();
+      unsignedLEB128(); // initial size
+      var hasMax = (flags & 1) != 0;
+      if (hasMax) {
+        unsignedLEB128();
+      }
+    }
+
+    binary_parse:
+    while (offset < buffer.length) {
+      var start = offset;
+      var type = buffer[offset++];
+      var end = unsignedLEB128() + offset;
+      switch (type) {
+        case 2: // import section
+          // we need to find all function imports and increment funcidx for each one
+          // since functions defined in the module are numbered after all imports
+          var count = unsignedLEB128();
+
+          while (count-- > 0) {
+            // skip module
+            offset = unsignedLEB128() + offset;
+            // skip name
+            offset = unsignedLEB128() + offset;
+
+            var kind = buffer[offset++];
+            switch (kind) {
+              case 0: // function import
+                ++funcidx;
+                unsignedLEB128(); // skip function type
+                break;
+              case 1: // table import
+                unsignedLEB128(); // skip elem type
+                skipLimits();
+                break;
+              case 2: // memory import
+                skipLimits();
+                break;
+              case 3: // global import
+                offset += 2; // skip type id byte and mutability byte
+                break;
+              case 4: // tag import
+                ++offset; // skip attribute
+                unsignedLEB128(); // skip tag type
+                break;
+            }
+          }
+          this.import_functions = funcidx;
+          break;
+        case 10: // code section
+          var count = unsignedLEB128();
+          while (count-- > 0) {
+            var size = unsignedLEB128();
+            this.offset_map[funcidx++] = offset;
+            this.func_starts.push(offset);
+            offset += size;
+          }
+          break binary_parse;
+      }
+      offset = end;
+    }
+
+    var sections = WebAssembly.Module.customSections(wasmModule, "name");
+    var nameSection = sections.length ? sections[0] : undefined;
+    if (nameSection) {
+      buffer = new Uint8Array(nameSection);
+      offset = 0;
+      while (offset < buffer.length) {
+        var subsection_type = buffer[offset++];
+        var len = unsignedLEB128(); // byte count
+        if (subsection_type != 1) {
+          // Skip the whole sub-section if it's not a function name sub-section.
+          offset += len;
+          continue;
+        }
+        var count = unsignedLEB128();
+        while (count-- > 0) {
+          var index = unsignedLEB128();
+          var length = unsignedLEB128();
+          this.name_map[index] = UTF8ArrayToString(buffer, offset, length);
+          offset += length;
+        }
+      }
+    }
+  }
+
+  convert(funcidx, offset) {
+    return this.offset_map[funcidx] + offset;
+  }
+
+  getIndex(offset) {
+    var lo = 0;
+    var hi = this.func_starts.length;
+    var mid;
+
+    while (lo < hi) {
+      mid = Math.floor((lo + hi) / 2);
+      if (this.func_starts[mid] > offset) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
+      }
+    }
+    return lo + this.import_functions - 1;
+  }
+
+  isSameFunc(offset1, offset2) {
+    return this.getIndex(offset1) == this.getIndex(offset2);
+  }
+
+  getName(offset) {
+    var index = this.getIndex(offset);
+    return this.name_map[index] || `wasm-function[${index}]`;
+  }
+}
+// end include: wasm_offset_converter.js
+
 // Memory management
 
 var wasmMemory;
@@ -410,6 +581,9 @@ async function instantiateArrayBuffer(binaryFile, imports) {
   try {
     var binary = await getWasmBinary(binaryFile);
     var instance = await WebAssembly.instantiate(binary, imports);
+    // wasmOffsetConverter needs to be assigned before calling resolve.
+    // See comments below in instantiateAsync.
+    wasmOffsetConverter = new WasmOffsetConverter(binary, instance.module);
     return instance;
   } catch (reason) {
     err(`failed to asynchronously prepare wasm: ${reason}`);
@@ -432,7 +606,27 @@ async function instantiateAsync(binary, binaryFile, imports) {
      ) {
     try {
       var response = fetch(binaryFile, { credentials: 'same-origin' });
+      // We need the wasm binary for the offset converter. Clone the response
+      // in order to get its arrayBuffer (cloning should be more efficient
+      // than doing another entire request).
+      // (We must clone the response now in order to use it later, as if we
+      // try to clone it asynchronously lower down then we will get a
+      // "response was already consumed" error.)
+      var clonedResponse = (await response).clone();
       var instantiationResult = await WebAssembly.instantiateStreaming(response, imports);
+      // When using the offset converter, we must interpose here. First,
+      // the instantiation result must arrive (if it fails, the error
+      // handling later down will handle it). Once it arrives, we can
+      // initialize the offset converter. And only then is it valid to
+      // call receiveInstantiationResult, as that function will use the
+      // offset converter (in the case of pthreads, it will create the
+      // pthreads and send them the offsets along with the wasm instance).
+      var arrayBufferResult = await clonedResponse.arrayBuffer();
+      try {
+        wasmOffsetConverter = new WasmOffsetConverter(new Uint8Array(arrayBufferResult), instantiationResult.module);
+      } catch (reason) {
+        err(`failed to initialize offset-converter: ${reason}`);
+      }
       return instantiationResult;
     } catch (reason) {
       // We expect the most common failure cause to be a bad MIME type for the binary,
@@ -523,6 +717,64 @@ async function createWasm() {
       }
     }
 
+  var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
+  
+  var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
+      var maxIdx = idx + maxBytesToRead;
+      if (ignoreNul) return maxIdx;
+      // TextDecoder needs to know the byte length in advance, it doesn't stop on
+      // null terminator by itself.
+      // As a tiny code save trick, compare idx against maxIdx using a negation,
+      // so that maxBytesToRead=undefined/NaN means Infinity.
+      while (heapOrArray[idx] && !(idx >= maxIdx)) ++idx;
+      return idx;
+    };
+  
+    /**
+     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
+     * array that contains uint8 values, returns a copy of that string as a
+     * Javascript String object.
+     * heapOrArray is either a regular array, or a JavaScript typed array view.
+     * @param {number=} idx
+     * @param {number=} maxBytesToRead
+     * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
+     * @return {string}
+     */
+  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead, ignoreNul) => {
+  
+      var endPtr = findStringEnd(heapOrArray, idx, maxBytesToRead, ignoreNul);
+  
+      // When using conditional TextDecoder, skip it for short strings as the overhead of the native call is not worth it.
+      if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
+        return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
+      }
+      var str = '';
+      while (idx < endPtr) {
+        // For UTF8 byte structure, see:
+        // http://en.wikipedia.org/wiki/UTF-8#Description
+        // https://www.ietf.org/rfc/rfc2279.txt
+        // https://tools.ietf.org/html/rfc3629
+        var u0 = heapOrArray[idx++];
+        if (!(u0 & 0x80)) { str += String.fromCharCode(u0); continue; }
+        var u1 = heapOrArray[idx++] & 63;
+        if ((u0 & 0xE0) == 0xC0) { str += String.fromCharCode(((u0 & 31) << 6) | u1); continue; }
+        var u2 = heapOrArray[idx++] & 63;
+        if ((u0 & 0xF0) == 0xE0) {
+          u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
+        } else {
+          u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
+        }
+  
+        if (u0 < 0x10000) {
+          str += String.fromCharCode(u0);
+        } else {
+          var ch = u0 - 0x10000;
+          str += String.fromCharCode(0xD800 | (ch >> 10), 0xDC00 | (ch & 0x3FF));
+        }
+      }
+      return str;
+    };
+
   var callRuntimeCallbacks = (callbacks) => {
       while (callbacks.length > 0) {
         // Pass the module as the first argument.
@@ -583,63 +835,6 @@ async function createWasm() {
 
   var stackSave = () => _emscripten_stack_get_current();
 
-  var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
-  
-  var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
-      var maxIdx = idx + maxBytesToRead;
-      if (ignoreNul) return maxIdx;
-      // TextDecoder needs to know the byte length in advance, it doesn't stop on
-      // null terminator by itself.
-      // As a tiny code save trick, compare idx against maxIdx using a negation,
-      // so that maxBytesToRead=undefined/NaN means Infinity.
-      while (heapOrArray[idx] && !(idx >= maxIdx)) ++idx;
-      return idx;
-    };
-  
-    /**
-     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
-     * array that contains uint8 values, returns a copy of that string as a
-     * Javascript String object.
-     * heapOrArray is either a regular array, or a JavaScript typed array view.
-     * @param {number=} idx
-     * @param {number=} maxBytesToRead
-     * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
-     * @return {string}
-     */
-  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead, ignoreNul) => {
-  
-      var endPtr = findStringEnd(heapOrArray, idx, maxBytesToRead, ignoreNul);
-  
-      // When using conditional TextDecoder, skip it for short strings as the overhead of the native call is not worth it.
-      if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-        return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
-      }
-      var str = '';
-      while (idx < endPtr) {
-        // For UTF8 byte structure, see:
-        // http://en.wikipedia.org/wiki/UTF-8#Description
-        // https://www.ietf.org/rfc/rfc2279.txt
-        // https://tools.ietf.org/html/rfc3629
-        var u0 = heapOrArray[idx++];
-        if (!(u0 & 0x80)) { str += String.fromCharCode(u0); continue; }
-        var u1 = heapOrArray[idx++] & 63;
-        if ((u0 & 0xE0) == 0xC0) { str += String.fromCharCode(((u0 & 31) << 6) | u1); continue; }
-        var u2 = heapOrArray[idx++] & 63;
-        if ((u0 & 0xF0) == 0xE0) {
-          u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
-        } else {
-          u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
-        }
-  
-        if (u0 < 0x10000) {
-          str += String.fromCharCode(u0);
-        } else {
-          var ch = u0 - 0x10000;
-          str += String.fromCharCode(0xD800 | (ch >> 10), 0xDC00 | (ch & 0x3FF));
-        }
-      }
-      return str;
-    };
   
     /**
      * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
@@ -3500,7 +3695,7 @@ async function createWasm() {
         // Older versions of v8 give function index and offset in the function,
         // so we try using the offset converter. If that doesn't work,
         // we pack index and offset into a "return address"
-        abort('Legacy backtrace format detected but -sUSE_OFFSET_CONVERTER not present.')
+        return wasmOffsetConverter.convert(+match[1], +match[2]);
       } else if (match = /:(\d+):\d+(?:\)|$)/.exec(frame)) {
         // If we are in js, we can use the js line number as the "return address".
         // This should work for wasm2js.  We tag the high bit to distinguish this
