@@ -97,6 +97,7 @@ def examples():
 
     add("Hello World", "rv", "rv-hello.S")
     add("Registers", "rv", "rv-regs.S")
+    add("Functions", "rv", "rv-func.S")
 
     add("Hello World", "arm32", "arm32-hello.S")
     add("Registers", "arm32", "arm32-regs.S")
