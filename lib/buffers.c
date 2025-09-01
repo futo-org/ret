@@ -68,11 +68,14 @@ static void buffer_append_hex(struct RetBuffer *buf, const void *in, unsigned in
 
 	for (unsigned int i = 0; i < len; i += data_type_size) {
 		if (data_type_size == 1) {
-			char ch = ' ';
+			char *ch = " ";
 			if (buf->output_options & OUTPUT_SPLIT_BY_FOUR) {
 				if (is_end_of_4(buf->counter)) {
-					ch = '\n';
+					ch = "\n";
 				}
+			} else if ((i + data_type_size) >= len) {
+				// Don't output space if end of chunk
+				ch = "";
 			}
 
 			uint8_t b;
@@ -82,9 +85,9 @@ static void buffer_append_hex(struct RetBuffer *buf, const void *in, unsigned in
 			} else if (buf->output_options & OUTPUT_AS_U8_BINARY) {
 				char binbuf[9];
 				to_bits(b, 8, binbuf);
-				buf->offset += sprintf(buf->buffer + buf->offset, "0b%s%c", binbuf, ch);				
+				buf->offset += sprintf(buf->buffer + buf->offset, "0b%s%s", binbuf, ch);
 			} else {
-				buf->offset += sprintf(buf->buffer + buf->offset, "%02x%c", b, ch);
+				buf->offset += sprintf(buf->buffer + buf->offset, "%02x%s", b, ch);
 			}
 		} else if (data_type_size == 2) {
 			if (i + 2 >= len + 1) break;
