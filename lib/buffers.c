@@ -59,6 +59,16 @@ static void buffer_append_hex(struct RetBuffer *buf, const void *in, unsigned in
 		buf->length = buf->length + max_str_len + 1000;
 	}
 
+	if (buf->output_options & OUTPUT_AS_BINARY) {
+		buf->offset += sprintf(buf->buffer + buf->offset, "0b");
+		for (int i = len - 1; i >= 0; --i) {
+			char binbuf[9];
+			to_bits(((const uint8_t *)in)[i], 8, binbuf);
+			buf->offset += sprintf(buf->buffer + buf->offset, "%s", binbuf);
+		}
+		return;
+	}
+
 	unsigned int data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U8) data_type_size = 1;
 	if (buf->output_options & OUTPUT_AS_U16) data_type_size = 2;

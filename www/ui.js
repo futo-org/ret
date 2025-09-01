@@ -388,14 +388,14 @@ document.querySelector("#copy-popup-button").onclick = function() {
 	if (curr == ret.OUTPUT_AS_U8) defaultOpt = 1;
 	if (curr == ret.OUTPUT_AS_U32) defaultOpt = 2;
 	if (curr == ret.OUTPUT_AS_C_ARRAY) defaultOpt = 3;
-	if (curr == ret.OUTPUT_AS_U8_BINARY) defaultOpt = 4;
+	if (curr == ret.OUTPUT_AS_BINARY) defaultOpt = 4;
 	setupRadio("select_output_as", defaultOpt, function(index, value, e) {
 		let option = 0;
 		if (index == 0) option = ret.OUTPUT_AS_AUTO;
 		if (index == 1) option = ret.OUTPUT_AS_U8;
 		if (index == 2) option = ret.OUTPUT_AS_U32;
 		if (index == 3) option = ret.OUTPUT_AS_C_ARRAY;
-		if (index == 4) option = ret.OUTPUT_AS_U8_BINARY;
+		if (index == 4) option = ret.OUTPUT_AS_BINARY;
 		ret.baseOutputOption = option;
 	});
 }
