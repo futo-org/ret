@@ -32,6 +32,8 @@ static void buffer_append_string(struct RetBuffer *buf, const void *in, unsigned
 	if (max_str_len == 0) max_str_len = strlen(str);
 	if (buf->length < (max_str_len + 1 + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1 + 1000);
+		buf->length = buf->length + max_str_len + 1 + 1000;
+		if (buf->buffer == NULL) abort();
 	}
 	memcpy(buf->buffer + buf->offset, str, max_str_len);
 	buf->offset += max_str_len;
@@ -41,6 +43,7 @@ static void buffer_append_string(struct RetBuffer *buf, const void *in, unsigned
 static void buffer_append_mem(struct RetBuffer *buf, const void *in, unsigned int len) {
 	if (buf->length < (len + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + len + 1000);
+		buf->length = buf->length + len + 1000;
 	}
 	memcpy(buf->buffer + buf->offset, in, len);
 	buf->offset += len;
@@ -53,6 +56,7 @@ static void buffer_append_hex(struct RetBuffer *buf, const void *in, unsigned in
 	unsigned int max_str_len = 32 * len;
 	if (buf->length < (max_str_len + buf->offset)) {
 		buf->buffer = realloc(buf->buffer, buf->length + max_str_len + 1000);
+		buf->length = buf->length + max_str_len + 1000;
 	}
 
 	unsigned int data_type_size = 1;
