@@ -196,12 +196,11 @@ let editor = CodeJar(document.querySelector("#asm"), highlight, {tab: '\t'});
 if (ret.urlOptions.hasOwnProperty("code")) {
 	editor.updateCode(decodeURIComponent(ret.urlOptions.code));
 }
-if (ret.urlOptions.hasOwnProperty("theme")) {
-	if (ret.urlOptions.theme == "light") {
-		let prefix = "";
-		if (ret.currentArch != ret.DEFAULT_ARCH) prefix = "../";
-		document.querySelector("#themelink").href = prefix + "light-theme.css";
-	}
+if ((ret.urlOptions.hasOwnProperty("theme") && ret.urlOptions.theme == "light")
+		|| !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+	let prefix = "";
+	if (ret.currentArch != ret.DEFAULT_ARCH) prefix = "../";
+	document.querySelector("#themelink").href = prefix + "light-theme.css";
 }
 if (editor.toString() == "") {
 	editor.updateCode(ret.getExample("Hello World"));
