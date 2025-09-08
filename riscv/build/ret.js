@@ -215,177 +215,6 @@ var isFileURI = (filename) => filename.startsWith('file://');
 // end include: runtime_exceptions.js
 // include: runtime_debug.js
 // end include: runtime_debug.js
-var wasmOffsetConverter;
-// include: wasm_offset_converter.js
-class WasmOffsetConverter {
-  // This class parses a WASM binary file, and constructs a mapping from
-  // function indices to the start of their code in the binary file, as well
-  // as parsing the name section to allow conversion of offsets to function names.
-  //
-  // The main purpose of this module is to enable the conversion of function
-  // index and offset from start of function to an offset into the WASM binary.
-  // This is needed to look up the WASM source map as well as generate
-  // consistent program counter representations given v8's non-standard
-  // WASM stack trace format.
-  //
-  // v8 bug: https://crbug.com/v8/9172
-  //
-  // This code is also used to check if the candidate source map offset is
-  // actually part of the same function as the offset we are looking for,
-  // as well as providing the function names for a given offset.
-
-  // map from function index to byte offset in WASM binary
-  offset_map = {};
-  func_starts = [];
-
-  // map from function index to names in WASM binary
-  name_map = {};
-
-  // number of imported functions this module has
-  import_functions = 0;
-
-  constructor(wasmBytes, wasmModule) {
-    // the buffer unsignedLEB128 will read from.
-    var buffer = wasmBytes;
-
-    // current byte offset into the WASM binary, as we parse it
-    // the first section starts at offset 8.
-    var offset = 8;
-
-    // the index of the next function we see in the binary
-    var funcidx = 0;
-
-    function unsignedLEB128() {
-      // consumes an unsigned LEB128 integer starting at `offset`.
-      // changes `offset` to immediately after the integer
-      var result = 0;
-      var shift = 0;
-      do {
-        var byte = buffer[offset++];
-        result += (byte & 0x7F) << shift;
-        shift += 7;
-      } while (byte & 0x80);
-      return result;
-    }
-
-    function skipLimits() {
-      var flags = unsignedLEB128();
-      unsignedLEB128(); // initial size
-      var hasMax = (flags & 1) != 0;
-      if (hasMax) {
-        unsignedLEB128();
-      }
-    }
-
-    binary_parse:
-    while (offset < buffer.length) {
-      var start = offset;
-      var type = buffer[offset++];
-      var end = unsignedLEB128() + offset;
-      switch (type) {
-        case 2: // import section
-          // we need to find all function imports and increment funcidx for each one
-          // since functions defined in the module are numbered after all imports
-          var count = unsignedLEB128();
-
-          while (count-- > 0) {
-            // skip module
-            offset = unsignedLEB128() + offset;
-            // skip name
-            offset = unsignedLEB128() + offset;
-
-            var kind = buffer[offset++];
-            switch (kind) {
-              case 0: // function import
-                ++funcidx;
-                unsignedLEB128(); // skip function type
-                break;
-              case 1: // table import
-                unsignedLEB128(); // skip elem type
-                skipLimits();
-                break;
-              case 2: // memory import
-                skipLimits();
-                break;
-              case 3: // global import
-                offset += 2; // skip type id byte and mutability byte
-                break;
-              case 4: // tag import
-                ++offset; // skip attribute
-                unsignedLEB128(); // skip tag type
-                break;
-            }
-          }
-          this.import_functions = funcidx;
-          break;
-        case 10: // code section
-          var count = unsignedLEB128();
-          while (count-- > 0) {
-            var size = unsignedLEB128();
-            this.offset_map[funcidx++] = offset;
-            this.func_starts.push(offset);
-            offset += size;
-          }
-          break binary_parse;
-      }
-      offset = end;
-    }
-
-    var sections = WebAssembly.Module.customSections(wasmModule, "name");
-    var nameSection = sections.length ? sections[0] : undefined;
-    if (nameSection) {
-      buffer = new Uint8Array(nameSection);
-      offset = 0;
-      while (offset < buffer.length) {
-        var subsection_type = buffer[offset++];
-        var len = unsignedLEB128(); // byte count
-        if (subsection_type != 1) {
-          // Skip the whole sub-section if it's not a function name sub-section.
-          offset += len;
-          continue;
-        }
-        var count = unsignedLEB128();
-        while (count-- > 0) {
-          var index = unsignedLEB128();
-          var length = unsignedLEB128();
-          this.name_map[index] = UTF8ArrayToString(buffer, offset, length);
-          offset += length;
-        }
-      }
-    }
-  }
-
-  convert(funcidx, offset) {
-    return this.offset_map[funcidx] + offset;
-  }
-
-  getIndex(offset) {
-    var lo = 0;
-    var hi = this.func_starts.length;
-    var mid;
-
-    while (lo < hi) {
-      mid = Math.floor((lo + hi) / 2);
-      if (this.func_starts[mid] > offset) {
-        hi = mid;
-      } else {
-        lo = mid + 1;
-      }
-    }
-    return lo + this.import_functions - 1;
-  }
-
-  isSameFunc(offset1, offset2) {
-    return this.getIndex(offset1) == this.getIndex(offset2);
-  }
-
-  getName(offset) {
-    var index = this.getIndex(offset);
-    return this.name_map[index] || `wasm-function[${index}]`;
-  }
-}
-// end include: wasm_offset_converter.js
-
 // Memory management
 
 var wasmMemory;
@@ -479,37 +308,6 @@ function postRun() {
   // End ATPOSTRUNS hooks
 }
 
-// A counter of dependencies for calling run(). If we need to
-// do asynchronous work before running, increment this and
-// decrement it. Incrementing must happen in a place like
-// Module.preRun (used by emcc to add file preloading).
-// Note that you can add dependencies in preRun, even though
-// it happens right before run - run will be postponed until
-// the dependencies are met.
-var runDependencies = 0;
-var dependenciesFulfilled = null; // overridden to take different actions when all run dependencies are fulfilled
-
-function addRunDependency(id) {
-  runDependencies++;
-
-  Module['monitorRunDependencies']?.(runDependencies);
-
-}
-
-function removeRunDependency(id) {
-  runDependencies--;
-
-  Module['monitorRunDependencies']?.(runDependencies);
-
-  if (runDependencies == 0) {
-    if (dependenciesFulfilled) {
-      var callback = dependenciesFulfilled;
-      dependenciesFulfilled = null;
-      callback(); // can add another dependenciesFulfilled
-    }
-  }
-}
-
 /** @param {string|number=} what */
 function abort(what) {
   Module['onAbort']?.(what);
@@ -581,9 +379,6 @@ async function instantiateArrayBuffer(binaryFile, imports) {
   try {
     var binary = await getWasmBinary(binaryFile);
     var instance = await WebAssembly.instantiate(binary, imports);
-    // wasmOffsetConverter needs to be assigned before calling resolve.
-    // See comments below in instantiateAsync.
-    wasmOffsetConverter = new WasmOffsetConverter(binary, instance.module);
     return instance;
   } catch (reason) {
     err(`failed to asynchronously prepare wasm: ${reason}`);
@@ -606,27 +401,7 @@ async function instantiateAsync(binary, binaryFile, imports) {
      ) {
     try {
       var response = fetch(binaryFile, { credentials: 'same-origin' });
-      // We need the wasm binary for the offset converter. Clone the response
-      // in order to get its arrayBuffer (cloning should be more efficient
-      // than doing another entire request).
-      // (We must clone the response now in order to use it later, as if we
-      // try to clone it asynchronously lower down then we will get a
-      // "response was already consumed" error.)
-      var clonedResponse = (await response).clone();
       var instantiationResult = await WebAssembly.instantiateStreaming(response, imports);
-      // When using the offset converter, we must interpose here. First,
-      // the instantiation result must arrive (if it fails, the error
-      // handling later down will handle it). Once it arrives, we can
-      // initialize the offset converter. And only then is it valid to
-      // call receiveInstantiationResult, as that function will use the
-      // offset converter (in the case of pthreads, it will create the
-      // pthreads and send them the offsets along with the wasm instance).
-      var arrayBufferResult = await clonedResponse.arrayBuffer();
-      try {
-        wasmOffsetConverter = new WasmOffsetConverter(new Uint8Array(arrayBufferResult), instantiationResult.module);
-      } catch (reason) {
-        err(`failed to initialize offset-converter: ${reason}`);
-      }
       return instantiationResult;
     } catch (reason) {
       // We expect the most common failure cause to be a bad MIME type for the binary,
@@ -670,7 +445,6 @@ async function createWasm() {
     removeRunDependency('wasm-instantiate');
     return wasmExports;
   }
-  // wait for the pthread pool (if any)
   addRunDependency('wasm-instantiate');
 
   // Prefer streaming instantiation if available.
@@ -716,6 +490,91 @@ async function createWasm() {
         this.status = status;
       }
     }
+
+  var callRuntimeCallbacks = (callbacks) => {
+      while (callbacks.length > 0) {
+        // Pass the module as the first argument.
+        callbacks.shift()(Module);
+      }
+    };
+  var onPostRuns = [];
+  var addOnPostRun = (cb) => onPostRuns.push(cb);
+
+  var onPreRuns = [];
+  var addOnPreRun = (cb) => onPreRuns.push(cb);
+
+  var runDependencies = 0;
+  
+  
+  var dependenciesFulfilled = null;
+  var removeRunDependency = (id) => {
+      runDependencies--;
+  
+      Module['monitorRunDependencies']?.(runDependencies);
+  
+      if (runDependencies == 0) {
+        if (dependenciesFulfilled) {
+          var callback = dependenciesFulfilled;
+          dependenciesFulfilled = null;
+          callback(); // can add another dependenciesFulfilled
+        }
+      }
+    };
+  var addRunDependency = (id) => {
+      runDependencies++;
+  
+      Module['monitorRunDependencies']?.(runDependencies);
+  
+    };
+
+
+  
+    /**
+     * @param {number} ptr
+     * @param {string} type
+     */
+  function getValue(ptr, type = 'i8') {
+    if (type.endsWith('*')) type = '*';
+    switch (type) {
+      case 'i1': return HEAP8[ptr];
+      case 'i8': return HEAP8[ptr];
+      case 'i16': return HEAP16[((ptr)>>1)];
+      case 'i32': return HEAP32[((ptr)>>2)];
+      case 'i64': return HEAP64[((ptr)>>3)];
+      case 'float': return HEAPF32[((ptr)>>2)];
+      case 'double': return HEAPF64[((ptr)>>3)];
+      case '*': return HEAPU32[((ptr)>>2)];
+      default: abort(`invalid type for getValue: ${type}`);
+    }
+  }
+
+  var noExitRuntime = true;
+
+
+  
+    /**
+     * @param {number} ptr
+     * @param {number} value
+     * @param {string} type
+     */
+  function setValue(ptr, value, type = 'i8') {
+    if (type.endsWith('*')) type = '*';
+    switch (type) {
+      case 'i1': HEAP8[ptr] = value; break;
+      case 'i8': HEAP8[ptr] = value; break;
+      case 'i16': HEAP16[((ptr)>>1)] = value; break;
+      case 'i32': HEAP32[((ptr)>>2)] = value; break;
+      case 'i64': HEAP64[((ptr)>>3)] = BigInt(value); break;
+      case 'float': HEAPF32[((ptr)>>2)] = value; break;
+      case 'double': HEAPF64[((ptr)>>3)] = value; break;
+      case '*': HEAPU32[((ptr)>>2)] = value; break;
+      default: abort(`invalid type for setValue: ${type}`);
+    }
+  }
+
+  var stackRestore = (val) => __emscripten_stack_restore(val);
+
+  var stackSave = () => _emscripten_stack_get_current();
 
   var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
   
@@ -774,67 +633,6 @@ async function createWasm() {
       }
       return str;
     };
-
-  var callRuntimeCallbacks = (callbacks) => {
-      while (callbacks.length > 0) {
-        // Pass the module as the first argument.
-        callbacks.shift()(Module);
-      }
-    };
-  var onPostRuns = [];
-  var addOnPostRun = (cb) => onPostRuns.push(cb);
-
-  var onPreRuns = [];
-  var addOnPreRun = (cb) => onPreRuns.push(cb);
-
-
-  
-    /**
-     * @param {number} ptr
-     * @param {string} type
-     */
-  function getValue(ptr, type = 'i8') {
-    if (type.endsWith('*')) type = '*';
-    switch (type) {
-      case 'i1': return HEAP8[ptr];
-      case 'i8': return HEAP8[ptr];
-      case 'i16': return HEAP16[((ptr)>>1)];
-      case 'i32': return HEAP32[((ptr)>>2)];
-      case 'i64': return HEAP64[((ptr)>>3)];
-      case 'float': return HEAPF32[((ptr)>>2)];
-      case 'double': return HEAPF64[((ptr)>>3)];
-      case '*': return HEAPU32[((ptr)>>2)];
-      default: abort(`invalid type for getValue: ${type}`);
-    }
-  }
-
-  var noExitRuntime = true;
-
-  
-    /**
-     * @param {number} ptr
-     * @param {number} value
-     * @param {string} type
-     */
-  function setValue(ptr, value, type = 'i8') {
-    if (type.endsWith('*')) type = '*';
-    switch (type) {
-      case 'i1': HEAP8[ptr] = value; break;
-      case 'i8': HEAP8[ptr] = value; break;
-      case 'i16': HEAP16[((ptr)>>1)] = value; break;
-      case 'i32': HEAP32[((ptr)>>2)] = value; break;
-      case 'i64': HEAP64[((ptr)>>3)] = BigInt(value); break;
-      case 'float': HEAPF32[((ptr)>>2)] = value; break;
-      case 'double': HEAPF64[((ptr)>>3)] = value; break;
-      case '*': HEAPU32[((ptr)>>2)] = value; break;
-      default: abort(`invalid type for setValue: ${type}`);
-    }
-  }
-
-  var stackRestore = (val) => __emscripten_stack_restore(val);
-
-  var stackSave = () => _emscripten_stack_get_current();
-
   
     /**
      * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
@@ -1698,6 +1496,8 @@ async function createWasm() {
   var getUniqueRunDependency = (id) => {
       return id;
     };
+  
+  
   
   var preloadPlugins = [];
   var FS_handledByPreloadPlugin = async (byteArray, fullname) => {
@@ -3188,7 +2988,6 @@ async function createWasm() {
         } else { // Command-line.
           try {
             obj.contents = readBinary(obj.url);
-            obj.usedBytes = obj.contents.length;
           } catch (e) {
             throw new FS.ErrnoError(29);
           }
@@ -3689,13 +3488,8 @@ async function createWasm() {
       var match;
   
       if (match = /\bwasm-function\[\d+\]:(0x[0-9a-f]+)/.exec(frame)) {
-        // some engines give the binary offset directly, so we use that as return address
+        // Wasm engines give the binary offset directly, so we use that as return address
         return +match[1];
-      } else if (match = /\bwasm-function\[(\d+)\]:(\d+)/.exec(frame)) {
-        // Older versions of v8 give function index and offset in the function,
-        // so we try using the offset converter. If that doesn't work,
-        // we pack index and offset into a "return address"
-        return wasmOffsetConverter.convert(+match[1], +match[2]);
       } else if (match = /:(\d+):\d+(?:\)|$)/.exec(frame)) {
         // If we are in js, we can use the js line number as the "return address".
         // This should work for wasm2js.  We tag the high bit to distinguish this
@@ -4180,6 +3974,12 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   if (Module['arguments']) arguments_ = Module['arguments'];
   if (Module['thisProgram']) thisProgram = Module['thisProgram'];
 
+  if (Module['preInit']) {
+    if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
+    while (Module['preInit'].length > 0) {
+      Module['preInit'].shift()();
+    }
+  }
 }
 
 // Begin runtime exports
@@ -4340,8 +4140,6 @@ var wasmImports = {
   /** @export */
   proc_exit: _proc_exit
 };
-var wasmExports;
-createWasm();
 
 function invoke_viii(index,a1,a2,a3) {
   var sp = stackSave();
@@ -4498,16 +4296,12 @@ function run() {
   }
 }
 
-function preInit() {
-  if (Module['preInit']) {
-    if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
-    while (Module['preInit'].length > 0) {
-      Module['preInit'].shift()();
-    }
-  }
-}
+var wasmExports;
 
-preInit();
+// With async instantation wasmExports is assigned asynchronously when the
+// instance is received.
+createWasm();
+
 run();
 
 // end include: postamble.js

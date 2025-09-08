@@ -33,6 +33,7 @@ const ret = {
 	OUTPUT_AS_U64: 1 << 4,
 	OUTPUT_AS_U32_BINARY: 1 << 5,
 	OUTPUT_AS_U8_BINARY: 1 << 6,
+	OUTPUT_AS_BINARY: 1 << 7,
 	// Additional hex buffer output options (TODO: C Array isn't treated as one)
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
