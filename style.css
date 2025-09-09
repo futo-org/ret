@@ -202,6 +202,7 @@ button {
 	border: none;
 	padding: 5px;
 	margin: 5px;
+	width: 50px;
 }
 
 #help-dropdown-box {
@@ -303,4 +304,10 @@ button {
 }
 .link-bitbash .btn {
 	width: 100%;
+}
+
+#x86-dropdown, #riscv-dropdown {
+	display: none;
+	/* font-style: italic; */
+	background: #374737;
 }
