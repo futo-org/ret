@@ -203,6 +203,7 @@ button {
 	padding: 5px;
 	margin: 5px;
 	width: 50px;
+	text-align: center;
 }
 
 #help-dropdown-box {
