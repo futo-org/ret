@@ -229,6 +229,13 @@ button {
 #arch-dropdown-box {
 	min-width: 160px;
 }
+#arch-dropdown-box a {
+	text-decoration: none;
+	display: flex;
+}
+#arch-dropdown-box a .btn {
+	flex: 1;
+}
 
 #examples-dropdown-box {
 	min-width: 160px;

@@ -125,22 +125,6 @@ function setupWidgets() {
 		document.querySelector("#vseparator"),
 		vertical = false
 	);
-
-	document.querySelector("#switch-arm64").onclick = function() {
-		ret.switchArch(ret.ARCH_ARM64);
-	}
-	document.querySelector("#switch-arm32").onclick = function() {
-		ret.switchArch(ret.ARCH_ARM32);
-	}
-	document.querySelector("#switch-arm32thumb").onclick = function() {
-		ret.switchArch(ret.ARCH_ARM32_THUMB);
-	}
-	document.querySelector("#switch-x86").onclick = function() {
-		ret.switchArch(ret.ARCH_X86);
-	}
-	document.querySelector("#switch-riscv").onclick = function() {
-		ret.switchArch(ret.ARCH_RISCV);
-	}
 }
 setupWidgets();
 
@@ -196,6 +180,8 @@ let editor = CodeJar(document.querySelector("#asm"), highlight, {tab: '\t'});
 // Set editor text if empty (will not be if window was duplicated)
 if (ret.urlOptions.hasOwnProperty("code")) {
 	editor.updateCode(decodeURIComponent(ret.urlOptions.code));
+} else if (ret.urlOptions.hasOwnProperty("codeb64")) {
+	editor.updateCode(atob(ret.urlOptions.codeb64));
 }
 if ((ret.urlOptions.hasOwnProperty("theme") && ret.urlOptions.theme == "light")
 		|| !(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

@@ -119,7 +119,7 @@ const ret = {
 	},
 	encodeURL: function(allOptions) {
 		let opt = Object.assign({}, ret.urlOptions); // duplicate object
-		opt.code = encodeURIComponent(editor.toString());
+		opt.codeb64 = btoa(editor.toString());
 		if (allOptions) {
 			opt.baseParseOption = String(ret.baseParseOption);
 			opt.baseOutputOption = String(ret.baseOutputOption);
