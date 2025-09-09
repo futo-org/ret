@@ -112,7 +112,8 @@ const ret = {
 		if (allOptions) {
 			opt.baseParseOption = String(ret.baseParseOption);
 			opt.baseOutputOption = String(ret.baseOutputOption);
-			opt.currentBaseOffset = Number(ret.currentBaseOffset);
+			opt.bits = String(ret.bits);
+			opt.currentBaseOffset = String(ret.currentBaseOffset);
 			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
 			if (ret.parseCComments) opt.parseCComments = "true";
 			if (ret.aggressiveDisasm) opt.aggressiveDisasm = "true";
