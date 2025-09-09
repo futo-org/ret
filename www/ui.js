@@ -363,7 +363,7 @@ document.querySelector("#copy-popup-button").onclick = function() {
 	document.querySelector("#copy-popup").style.display = "none";
 }
 
-setupRadioFromMap("select_parse_as", ret.baseOutputOption, [
+setupRadioFromMap("select_parse_as", ret.baseParseOption, [
 	ret.PARSE_AS_AUTO,
 	ret.PARSE_AS_U8,
 	ret.PARSE_AS_U16,
