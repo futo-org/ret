@@ -1,4 +1,3 @@
-.norvc
 la a0, string
 li a2, 0x9000000
 

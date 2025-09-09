@@ -6,7 +6,7 @@ function addExample(name, arch, data) {
 		arch: arch,
 		data: data
 	});
-}addExample("Hello World", "rv", ".norvc\nla a0, string\nli a2, 0x9000000\n\ntop:\nlbu a1, 0(a0)\nsw a1, 0(a2)\naddi a0, a0, 1\nbne a1, zero, top\n\nj skip\nstring: .string \"Hello World\"\n.align 1\nskip:\n");
+}addExample("Hello World", "rv", "la a0, string\nli a2, 0x9000000\n\ntop:\nlbu a1, 0(a0)\nsw a1, 0(a2)\naddi a0, a0, 1\nbne a1, zero, top\n\nj skip\nstring: .string \"Hello World\"\n.align 1\nskip:\n");
 addExample("Registers", "rv", "// LI stands for load immediate.\n// This is equivalent to mov in other architectures.\nli a1, 0x1\n\n// x0 is a zero register. Writes to it will be ignored.\nli x0, 0x2\n\n// Read more about the RISC-V ABI: https://en.wikichip.org/wiki/risc-v/registers\n\n// The add instruction can add two registers\nadd a2, a1, a1 // x1 = x0 + x0\n\n// addi adds a register to an immediate value (which is a number rather than register)\naddi a2, a1, 0x5 // x1 = x0 + x5\n");
 addExample("Functions", "rv", "j skip\nnested:\n	jr ra\n\nmyfunc:\n	addi sp, sp, -8\n	sd ra, 0(sp) // ra = return address\n	call nested\n	li a0, 0x123\n	ld ra, 0(sp)\n	addi sp, sp, 8\n	jr ra\nskip:\n\ncall myfunc\n");
 addExample("Hello World", "arm32", "// https://armasm.com/ is an excellent resource for learning ARM Assembly\nadr r1, string\nldr r2, UART_DR\ntop:\n	ldrb r0, [r1]\n	cmp r0, #0x0\n	beq end\n	str r0, [r2]\n	add r1, r1, #0x1\n	b top\nend:\n\nb skip\nUART_DR: .int 0x9000000\nstring:\n.ascii \"Hello, World\\n\"\n.byte 0\n.align 2 \nskip:\n");
