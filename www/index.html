@@ -73,7 +73,7 @@
 		<div class="btn" id="arch-select">
 			<span id="arch-select-text">ARM64</span><img class="icon" src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 			<div class="dropdown-content" id="arch-dropdown-box">
-				<button class="btn" id="switch-x86">x86_64</button>
+				<button class="btn" id="switch-x86">x86</button>
 				<button class="btn" id="switch-arm64">Arm64</button>
 				<button class="btn" id="switch-arm32">Arm32</button>
 				<button class="btn" id="switch-arm32thumb">Arm32 Thumb</button>
@@ -93,6 +93,43 @@
 				<div class="radio-button" name="select_output_as">u32</div>
 				<div class="radio-button" name="select_output_as">C array</div>
 				<div class="radio-button" name="select_output_as">Binary</div>
+			</div>
+		</div>
+		<div class="btn" id="x86-dropdown">
+			<span>x86 Options</span>
+			<div class="dropdown-content" id="x86-dropdown-box">
+				<span class="padded-block">X86 Syntax:</span>
+				<div class="radio-button" name="x86_syntax">Intel</div>
+				<div class="radio-button" name="x86_syntax">AT&T</div>
+				<div class="radio-button" name="x86_syntax">NASM</div>
+				<div class="radio-button" name="x86_syntax">MASM</div>
+				<div class="radio-button" name="x86_syntax">GNU GAS</div>
+				<span class="padded-block">Bits:</span>
+				<div class="radio-button" name="x86_bits">64</div>
+				<div class="radio-button" name="x86_bits">32</div>
+				<div class="radio-button" name="x86_bits">16</div>
+			</div>
+		</div>
+		<div class="btn" id="riscv-dropdown">
+			<span>RISC-V Options</span>
+			<div class="dropdown-content" id="riscv-dropdown-box">
+				<span class="padded-block">Bits:</span>
+				<div class="radio-button" name="riscv_bits">64</div>
+				<div class="radio-button" name="riscv_bits">32</div>
+
+				<!-- <span class="padded-block">Extensions:</span> -->
+				<!-- <div class="padded-block"> -->
+				<!-- 	<input type="checkbox" id="riscvm" name="riscvm" /> -->
+				<!-- 	<label for="riscvm">Math (M)</label> -->
+				<!-- </div> -->
+				<!-- <div class="padded-block"> -->
+				<!-- 	<input type="checkbox" id="riscva" name="riscva" /> -->
+				<!-- 	<label for="riscva">Atomic (A)</label> -->
+				<!-- </div> -->
+				<!-- <div class="padded-block"> -->
+				<!-- 	<input type="checkbox" id="riscva" name="riscva" /> -->
+				<!-- 	<label for="riscva">Compressed (C)</label> -->
+				<!-- </div> -->
 			</div>
 		</div>
 		<div class="right">
@@ -170,14 +207,6 @@ ESC: Close popup
 					<div class="radio-button" name="select_parse_as">u16</div>
 					<div class="radio-button" name="select_parse_as">u32</div>
 				</div>
-				<div class="flex-child-horiz">
-					<span class="padded-block">X86 Syntax:</span>
-					<div class="radio-button" name="x86_syntax">Intel</div>
-					<div class="radio-button" name="x86_syntax">AT&T</div>
-					<div class="radio-button" name="x86_syntax">NASM</div>
-					<div class="radio-button" name="x86_syntax">MASM</div>
-					<div class="radio-button" name="x86_syntax">GNU GAS</div>
-				</div>
 			</div>
 
 			<!-- <div style="padding: 10px;"> -->
@@ -212,16 +241,6 @@ ESC: Close popup
 <script src="lib/x86asm.js"></script>
 <script src="lib/armasm.js"></script>
 <script src="lib/codejar.js"></script>
-<script>
-var examples = [];
-function addExample(name, arch, data) {
-	examples.push({
-		name: name,
-		arch: arch,
-		data: data
-	});
-}
-</script>
 <script src="examples.js"></script>
 <script src="lib.js"></script>
 <script src="ret.js"></script>

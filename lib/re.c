@@ -33,10 +33,10 @@ int re_is_arch_supported(int arch) {
 	if (arch == ARCH_ARM32 || arch == ARCH_ARM32_THUMB) return 1;
 #endif
 #ifdef RET_SUPPORT_X86
-	if (arch == ARCH_X86 || arch == ARCH_X86_64) return 1;
+	if (arch == ARCH_X86) return 1;
 #endif
 #ifdef RET_SUPPORT_RISCV
-	if (arch == ARCH_RISCV64 || arch == ARCH_RISCV32) return 1;
+	if (arch == ARCH_RISCV) return 1;
 #endif
 	return 0;
 }
@@ -52,9 +52,11 @@ int re_is_unicorn_supported(void) {
 static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_engine **ks) {
 	ks_arch _ks_arch;
 	ks_mode _ks_mode = KS_MODE_LITTLE_ENDIAN;
-	if (arch == ARCH_X86_64) {
+	if (arch == ARCH_X86) {
 		_ks_arch = KS_ARCH_X86;
-		_ks_mode |= KS_MODE_64;
+		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_64;
+		else if (opt & RET_BITS_32) _ks_mode |= KS_MODE_32;
+		else if (opt & RET_BITS_16) _ks_mode |= KS_MODE_16;
 	} else if (arch == ARCH_ARM64) {
 		_ks_arch = KS_ARCH_ARM64;
 	} else if (arch == ARCH_ARM32) {
@@ -63,12 +65,11 @@ static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_eng
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_ks_arch = KS_ARCH_ARM;
 		_ks_mode |= KS_MODE_THUMB;
-	} else if (arch == ARCH_RISCV32) {
+	} else if (arch == ARCH_RISCV) {
 		_ks_arch = KS_ARCH_RISCV;
+		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_RISCV32;
+		else if (opt & RET_BITS_64) _ks_mode |= KS_MODE_RISCV64;
 		_ks_mode |= KS_MODE_RISCV32;
-	} else if (arch == ARCH_RISCV64) {
-		_ks_arch = KS_ARCH_RISCV;
-		_ks_mode |= KS_MODE_RISCV64;
 	} else {
 		err_buf->append(err_buf, "Unsupported architecture", 0);
 		return -1;
@@ -100,9 +101,11 @@ static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_eng
 static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *cs) {
 	cs_arch _cs_arch = 0;
 	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
-	if (arch == ARCH_X86_64) {
+	if (arch == ARCH_X86) {
 		_cs_arch = CS_ARCH_X86;
-		_cs_mode |= CS_MODE_64;
+		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_64;
+		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_32;
+		else if (opt & RET_BITS_16) _cs_mode |= CS_MODE_16;
 	} else if (arch == ARCH_ARM64) {
 		_cs_arch = CS_ARCH_AARCH64;
 	} else if (arch == ARCH_ARM32) {
@@ -110,12 +113,11 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_cs_arch = CS_ARCH_ARM;
 		_cs_mode |= CS_MODE_THUMB;
-	} else if (arch == ARCH_RISCV64) {
+	} else if (arch == ARCH_RISCV) {
 		_cs_arch = CS_ARCH_RISCV;
-		_cs_mode |= CS_MODE_RISCV64 | CS_MODE_RISCVC;
-	} else if (arch == ARCH_RISCV32) {
-		_cs_arch = CS_ARCH_RISCV;
-		_cs_mode |= CS_MODE_RISCV32;
+		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_RISCV64;
+		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_RISCV32;
+		//_cs_mode |= CS_MODE_RISCVC;
 	} else {
 		err_buf->append(err_buf, "Unsupported architecture", 0);
 		return -1;
@@ -287,7 +289,7 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct R
 			if (!(options & RET_AGGRESSIVE_DISASM))
 				end_of_valid = 1;
 			// TODO: Maybe print as u32 for arm64 and arm32
-			if (arch == ARCH_X86_64 || arch == ARCH_X86) {
+			if (arch == ARCH_X86) {
 				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", *bytecode);
 			} else {
 				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", *bytecode);
@@ -327,7 +329,7 @@ static int cli_asm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_assemble(arch, 0x0, RET_SYNTAX_INTEL, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
+	int rc = re_assemble(arch, 0x0, RET_SYNTAX_INTEL | RET_BITS_64, &re_buf_hex, &re_buf_err, input, OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_INSTRUCTION);
 	if (rc) {
 		printf("%s\n", re_buf_err.buffer);
 	} else {
@@ -359,7 +361,7 @@ int cli_disasm(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	int rc = re_disassemble(arch, 0x0, 0, &re_buf_str, &re_buf_err, input, PARSE_AS_AUTO, OUTPUT_AS_AUTO);
+	int rc = re_disassemble(arch, 0x0, RET_BITS_64, &re_buf_str, &re_buf_err, input, PARSE_AS_AUTO, OUTPUT_AS_AUTO);
 	if (rc) {
 		return -1;
 	}
@@ -437,11 +439,11 @@ int main(int argc, char **argv) {
 	re_init_globals();
 	enum Arch arch = ARCH_ARM64;
 	for (int i = 0; i < argc; i++) {
-		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86_64;
+		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86;
 		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
 		if (!strcmp(argv[i], "--thumb")) arch = ARCH_ARM32_THUMB;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
-		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV64;
+		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV;
 
 		if (!strcmp(argv[i], "--test")) return test();
 		if (!strcmp(argv[i], "--asm")) return cli_asm(arch, argv[i + 1]);

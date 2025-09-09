@@ -2,18 +2,20 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+// Architectures and execution modes
 enum Arch {
 	ARCH_ARM64 = 0,
 	ARCH_ARM32 = 1,
 	ARCH_X86 = 2,
-	ARCH_X86_64 = 3,
-	ARCH_RISCV32 = 4,
-	ARCH_RISCV64 = 5,
+	ARCH_XXX = 3,
+	ARCH_RISCV = 4,
+	ARCH_YYY = 5,
 	ARCH_WASM = 6,
 	ARCH_ARM32_THUMB = 7,
 	ARCH_POWERPC = 7,
 };
 
+// Base Hex parser options
 enum ParseOptions {
 	PARSE_AS_U8 = 1 << 0,
 	PARSE_AS_U16 = 1 << 1,
@@ -34,6 +36,7 @@ enum ParseOptions {
 	PARSE_C_COMMENTS = 1 << 12,
 };
 
+// Hex buffer output options
 enum OutputOptions {
 	// If the parser was piped into a buffer the data format will be detected
 	// automatically
@@ -45,6 +48,7 @@ enum OutputOptions {
 	OUTPUT_AS_U32_BINARY = 1 << 5,
 	OUTPUT_AS_U8_BINARY = 1 << 6,
 	OUTPUT_AS_BINARY = 1 << 7,
+	// Additional hex buffer output options (TODO: C Array isn't treated as one)
 	OUTPUT_AS_C_ARRAY = 1 << 10,
 	OUTPUT_AS_RUST_ARRAY = 1 << 11,
 	// TODO:
@@ -57,13 +61,19 @@ enum OutputOptions {
 	OUTPUT_ASSEMBLY_ANNOTATIONS = 1 << 15,
 };
 
-enum AssemblyOptions {
+enum RetOptions {
 	// Intel is the default syntax for assembler and disassembler
 	RET_SYNTAX_INTEL = 0,
 	RET_SYNTAX_ATT = 1 << 1,
 	RET_SYNTAX_NASM = 1 << 2,
 	RET_SYNTAX_MASM = 1 << 3,
 	RET_SYNTAX_GAS = 1 << 4,
+
+	// Size options for architectures that need it
+	RET_BITS_16 = 1 << 6,
+	RET_BITS_32 = 1 << 7,
+	RET_BITS_64 = 1 << 8,
+	RET_BITS_128 = 1 << 9,
 
 	// Tries to disassemble from every valid offset.
 	// If not chosen, .byte or .db directives will be added for the rest of the program.

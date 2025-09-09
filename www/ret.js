@@ -1,14 +1,14 @@
 const ret = {
 	// Default architecture (root-level) will be x86_64
-	DEFAULT_ARCH: 3,
+	DEFAULT_ARCH: 2,
 
 	// Architectures and variants
 	ARCH_ARM64: 0,
 	ARCH_ARM32: 1,
 	ARCH_X86: 2,
-	ARCH_X86_64: 3,
-	ARCH_RISCV32: 4,
-	ARCH_RISCV64: 5,
+	ARCH_XXX: 3,
+	ARCH_RISCV: 4,
+	ARCH_YYY: 5,
 	ARCH_WASM: 6,
 	ARCH_ARM32_THUMB: 7,
 
@@ -34,7 +34,6 @@ const ret = {
 	OUTPUT_AS_U32_BINARY: 1 << 5,
 	OUTPUT_AS_U8_BINARY: 1 << 6,
 	OUTPUT_AS_BINARY: 1 << 7,
-	// Additional hex buffer output options (TODO: C Array isn't treated as one)
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 	OUTPUT_AS_BIG_ENDIAN: 1 << 12,
@@ -48,6 +47,10 @@ const ret = {
 	SYNTAX_NASM: 1 << 2,
 	SYNTAX_MASM: 1 << 3,
 	SYNTAX_GAS: 1 << 4,
+	BITS_16: 1 << 6,
+	BITS_32: 1 << 7,
+	BITS_64: 1 << 8,
+	BITS_128: 1 << 9,
 	AGGRESSIVE_DISASM: 1 << 10,
 
 	// has object with initial URL options
@@ -55,6 +58,7 @@ const ret = {
 
 	currentArch: undefined,
 	currentSyntax: undefined,
+	bits: undefined,
 	aggressiveDisasm: false,
 	useGodboltOnAssembler: false,
 	currentBaseOffset: 0,
@@ -75,6 +79,7 @@ const ret = {
 		ret.baseParseOption = ret.PARSE_AS_AUTO;
 		ret.baseOutputOption = ret.OUTPUT_AS_AUTO;
 		ret.currentSyntax = ret.SYNTAX_INTEL;
+		ret.bits = 64; // used by RISC-V and x86
 		if (ret.urlOptions.hasOwnProperty("useGodboltOnAssembler")) {
 			ret.useGodboltOnAssembler = true;
 		}
@@ -86,6 +91,9 @@ const ret = {
 		}
 		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
 			ret.currentSyntax = Number(ret.urlOptions.currentSyntax);
+		}
+		if (ret.urlOptions.hasOwnProperty("bits")) {
+			ret.bits = Number(ret.urlOptions.bits);
 		}
 		if (ret.urlOptions.hasOwnProperty("currentBaseOffset")) {
 			ret.currentBaseOffset = Number(ret.urlOptions.currentBaseOffset);
@@ -99,7 +107,7 @@ const ret = {
 		ret.log("Loading...");
 	},
 	encodeURL: function(allOptions) {
-		let opt = Object.assign({}, ret.urlOptions);
+		let opt = Object.assign({}, ret.urlOptions); // duplicate object
 		opt.code = encodeURIComponent(editor.toString());
 		if (allOptions) {
 			opt.baseParseOption = String(ret.baseParseOption);
@@ -114,7 +122,6 @@ const ret = {
 		}
 		return window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
 	},
-	// TODO: Make this function less dumb
 	checkArch: function() {
 		if (window.location.pathname.includes("arm64")) {
 			return ret.ARCH_ARM64;
@@ -125,14 +132,9 @@ const ret = {
 				return ret.ARCH_ARM32;
 			}
 		} else if (window.location.pathname.includes("riscv")) {
-			if (ret.urlOptions.hasOwnProperty("rv32")) {
-				return ret.ARCH_RISCV32;
-			} else {
-				return ret.ARCH_RISCV64;
-			}
-			return ret.ARCH_RISCV64;
+			return ret.ARCH_RISCV;
 		} else if (window.location.pathname.includes("x86")) {
-			return ret.ARCH_X86_64;
+			return ret.ARCH_X86;
 		} else {
 			return ret.DEFAULT_ARCH;
 		}
@@ -165,10 +167,8 @@ const ret = {
 			window.location.href = prefix + "arm32/";
 		} else if (arch == ret.ARCH_ARM32_THUMB) {
 			window.location.href = prefix + "arm32/?thumb";
-		} else if (arch == ret.ARCH_RISCV64) {
+		} else if (arch == ret.ARCH_RISCV) {
 			window.location.href = prefix + "riscv/";
-		} else if (arch == ret.ARCH_RISCV32) {
-			window.location.href = prefix + "riscv/?rv32";
 		}
 	},
 
@@ -225,7 +225,7 @@ const ret = {
 		} else if (arch == ret.ARCH_ARM32_THUMB) {
 			compiler = "gnuasarmhfg54";
 			arguments += "-mthumb ";
-		} else if (arch == ret.ARCH_X86_64 || arch == ret.ARCH_X86) {
+		} else if (arch == ret.ARCH_X86) {
 			compiler = "gnuassnapshot";
 			if (ret.currentSyntax == ret.SYNTAX_INTEL) {
 				useIntel = true;
@@ -233,9 +233,9 @@ const ret = {
 			} else if (ret.currentSyntax == ret.SYNTAX_NASM) {
 				compiler = "nasm21601";
 			}
-		} else if (arch == ret.ARCH_RISCV64) {
+		} else if (arch == ret.ARCH_RISCV && ret.bits == 64) {
 			compiler = "gnuasriscv64g1510";
-		} else if (arch == ret.ARCH_RISCV32) {
+		} else if (arch == ret.ARCH_RISCV && ret.bits == 32) {
 			compiler = "gnuasriscv32g1510";
 		} else {
 			throw "Error";
@@ -264,7 +264,7 @@ const ret = {
 		let selected = [];
 		for (let i = 0; i < examples.length; i++) {
 			const isArm = ret.currentArch == ret.ARCH_ARM32 || ret.currentArch == ret.ARCH_ARM32_THUMB;
-			const isX86 = ret.currentArch == ret.ARCH_X86 || ret.currentArch == ret.ARCH_X86_64;
+			const isX86 = ret.currentArch == ret.ARCH_X86;
 			if (examples[i].arch == "arm32" && isArm) {
 				selected.push(examples[i]);
 			} else if (isX86 && examples[i].arch.startsWith("x86")) {
@@ -281,9 +281,9 @@ const ret = {
 
 			else if (examples[i].arch == "arm64" && ret.currentArch == ret.ARCH_ARM64) {
 				selected.push(examples[i]);
-			} else if ((examples[i].arch == "rv32" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV32) {
+			} else if ((examples[i].arch == "rv32" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV && ret.bits == 32) {
 				selected.push(examples[i]);
-			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV64) {
+			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV && ret.bits == 64) {
 				selected.push(examples[i]);
 			}
 		}
@@ -326,7 +326,22 @@ const ret = {
 
 	assemble: function(code, outBuf, errBuf) {
 		let then = Date.now();
-		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, outBuf, errBuf, code, ret.getOptionOption());
+		let option = ret.currentSyntax;
+		if (ret.bits == 64) option |= ret.BITS_64;
+		else if (ret.bits == 32) option |= ret.BITS_32;
+		else if (ret.bits == 16) option |= ret.BITS_16;
+		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
+		let now = Date.now();
+		return [rc, now - then];
+	},
+	disassemble: function(hexText, outBuf, errBuf) {
+		let then = Date.now();
+		let option = ret.currentSyntax;
+		if (ret.bits == 64) option |= ret.BITS_64;
+		else if (ret.bits == 32) option |= ret.BITS_32;
+		else if (ret.bits == 16) option |= ret.BITS_16;
+		let rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf,
+			hexText, ret.getParseOption(), ret.getOptionOption());
 		let now = Date.now();
 		return [rc, now - then];
 	},

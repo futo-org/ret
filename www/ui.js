@@ -99,8 +99,17 @@ function setupRadio(elementName, initialOptionIndex, callback) {
 	}
 }
 
+function setupRadioFromMap(elementName, initialOptionValue, map, callback) {
+	let defaultOpt = Object.keys(map).find(k => map[k] === initialOptionValue);
+	setupRadio(elementName, defaultOpt, function(index, value, e) {
+		callback(map[index]);
+	});
+}
+
 function setupWidgets() {
 	setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
+	setupDropDown(document.querySelector("#x86-dropdown"), document.querySelector("#x86-dropdown-box"));
+	setupDropDown(document.querySelector("#riscv-dropdown"), document.querySelector("#riscv-dropdown-box"));
 	setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
 	setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
 	setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
@@ -127,10 +136,10 @@ function setupWidgets() {
 		ret.switchArch(ret.ARCH_ARM32_THUMB);
 	}
 	document.querySelector("#switch-x86").onclick = function() {
-		ret.switchArch(ret.ARCH_X86_64);
+		ret.switchArch(ret.ARCH_X86);
 	}
 	document.querySelector("#switch-riscv").onclick = function() {
-		ret.switchArch(ret.ARCH_RISCV64);
+		ret.switchArch(ret.ARCH_RISCV);
 	}
 }
 setupWidgets();
@@ -140,33 +149,25 @@ function updatePageArch() {
 	if (ret.currentArch == ret.ARCH_ARM64) {
 		document.querySelector("#arch-select-text").innerText = "Arm64";
 		document.querySelector("#menu").style.background = "rgb(23 55 81)";
-		document.title = "Ret Arm64";
 		document.querySelector("#asm").classList.add("language-armasm2");
-	} else if (ret.currentArch == ret.ARCH_X86_64) {
-		document.querySelector("#arch-select-text").innerText = "x86_64";
+	} else if (ret.currentArch == ret.ARCH_X86) {
+		document.querySelector("#arch-select-text").innerText = "x86";
 		document.querySelector("#menu").style.background = "rgb(97 36 48)";
-		document.title = "Ret x86_64";
 		document.querySelector("#asm").classList.add("language-x86asm2");
+		document.querySelector("#x86-dropdown").style.display = "flex";
 	} else if (ret.currentArch == ret.ARCH_ARM32) {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
 		document.querySelector("#menu").style.background = "rgb(19 73 64)";
-		document.title = "Ret Arm32";
 		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_ARM32_THUMB) {
 		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
 		document.querySelector("#menu").style.background = "rgb(24 91 83)";
-		document.title = "Ret Arm32 Thumb";
 		document.querySelector("#asm").classList.add("language-armasm2");
-	} else if (ret.currentArch == ret.ARCH_RISCV64) {
+	} else if (ret.currentArch == ret.ARCH_RISCV) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V";
 		document.querySelector("#menu").style.background = "rgb(170 65 18)";
-		document.title = "Ret RISC-V";
 		document.querySelector("#asm").classList.add("language-armasm2");
-	} else if (ret.currentArch == ret.ARCH_RISCV32) {
-		document.querySelector("#arch-select-text").innerText = "RISC-V 32";
-		document.querySelector("#menu").style.background = "rgb(165 99 70)";
-		document.title = "Ret RISC-V 32";
-		document.querySelector("#asm").classList.add("language-armasm2");
+		document.querySelector("#riscv-dropdown").style.display = "flex";
 	}
 }
 updatePageArch();
@@ -263,15 +264,13 @@ document.querySelector("#assemble").onclick = function() {
 document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
-	let then = Date.now();
-	let rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, ret.currentSyntax, ret.str_buf, ret.err_buf,
-		document.querySelector("#bytes").value, ret.getParseOption(), ret.getOptionOption());
-	let now = Date.now();
+	let obj = ret.disassemble(document.querySelector("#bytes").value, ret.str_buf, ret.err_buf);
+	let rc = obj[0];
 	if (rc != 0) {
 		ret.log(ret.get_buffer_contents(ret.err_buf));
 	} else {
 		editor.updateCode(ret.get_buffer_contents(ret.str_buf));
-		ret.log("Disassembled in " + String(now - then) + "us");
+		ret.log("Disassembled in " + String(obj[1]) + "us");
 	}
 }
 
@@ -364,61 +363,45 @@ document.querySelector("#copy-popup-button").onclick = function() {
 	document.querySelector("#copy-popup").style.display = "none";
 }
 
-{
-	let curr = ret.baseParseOption;
-	let defaultOpt = 0;
-	if (curr == ret.PARSE_AS_AUTO) defaultOpt = 0;
-	if (curr == ret.PARSE_AS_U8) defaultOpt = 1;
-	if (curr == ret.PARSE_AS_U16) defaultOpt = 2;
-	if (curr == ret.PARSE_AS_U32) defaultOpt = 3;
-	setupRadio("select_parse_as", defaultOpt, function(index, value, e) {
-		let option = 0;
-		if (index == 0) option = ret.PARSE_AS_AUTO;
-		if (index == 1) option = ret.PARSE_AS_U8;
-		if (index == 2) option = ret.PARSE_AS_U16;
-		if (index == 3) option = ret.PARSE_AS_U32;
-		ret.baseParseOption = option;
-	});
-}
-
-{
-	let curr = ret.baseOutputOption;
-	let defaultOpt = 0;
-	if (curr == ret.OUTPUT_AS_AUTO) defaultOpt = 0;
-	if (curr == ret.OUTPUT_AS_U8) defaultOpt = 1;
-	if (curr == ret.OUTPUT_AS_U32) defaultOpt = 2;
-	if (curr == ret.OUTPUT_AS_C_ARRAY) defaultOpt = 3;
-	if (curr == ret.OUTPUT_AS_BINARY) defaultOpt = 4;
-	setupRadio("select_output_as", defaultOpt, function(index, value, e) {
-		let option = 0;
-		if (index == 0) option = ret.OUTPUT_AS_AUTO;
-		if (index == 1) option = ret.OUTPUT_AS_U8;
-		if (index == 2) option = ret.OUTPUT_AS_U32;
-		if (index == 3) option = ret.OUTPUT_AS_C_ARRAY;
-		if (index == 4) option = ret.OUTPUT_AS_BINARY;
-		ret.baseOutputOption = option;
-	});
-}
-
-{
-	let syntax = 0;
-	switch (ret.currentSyntax) {
-	case ret.SYNTAX_INTEL: syntax = 0; break;
-	case ret.SYNTAX_ATT: syntax = 1; break;
-	case ret.SYNTAX_NASM: syntax = 2; break;
-	case ret.SYNTAX_MASM: syntax = 3; break;
-	case ret.SYNTAX_GAS: syntax = 4; break;
-	}
-	setupRadio("x86_syntax", syntax, function(index, value, e) {
-		let option = 0;
-		if (index == 0) option = ret.SYNTAX_INTEL;
-		if (index == 1) option = ret.SYNTAX_ATT;
-		if (index == 2) option = ret.SYNTAX_NASM;
-		if (index == 3) option = ret.SYNTAX_MASM;
-		if (index == 4) option = ret.SYNTAX_GAS;
-		ret.currentSyntax = option;
-	});
-}
+setupRadioFromMap("select_parse_as", ret.baseOutputOption, [
+	ret.PARSE_AS_AUTO,
+	ret.PARSE_AS_U8,
+	ret.PARSE_AS_U16,
+	ret.PARSE_AS_U32,
+], function(value) {
+	ret.baseParseOption = value;
+});
+setupRadioFromMap("select_output_as", ret.baseOutputOption, [
+	ret.OUTPUT_AS_AUTO,
+	ret.OUTPUT_AS_U8,
+	ret.OUTPUT_AS_U32,
+	ret.OUTPUT_AS_C_ARRAY,
+	ret.OUTPUT_AS_BINARY,
+], function(value) {
+	ret.baseOutputOption = value;
+});
+setupRadioFromMap("x86_syntax", ret.currentSyntax, [
+	ret.SYNTAX_INTEL,
+	ret.SYNTAX_ATT,
+	ret.SYNTAX_NASM,
+	ret.SYNTAX_MASM,
+	ret.SYNTAX_GAS,
+], function(value) {
+	ret.currentSyntax = value;
+});
+setupRadioFromMap("x86_bits", ret.bits, [
+	64,
+	32,
+	16,
+], function(value) {
+	ret.bits = value;
+});
+setupRadioFromMap("riscv_bits", ret.bits, [
+	64,
+	32,
+], function(value) {
+	ret.bits = value;
+});
 
 document.querySelector("#parseccomments").checked = ret.parseCComments;
 document.querySelector("#parseccomments").onchange = function() {

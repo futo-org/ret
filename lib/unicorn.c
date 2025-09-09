@@ -77,8 +77,11 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 
 	uc_arch _uc_arch = 0;
 	uc_mode _uc_mode = 0;
-	if (arch == ARCH_X86_64) {
+	if (arch == ARCH_X86) {
 		_uc_arch = UC_ARCH_X86;
+//		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_64;
+//		else if (opt & RET_BITS_32) _uc_mode |= UC_MODE_32;
+//		else if (opt & RET_BITS_16) _uc_mode |= UC_MODE_16;
 		_uc_mode |= UC_MODE_64;
 	} else if (arch == ARCH_ARM64) {
 		_uc_arch = UC_ARCH_ARM64;
@@ -89,7 +92,7 @@ int re_emulator(enum Arch arch, unsigned int base_addr, struct RetBuffer *asm_bu
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_THUMB;
-	} else if (arch == ARCH_RISCV64) {
+	} else if (arch == ARCH_RISCV) {
 		_uc_arch = UC_ARCH_RISCV;
 		_uc_mode |= UC_MODE_RISCV64;
 	} else {
