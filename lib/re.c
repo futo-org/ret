@@ -67,9 +67,8 @@ static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_eng
 		_ks_mode |= KS_MODE_THUMB;
 	} else if (arch == ARCH_RISCV) {
 		_ks_arch = KS_ARCH_RISCV;
-		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_RISCV32;
-		else if (opt & RET_BITS_64) _ks_mode |= KS_MODE_RISCV64;
-		_ks_mode |= KS_MODE_RISCV32;
+		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_RISCV64;
+		else if (opt & RET_BITS_32) _ks_mode |= KS_MODE_RISCV32;
 	} else {
 		err_buf->append(err_buf, "Unsupported architecture", 0);
 		return -1;
