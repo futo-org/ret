@@ -52,6 +52,7 @@ const ret = {
 	BITS_64: 1 << 8,
 	BITS_128: 1 << 9,
 	AGGRESSIVE_DISASM: 1 << 10,
+	RISCV_C: 1 << 11,
 
 	// has object with initial URL options
 	urlOptions: null,
@@ -71,9 +72,18 @@ const ret = {
 	// Assembly options
 	splitBytesByInstruction: true,
 	splitBytesByFour: true,
+	// RISC-V options
+	riscvc: false,
 
 	// Initialize this object from URL options or defaults
 	init: function() {
+		function importBool(optionName, retName) {
+			if (ret.urlOptions.hasOwnProperty(optionName)) {
+				ret[retName] = (ret.urlOptions[retName] == "true");
+			} else {
+				ret[retName] = false;
+			}
+		}
 		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 		ret.currentArch = ret.checkArch();
 		ret.baseParseOption = ret.PARSE_AS_AUTO;
@@ -98,6 +108,7 @@ const ret = {
 		if (ret.urlOptions.hasOwnProperty("currentBaseOffset")) {
 			ret.currentBaseOffset = Number(ret.urlOptions.currentBaseOffset);
 		}
+		importBool("riscvc", "riscvc");
 		if (ret.urlOptions.hasOwnProperty("parseCComments")) ret.parseCComments = true;
 		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
 		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
@@ -114,6 +125,7 @@ const ret = {
 			opt.baseOutputOption = String(ret.baseOutputOption);
 			opt.bits = String(ret.bits);
 			opt.currentBaseOffset = String(ret.currentBaseOffset);
+			if (ret.currentArch == ret.ARCH_RISCV) opt.riscvc = String(ret.riscvc);
 			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
 			if (ret.parseCComments) opt.parseCComments = "true";
 			if (ret.aggressiveDisasm) opt.aggressiveDisasm = "true";
@@ -331,6 +343,7 @@ const ret = {
 		if (ret.bits == 64) option |= ret.BITS_64;
 		else if (ret.bits == 32) option |= ret.BITS_32;
 		else if (ret.bits == 16) option |= ret.BITS_16;
+		if (ret.riscvc) option |= ret.RISCV_C;
 		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
 		let now = Date.now();
 		return [rc, now - then];
@@ -341,6 +354,7 @@ const ret = {
 		if (ret.bits == 64) option |= ret.BITS_64;
 		else if (ret.bits == 32) option |= ret.BITS_32;
 		else if (ret.bits == 16) option |= ret.BITS_16;
+		if (ret.riscvc) option |= ret.RISCV_C;
 		let rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf,
 			hexText, ret.getParseOption(), ret.getOptionOption());
 		let now = Date.now();

@@ -78,6 +78,8 @@ enum RetOptions {
 	// Tries to disassemble from every valid offset.
 	// If not chosen, .byte or .db directives will be added for the rest of the program.
 	RET_AGGRESSIVE_DISASM = 1 << 10,
+
+	RET_RISCV_C = 1 << 11,
 };
 
 struct RetBuffer {

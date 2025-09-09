@@ -418,6 +418,11 @@ document.querySelector("#usegodbolt").onchange = function() {
 	ret.useGodboltOnAssembler = this.checked;
 }
 
+document.querySelector("#riscvc").checked = ret.riscvc;
+document.querySelector("#riscvc").onchange = function() {
+	ret.riscvc = this.checked;
+}
+
 function fillExamples() {
 	document.querySelector("#examples-dropdown-box").innerHTML = "";
 	let examples = ret.getExamples();
