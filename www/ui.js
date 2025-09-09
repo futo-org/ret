@@ -125,22 +125,6 @@ function setupWidgets() {
 		document.querySelector("#vseparator"),
 		vertical = false
 	);
-
-	document.querySelector("#switch-arm64").onclick = function() {
-		ret.switchArch(ret.ARCH_ARM64);
-	}
-	document.querySelector("#switch-arm32").onclick = function() {
-		ret.switchArch(ret.ARCH_ARM32);
-	}
-	document.querySelector("#switch-arm32thumb").onclick = function() {
-		ret.switchArch(ret.ARCH_ARM32_THUMB);
-	}
-	document.querySelector("#switch-x86").onclick = function() {
-		ret.switchArch(ret.ARCH_X86);
-	}
-	document.querySelector("#switch-riscv").onclick = function() {
-		ret.switchArch(ret.ARCH_RISCV);
-	}
 }
 setupWidgets();
 
