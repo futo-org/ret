@@ -309,5 +309,5 @@ button {
 #x86-dropdown, #riscv-dropdown {
 	display: none;
 	/* font-style: italic; */
-	background: #374737;
+	background: var(--special-box);
 }
