@@ -210,12 +210,22 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 			buffer_appendf(log, " x%d: 0x%llX\n", i, ((uint64_t *)rb)[0]);
 		}
 	} else if (_uc_arch == UC_ARCH_X86) {
-		const char *reg_names[] = {"eip", "eax", "ebx", "ecx", "esp", "ebp"};
-		int regs[] = {UC_X86_REG_EIP, UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
+		if (opt & RET_BITS_64) {
+			const char *reg_names[] = {"eip", "rax", "rbx", "rcx", "rsp", "rbp"};
+			int regs[] = {UC_X86_REG_EIP, UC_X86_REG_RAX, UC_X86_REG_RBX, UC_X86_REG_RCX, UC_X86_REG_RSP, UC_X86_REG_RBP};
 
-		for (int i = 0; i < 6; i++) {
-			uc_reg_read(uc, regs[i], rb);
-			buffer_appendf(log, " %s: 0x%X\n", reg_names[i], ((uint32_t *)rb)[0]);
+			for (int i = 0; i < 6; i++) {
+				uc_reg_read(uc, regs[i], rb);
+				buffer_appendf(log, " %s: 0x%llX\n", reg_names[i], ((uint64_t *)rb)[0]);
+			}
+		} else {
+			const char *reg_names[] = {"eip", "eax", "ebx", "ecx", "esp", "ebp"};
+			int regs[] = {UC_X86_REG_EIP, UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_ESP, UC_X86_REG_EBP};
+
+			for (int i = 0; i < 6; i++) {
+				uc_reg_read(uc, regs[i], rb);
+				buffer_appendf(log, " %s: 0x%X\n", reg_names[i], ((uint32_t *)rb)[0]);
+			}
 		}
 	} else if (_uc_arch == UC_ARCH_ARM) {
 		uint32_t reg;

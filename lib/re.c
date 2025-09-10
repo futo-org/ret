@@ -420,12 +420,12 @@ static int test_emu(enum Arch arch, const char *filename) {
 	fclose(f);
 	input[sz] = '\0';
 
-	if (re_assemble(arch, 0, 0, &re_buf_mem, &re_buf_err, input, 0)) {
+	if (re_assemble(arch, 0, RET_BITS_64, &re_buf_mem, &re_buf_err, input, 0)) {
 		printf("%s\n", re_buf_err.buffer);
 		return -1;
 	}
 
-	if (re_emulator(arch, RET_BITS_32, 0x0, &re_buf_mem, &re_buf_err)) {
+	if (re_emulator(arch, RET_BITS_64, 0x0, &re_buf_mem, &re_buf_err)) {
 		printf("%s\n", re_buf_err.buffer);
 		return -1;
 	}
