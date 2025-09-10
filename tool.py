@@ -4,6 +4,7 @@ import shutil
 import subprocess
 
 top_level_arch = "x86"
+ret_version = "v4.0"
 
 def nice_name(arch):
     match arch:
@@ -24,18 +25,18 @@ def pphtml(src_html, arch, top_level):
 
     def get_link(link_to):
         if arch == link_to:
-            return "."
-        if top_level == link_to:
+            return ""
+        if top_level_arch == link_to:
             return "../"
         return "../" + link_to
     
-    data = data.replace('{{RET_VERSION}}', 'v4.0')
-    data = data.replace('{{SWITCH_X86}}', get_link("x86"))
-    data = data.replace('{{SWITCH_ARM64}}', get_link("arm64"))
-    data = data.replace('{{SWITCH_ARM32}}', get_link("arm32"))
-    data = data.replace('{{SWITCH_RISCV}}', get_link("riscv"))
-    data = data.replace('{{TITLE}}', 'Ret - Online ' + nice_name(arch) + ' Assembler and Disassembler')
-    data = data.replace('{{DESCRIPTION}}', "Online assembler and disassembler supporting ARM64, x86, ARM, Thumb, and RISC-V. Runs entirely client-side in WebAssembly.")
+    data = data.replace("{{RET_VERSION}}", ret_version)
+    data = data.replace("{{SWITCH_X86}}", get_link("x86"))
+    data = data.replace("{{SWITCH_ARM64}}", get_link("arm64"))
+    data = data.replace("{{SWITCH_ARM32}}", get_link("arm32"))
+    data = data.replace("{{SWITCH_RISCV}}", get_link("riscv"))
+    data = data.replace("{{TITLE}}", "Ret - Online " + nice_name(arch) + " Assembler and Disassembler")
+    data = data.replace("{{DESCRIPTION}}", "Online assembler and disassembler supporting ARM64, x86, ARM, Thumb, and RISC-V. Runs entirely client-side in WebAssembly.")
     if not top_level:
         paths_to_prefix = [
             "./bitbash",
@@ -58,11 +59,11 @@ def pphtml(src_html, arch, top_level):
         ]
         for path in paths_to_prefix:
             data = data.replace(path, "../" + path)
-        data = data.replace('"ret.js"', '"../ret.js"')
+        data = data.replace("\"ret.js\"", "\"../ret.js\"")
     return data
 
 def ignore_build(dir, contents):
-	return ['build'] if 'build' in contents else []
+	return ["build"] if "build" in contents else []
 
 def deploy_target(arch):
     global top_level_arch
@@ -122,7 +123,7 @@ function addExample(name, arch, data) {
         d = open("examples/" + file, "r")
         out.write("addExample(\"" + name + "\", \"" + arch + "\", \"" + encode_js(d.read()) + "\");\n")
 
-    # 'Hello World' file is required for each arch
+    # "Hello World" file is required for each arch
 
     add("Hello World", "rv", "rv-hello.S")
     add("Registers", "rv", "rv-regs.S")
@@ -160,8 +161,8 @@ def serve():
 
     class CORSHandler(SimpleHTTPRequestHandler):
         def end_headers(self):
-            self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
-            self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
+            self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+            self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
             super().end_headers()
 
         def send_html(self, top_level, arch):
@@ -169,36 +170,36 @@ def serve():
             with open("www/index.html") as f:
                 data = f.read()
                 self.send_response(200)
-                self.send_header('Content-type', 'text/html')
+                self.send_header("Content-type", "text/html")
                 self.end_headers()
-                self.wfile.write(pphtml('www/index.html', arch, top_level).encode("utf-8"))
+                self.wfile.write(pphtml("www/index.html", arch, top_level).encode("utf-8"))
 
         def do_GET(self):
             path = urlparse(self.path).path
             print(urlparse(self.path))
             if path == "/":
                 self.send_html(True, top_level_arch)
-            elif path.strip("/") in ('arm64', 'arm32', 'x86', 'riscv'):
+            elif path.strip("/") in ("arm64", "arm32", "x86", "riscv"):
                 self.send_html(False, path.strip("/"))
             else:
                 super().do_GET()
 
         def translate_path(self, path):
-            root = os.path.abspath('www')
+            root = os.path.abspath("www")
             path = urlparse(path).path
-            for p in ('/arm64', '/arm32', '/x86', '/riscv'):
-                if path == p or path.startswith(p + '/'):
-                    return os.path.join(root, path.removeprefix(p).lstrip('/'))
-            return os.path.join(root, path.lstrip('/'))
+            for p in ("/arm64", "/arm32", "/x86", "/riscv"):
+                if path == p or path.startswith(p + "/"):
+                    return os.path.join(root, path.removeprefix(p).lstrip("/"))
+            return os.path.join(root, path.lstrip("/"))
 
     print("http://localhost:8000/")
-    HTTPServer(('localhost', 8000), CORSHandler).serve_forever()
+    HTTPServer(("localhost", 8000), CORSHandler).serve_forever()
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--deploy', action='store_true')
-    parser.add_argument('--examples', action='store_true')
-    parser.add_argument('--serve', action='store_true')
+    parser.add_argument("--deploy", action="store_true")
+    parser.add_argument("--examples", action="store_true")
+    parser.add_argument("--serve", action="store_true")
     args = parser.parse_args()
 
     if args.deploy:
