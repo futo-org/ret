@@ -425,7 +425,7 @@ static int test_emu(enum Arch arch, const char *filename) {
 		return -1;
 	}
 
-	if (re_emulator(arch, 0x0, &re_buf_mem, &re_buf_err)) {
+	if (re_emulator(arch, RET_BITS_32, 0x0, &re_buf_mem, &re_buf_err)) {
 		printf("%s\n", re_buf_err.buffer);
 		return -1;
 	}
