@@ -25,7 +25,7 @@ def pphtml(src_html, arch, top_level):
 
     def get_link(link_to):
         if arch == link_to:
-            return ""
+            return "../" + arch
         if top_level_arch == link_to:
             return "../"
         return "../" + link_to
