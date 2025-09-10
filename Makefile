@@ -1,10 +1,13 @@
-CMAKE ?= /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
+CMAKE := /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
 debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ALL=ON
 
 cli_build:
-	cmake -G Ninja -B buildcli -DSUPPORT_ARM64=ON -DSUPPORT_ARM32=ON -DSUPPORT_X86=ON -DSUPPORT_RISCV=ON -DUNICORN_SUPPORT=ON -DCMAKE_BUILD_TYPE=Debug
+	cmake -G Ninja -B buildcli -DSUPPORT_ALL=ON -DCMAKE_BUILD_TYPE=Debug
+
+bug1:
+	cmake --build buildcli && buildcli/ret --rv64 --asm examples/rv-func.S
 
 pages-deploy:
 	git tag -f 0.4.1-rc && git push -f origin 0.4.1-rc
