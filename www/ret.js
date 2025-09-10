@@ -120,6 +120,7 @@ const ret = {
 	encodeURL: function(allOptions) {
 		let opt = Object.assign({}, ret.urlOptions); // duplicate object
 		opt.codeb64 = btoa(editor.toString());
+		if (opt.hasOwnProperty("code")) delete opt.code; // remove code key in favor of codeb64
 		if (allOptions) {
 			opt.baseParseOption = String(ret.baseParseOption);
 			opt.baseOutputOption = String(ret.baseOutputOption);
