@@ -115,7 +115,7 @@ function addExample(name, arch, data) {
 		data: data
 	});
 }
-""".strip())
+""".strip() + "\n")
 
     def encode_js(data):
         return data.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\r', '')
@@ -145,8 +145,9 @@ function addExample(name, arch, data) {
     add("Mandelbrot", "arm64", "arm64-mandelbrot.S")
     #add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
 
-#    add("Hello World", "x86gnu", "x86-hello.asm")
-#    add("Hello World", "x86nasm", "x86-hello.asm")
+    add("Hello World (GNU)", "x86gnu", "x86-hello-gnu.asm")
+    add("Hello World (AT&T)", "x86att", "x86-hello-gnu.asm")
+    add("Hello World (NASM)", "x86nasm", "x86-hello-nasm.asm")
     add("Hello World", "x86intel", "x86-hello.asm")
     add("Registers", "x86intel", "x86-regs.asm")
     add("Functions", "x86intel", "x86-functions.asm")

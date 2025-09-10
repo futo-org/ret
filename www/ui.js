@@ -374,6 +374,7 @@ setupRadioFromMap("x86_syntax", ret.currentSyntax, [
 	ret.SYNTAX_GAS,
 ], function(value) {
 	ret.currentSyntax = value;
+	fillExamples();
 });
 setupRadioFromMap("x86_bits", ret.bits, [
 	64,
