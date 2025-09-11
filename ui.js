@@ -276,7 +276,13 @@ document.querySelector("#run").onclick = function() {
 		} else {
 			setBytes(ret.hex_buf);
 
-			rc = ret.re_emulator(ret.currentArch, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
+			let option = 0;
+			if (ret.bits == 64) option |= ret.BITS_64;
+			else if (ret.bits == 32) option |= ret.BITS_32;
+			else if (ret.bits == 16) option |= ret.BITS_16;
+			if (ret.riscvc) option |= ret.RISCV_C;
+
+			rc = ret.re_emulator(ret.currentArch, option, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
 			ret.log(ret.get_buffer_contents(ret.str_buf));
 		}
 	});
