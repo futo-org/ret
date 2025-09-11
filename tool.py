@@ -24,6 +24,8 @@ def pphtml(src_html, arch, top_level):
         data = f.read()
 
     def get_link(link_to):
+        if arch == link_to and top_level_arch == link_to:
+            return "" # not the best way to do this
         if arch == link_to:
             return "../" + arch
         if top_level_arch == link_to:
