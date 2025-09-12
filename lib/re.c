@@ -288,8 +288,7 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct R
 		} else {
 			if (!(options & RET_AGGRESSIVE_DISASM))
 				end_of_valid = 1;
-			// TODO: Maybe print as u32 for arm64 and arm32
-			if (arch == ARCH_X86) {
+			if (arch == ARCH_X86 && (options & RET_SYNTAX_NASM || options & RET_SYNTAX_MASM)) {
 				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", *bytecode);
 			} else {
 				snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", *bytecode);
