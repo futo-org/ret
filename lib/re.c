@@ -395,6 +395,11 @@ static int test(void) {
 	if (re_assemble(ARCH_ARM32, 0, 0, &re_buf_mirror, &re_buf_err, "mov r0, 0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
 	if (re_assemble(ARCH_ARM32_THUMB, 0, 0, &re_buf_mirror, &re_buf_err, "mov r0, 0x123\n", OUTPUT_AS_U8 | OUTPUT_SPLIT_BY_FOUR)) return -1;
 
+	printf("----- Test Parser ------\n");
+
+	parser_to_buf("1020304050607080", &re_buf_mirror, PARSE_AS_AUTO, OUTPUT_AS_U8);
+	printf("%s\n", buffer_get_contents(&re_buf_hex));
+
 	return 0;
 }
 

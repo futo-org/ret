@@ -193,18 +193,24 @@ int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, i
 	while (1) {
 		struct Number n = parser_next(&p);
 		if (buf->output_options == OUTPUT_AS_AUTO) {
-			if (n.data_type_size == 4) buf->output_options = OUTPUT_AS_U32;
-			if (n.data_type_size == 2) buf->output_options = OUTPUT_AS_U16;
-			if (n.data_type_size == 1) buf->output_options = OUTPUT_AS_U8;
+			if (n.data_type_size == 8) buf->output_options = OUTPUT_AS_U64;
+			else if (n.data_type_size == 4) buf->output_options = OUTPUT_AS_U32;
+			else if (n.data_type_size == 2) buf->output_options = OUTPUT_AS_U16;
+			else if (n.data_type_size == 1) buf->output_options = OUTPUT_AS_U8;
+			else return -1;
 		}
 		if (of + 4 >= sizeof(buffer)) {
 			buf->append(buf, buffer, of);
 			of = 0;
 		}
 		if (!n.eof) {
-			if (n.data_type_size == 4) of += write_u32(buffer + of, n.n);
-			if (n.data_type_size == 2) of += write_u16(buffer + of, n.n);
-			if (n.data_type_size == 1) of += write_u8(buffer + of, n.n);
+			if (n.data_type_size == 8) {
+				of += write_u32(buffer + of, n.n & 0xffffffff);
+				of += write_u32(buffer + of, n.n >> 32);
+			} else if (n.data_type_size == 4) of += write_u32(buffer + of, n.n);
+			else if (n.data_type_size == 2) of += write_u16(buffer + of, n.n);
+			else if (n.data_type_size == 1) of += write_u8(buffer + of, n.n);
+			else return -1;
 		} else {
 			break;
 		}
@@ -218,4 +224,3 @@ int parser_to_buf(const char *input, struct RetBuffer *buf, int parse_options, i
 
 	return 0;
 }
-	

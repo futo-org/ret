@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-// Architectures and execution modes
+/// @brief Architectures and execution modes
 enum Arch {
 	ARCH_ARM64 = 0,
 	ARCH_ARM32 = 1,
@@ -15,7 +15,7 @@ enum Arch {
 	ARCH_POWERPC = 7,
 };
 
-// Base Hex parser options
+/// @brief Base Hex parser options
 enum ParseOptions {
 	PARSE_AS_U8 = 1 << 0,
 	PARSE_AS_U16 = 1 << 1,
@@ -27,12 +27,12 @@ enum ParseOptions {
 	SKIP_1_AT_START = 1 << 5,
 	SKIP_2_AT_START = 1 << 6,
 
-	// TODO:
+	// TODO: Assume every number is base 10 and ignore letters
 	PARSE_AS_BASE_10 = 1 << 10,
 	// TODO:
 	PARSE_AS_BIG_ENDIAN = 1 << 11,
 
-	// Parse // comments in the hex code, same as C does
+	/// @brief Parse // comments in the hex code
 	PARSE_C_COMMENTS = 1 << 12,
 };
 
@@ -79,6 +79,7 @@ enum RetOptions {
 	// If not chosen, .byte or .db directives will be added for the rest of the program.
 	RET_AGGRESSIVE_DISASM = 1 << 10,
 
+	// Enable/Disable the RISC-V C extension
 	RET_RISCV_C = 1 << 11,
 };
 
