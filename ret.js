@@ -18,12 +18,12 @@ const ret = {
 	PARSE_AS_AUTO: 1 << 4,
 	SKIP_1_AT_START: 1 << 5,
 	SKIP_2_AT_START: 1 << 6,
-	// Additional options
+	// Extra options
 	PARSE_AS_BASE_10: 1 << 10,
 	PARSE_AS_BIG_ENDIAN: 1 << 11,
 	PARSE_C_COMMENTS: 1 << 12,
 
-	// Hex buffer output options
+	// Base hex buffer output options
 	OUTPUT_AS_AUTO: 0,
 	OUTPUT_AS_U8: 1 << 1,
 	OUTPUT_AS_U16: 1 << 2,
@@ -32,6 +32,7 @@ const ret = {
 	OUTPUT_AS_U32_BINARY: 1 << 5,
 	OUTPUT_AS_U8_BINARY: 1 << 6,
 	OUTPUT_AS_BINARY: 1 << 7,
+	// Extra options
 	OUTPUT_AS_C_ARRAY: 1 << 10,
 	OUTPUT_AS_RUST_ARRAY: 1 << 11,
 	OUTPUT_AS_BIG_ENDIAN: 1 << 12,
@@ -75,44 +76,33 @@ const ret = {
 
 	// Initialize this object from URL options or defaults
 	init: function() {
+		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 		function importBool(optionName, retName) {
 			if (ret.urlOptions.hasOwnProperty(optionName)) {
 				ret[retName] = (ret.urlOptions[retName] == "true");
-			} else {
-				ret[retName] = false;
 			}
 		}
-		ret.urlOptions = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+		function importNumber(optionName, retName) {
+			if (ret.urlOptions.hasOwnProperty(optionName)) {
+				ret[retName] = Number(ret.urlOptions[retName]);
+			}
+		}
 		ret.currentArch = ret.checkArch();
 		ret.baseParseOption = ret.PARSE_AS_AUTO;
 		ret.baseOutputOption = ret.OUTPUT_AS_AUTO;
 		ret.currentSyntax = ret.SYNTAX_INTEL;
 		ret.bits = 64; // used by RISC-V and x86
-		if (ret.urlOptions.hasOwnProperty("useGodboltOnAssembler")) {
-			ret.useGodboltOnAssembler = true;
-		}
-		if (ret.urlOptions.hasOwnProperty("baseParseOption")) {
-			ret.baseParseOption = Number(ret.urlOptions.baseParseOption);
-		}
-		if (ret.urlOptions.hasOwnProperty("baseOutputOption")) {
-			ret.baseOutputOption = Number(ret.urlOptions.baseOutputOption);
-		}
-		if (ret.urlOptions.hasOwnProperty("currentSyntax")) {
-			ret.currentSyntax = Number(ret.urlOptions.currentSyntax);
-		}
-		if (ret.urlOptions.hasOwnProperty("bits")) {
-			ret.bits = Number(ret.urlOptions.bits);
-		}
-		if (ret.urlOptions.hasOwnProperty("currentBaseOffset")) {
-			ret.currentBaseOffset = Number(ret.urlOptions.currentBaseOffset);
-		}
+		importNumber("baseParseOption", "baseParseOption");
+		importNumber("baseOutputOption", "baseOutputOption");
+		importNumber("currentSyntax", "currentSyntax");
+		importNumber("bits", "bits");
+		importNumber("currentBaseOffset", "currentBaseOffset");
 		importBool("riscvc", "riscvc");
-		if (ret.urlOptions.hasOwnProperty("parseCComments")) ret.parseCComments = true;
-		if (ret.urlOptions.hasOwnProperty("aggressiveDisasm")) ret.aggressiveDisasm = true;
-		if (ret.urlOptions.hasOwnProperty("splitBytesByInstruction")) {
-			ret.splitBytesByInstruction = (ret.urlOptions.splitBytesByInstruction == "true");
-		}
-		if (ret.urlOptions.hasOwnProperty("splitBytesByFour")) ret.splitBytesByFour = (ret.urlOptions.splitBytesByFour == "true");
+		importBool("useGodboltOnAssembler", "useGodboltOnAssembler");
+		importBool("parseCComments", "parseCComments");
+		importBool("aggressiveDisasm", "aggressiveDisasm");
+		importBool("splitBytesByInstruction", "splitBytesByInstruction");
+		importBool("splitBytesByFour", "splitBytesByFour");
 		ret.log("Loading...");
 	},
 	encodeURL: function(allOptions) {
@@ -157,31 +147,6 @@ const ret = {
 	},
 	log: function(str) {
 		document.querySelector("#log").value += str + "\n";
-	},
-	switchArch: function(arch) {
-		if (arch == ret.DEFAULT_ARCH) {
-			if (ret.currentArch == arch) {
-				window.location.href = "./";
-			} else {
-				window.location.href = "../";
-			}
-			return;
-		}
-		let prefix = "../";
-		if (ret.currentArch == ret.DEFAULT_ARCH) {
-			prefix = "";
-		}
-		if (arch == ret.ARCH_ARM64) {
-			window.location.href = prefix + "arm64/";
-		} else if (arch == ret.ARCH_X86) {
-			window.location.href = prefix + "x86/";
-		} else if (arch == ret.ARCH_ARM32) {
-			window.location.href = prefix + "arm32/";
-		} else if (arch == ret.ARCH_ARM32_THUMB) {
-			window.location.href = prefix + "arm32/?thumb";
-		} else if (arch == ret.ARCH_RISCV) {
-			window.location.href = prefix + "riscv/";
-		}
 	},
 
 	err_buf: null,
