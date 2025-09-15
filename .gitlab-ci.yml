@@ -1,9 +1,15 @@
 image: gitlab.futo.org:5050/baremetal/ret/wrangler:latest
 
+variables:
+  
+
 stages:
   - deploy
 
-deploy_to_cloudflare:
+variables:
+  CF_COMPATIBILITY_DATE: "2025-09-15"
+
+deploy_to_cloudflare_test:
   stage: deploy
   script:
     - |
@@ -12,3 +18,17 @@ deploy_to_cloudflare:
       make build_all
       make deploy
       echo "google-site-verification: google38b8ae97460b2987.html" > deploy/google38b8ae97460b2987.html
+      npx wrangler deploy --assets=./deploy --name=ret-test --compatibility-date "$CF_COMPATIBILITY_DATE"
+  artifacts:
+    paths:
+      - deploy/
+    expire_in: 1 day
+
+deploy_to_cloudflare_prod:
+  stage: deploy
+  needs: [deploy_to_cloudflare_test]
+  script:
+    - |
+      npx wrangler deploy --assets=./deploy --name=ret-prod --compatibility-date "$CF_COMPATIBILITY_DATE"
+  only:
+    - tags
