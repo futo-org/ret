@@ -4,11 +4,11 @@ project(fudge)
 if(EMSCRIPTEN)
 	# Speed up cmake checks on emscripten
 	set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-	set(CMAKE_REQUIRED_FLAGS "-sSIDE_MODULE=1 -sWASM=1 -sERROR_ON_UNDEFINED_SYMBOLS=0")
+	set(CMAKE_REQUIRED_FLAGS "-sSIDE_MODULE=1 -sWASM=1")
 endif()
 
 option(SUPPORT_ALL "Support all architectures" OFF)
-option(SUPPORT_ARM64 "arm v8+" OFF)
+option(SUPPORT_ARM64 "arm v8" OFF)
 option(SUPPORT_ARM32 "arm and arm thumb" OFF)
 option(SUPPORT_X86 "x86 and x86_64" OFF)
 option(SUPPORT_RISCV "rv64 and rv32" OFF)
