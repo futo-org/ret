@@ -7,7 +7,7 @@ deploy_to_cloudflare:
   stage: deploy
   script:
     - |
-      git submodule update --init --recursive
+      git submodule update --init --recursive --depth 1
       make config_all -j`nproc`
       make build_all
       make deploy
