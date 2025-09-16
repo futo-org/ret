@@ -13,7 +13,7 @@ deploy_to_cloudflare_test:
       make build_all
       make deploy
       echo "google-site-verification: google38b8ae97460b2987.html" > deploy/google38b8ae97460b2987.html
-      bunx wrangler pages deploy ./deploy --branch main --project-name=ret-test
+      npx wrangler pages deploy ./deploy --branch main --project-name=ret-test
   artifacts:
     paths:
       - deploy/
@@ -24,6 +24,6 @@ deploy_to_cloudflare_prod:
   needs: [deploy_to_cloudflare_test]
   script:
     - |
-      bunx wrangler pages deploy ./deploy --branch main --project-name=ret-prod
+      npx wrangler pages deploy ./deploy --branch main --project-name=ret-prod
   only:
     - tags
