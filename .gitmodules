@@ -11,3 +11,6 @@
 	path = unicorn
 	url = https://github.com/petabyt/unicorn.git
 	branch = tci-emscripten
+[submodule "www/bitbash"]
+	path = www/bitbash
+	url = https://gitlab.futo.org/baremetal/bitbash.git
