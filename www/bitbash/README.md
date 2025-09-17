@@ -10,11 +10,8 @@ name REG
 size 64
 [1:0] = ASD
 if ASD == 0b11 {
-	if ASD == 0b11: "3"
-}
-
-ASD = switch ASD {
-	case 0b11: "3"
+	[3:2] = DSA
+	if DSA == 0b0: "Description for 0b0"
 }
 
 ```

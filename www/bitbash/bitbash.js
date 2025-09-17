@@ -232,6 +232,12 @@ function createTable(reg, value, maker) {
 		e.appendChild(chk);
 	}
 
+	if (reg.fields.length == 0) {
+		setupBitMaskEntry(reg.size - 1, 0);
+		maker.addBox(reg.size - 1, 0, LEVEL_NAME);
+		setupFieldValueEntry(reg.size - 1, 0, null);
+	}
+
 	let lastPos = reg.size - 1;
 	for (let i = 0; i < reg.fields.length; i++) {
 		let field = reg.fields[i];
@@ -289,7 +295,7 @@ if (urlOptions.hasOwnProperty("text")) {
 		document.querySelector("#examples").value = urlOptions.example;
 		document.querySelector("#lang").value = examples[document.querySelector("#examples").selectedIndex];
 	} else {
-		document.querySelector("#lang").value = examples[0];
+		document.querySelector("#lang").value = "";
 	}
 }
 if (urlOptions.hasOwnProperty("regValue")) {
