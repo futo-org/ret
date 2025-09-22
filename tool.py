@@ -103,6 +103,7 @@ def deploy():
     deploy_target("arm64")
     deploy_target("arm32")
     deploy_target("riscv")
+    deploy_target("ppc")
 
 def examples():
     out = open("www/examples.js", "w")
