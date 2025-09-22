@@ -40,10 +40,10 @@ build_riscv:
 config_all: build_arm64 build_arm32 build_x86 build_riscv
 
 build_all:
-	cmake --build build_arm64
-	cmake --build build_arm32
-	cmake --build build_x86
-	cmake --build build_riscv
+	cmake --build build_arm64 --target ret
+	cmake --build build_arm32 --target ret
+	cmake --build build_x86 --target ret
+	cmake --build build_riscv --target ret
 
 clean:
 	rm -rf build_arm32 build_arm64 build_x86 build build_em buildcli deploy *.zip __pycache__ build_riscv build2

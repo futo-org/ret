@@ -152,6 +152,11 @@ function updatePageArch() {
 		document.querySelector("#menu").style.background = "rgb(170 65 18)";
 		document.querySelector("#asm").classList.add("language-armasm2");
 		document.querySelector("#riscv-dropdown").style.display = "flex";
+	} else if (ret.currentArch == ret.ARCH_POWERPC) {
+		document.querySelector("#arch-select-text").innerText = "PowerPC";
+		document.querySelector("#menu").style.background = "#ce4f32";
+		document.querySelector("#asm").classList.add("language-armasm2");
+		document.querySelector("#riscv-dropdown").style.display = "flex";
 	}
 }
 updatePageArch();

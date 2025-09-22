@@ -13,6 +13,7 @@ build_arm32
 build_risc
 build_riscv
 build_cli
+buildcli
 build2
 deploy
 *.zip

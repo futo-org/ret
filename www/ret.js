@@ -9,6 +9,7 @@ const ret = {
 	ARCH_RISCV: 4,
 	ARCH_WASM: 6,
 	ARCH_ARM32_THUMB: 7,
+	ARCH_POWERPC: 8,
 
 	// Base Hex parser options
 	PARSE_AS_U8: 1 << 0,
@@ -137,6 +138,8 @@ const ret = {
 			return ret.ARCH_RISCV;
 		} else if (window.location.pathname.includes("x86")) {
 			return ret.ARCH_X86;
+		} else if (window.location.pathname.includes("ppc")) {
+			return ret.ARCH_POWERPC;
 		} else {
 			return ret.DEFAULT_ARCH;
 		}
@@ -257,6 +260,8 @@ const ret = {
 			} else if ((examples[i].arch == "rv32" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV && ret.bits == 32) {
 				selected.push(examples[i]);
 			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV && ret.bits == 64) {
+				selected.push(examples[i]);
+			} else if ((examples[i].arch == "ppc32") && ret.currentArch == ret.ARCH_POWERPC && ret.bits == 32) {
 				selected.push(examples[i]);
 			}
 		}

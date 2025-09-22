@@ -4,7 +4,7 @@ import shutil
 import subprocess
 
 top_level_arch = "x86"
-ret_version = "v4.0"
+ret_version = "v4.1"
 
 def nice_name(arch):
     match arch:
@@ -16,6 +16,8 @@ def nice_name(arch):
             return "Arm"
         case "riscv":
             return "RISC-V"
+        case "ppc":
+            return "PowerPC"
 
 # Process HTML file so it can be placed in a subdirectory and reference
 # files from above directory
@@ -37,6 +39,7 @@ def pphtml(src_html, arch, top_level):
     data = data.replace("{{SWITCH_ARM64}}", get_link("arm64"))
     data = data.replace("{{SWITCH_ARM32}}", get_link("arm32"))
     data = data.replace("{{SWITCH_RISCV}}", get_link("riscv"))
+    data = data.replace("{{SWITCH_PPC}}", get_link("ppc"))
     data = data.replace("{{TITLE}}", "Ret - Online " + nice_name(arch) + " Assembler and Disassembler")
     data = data.replace("{{DESCRIPTION}}", "Online assembler and disassembler supporting ARM64, x86, ARM, Thumb, and RISC-V. Runs entirely client-side in WebAssembly.")
     if not top_level:
@@ -143,7 +146,9 @@ function addExample(name, arch, data) {
     add("Exception Levels", "arm64", "arm64-el.S")
     add("SIMD", "arm64", "arm64-simd.S")
     add("Mandelbrot", "arm64", "arm64-mandelbrot.S")
-    #add("Hello World (PIC)", "arm64", "arm64-hello-pic.S")
+
+    add("Hello World", "ppc64", "ppc64-hello.s")
+    add("Hello World", "ppc32", "ppc32-hello.s")
 
     add("Hello World (GNU)", "x86gnu", "x86-hello-gnu.asm")
     add("Hello World (AT&T)", "x86att", "x86-hello-gnu.asm")
@@ -180,7 +185,7 @@ def serve():
             print(urlparse(self.path))
             if path == "/":
                 self.send_html(True, top_level_arch)
-            elif path.strip("/") in ("arm64", "arm32", "x86", "riscv"):
+            elif path.strip("/") in ("arm64", "arm32", "x86", "riscv", "ppc"):
                 self.send_html(False, path.strip("/"))
             else:
                 super().do_GET()
@@ -188,7 +193,7 @@ def serve():
         def translate_path(self, path):
             root = os.path.abspath("www")
             path = urlparse(path).path
-            for p in ("/arm64", "/arm32", "/x86", "/riscv"):
+            for p in ("/arm64", "/arm32", "/x86", "/riscv", "/ppc"):
                 if path == p or path.startswith(p + "/"):
                     return os.path.join(root, path.removeprefix(p).lstrip("/"))
             return os.path.join(root, path.lstrip("/"))

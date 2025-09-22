@@ -68,6 +68,10 @@ static void hook_intr(uc_engine *uc, uint32_t intno, void *user_data) {
 	uc_emu_stop(uc);
 }
 
+static void hook_instr(uc_engine *uc, void *user_data) {
+	printf("Invalid instr\n");
+}
+
 int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffer *asm_buffer, struct RetBuffer *log) {
 	if (asm_buffer == NULL) return -1;
 	if (log == NULL) return -1;
@@ -97,6 +101,12 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_RISCV64;
 		else if (opt & RET_BITS_32) _uc_mode |= UC_MODE_RISCV32;
 		else _uc_mode |= UC_MODE_RISCV64;
+	} else if (arch == ARCH_POWERPC) {
+		_uc_arch = UC_ARCH_PPC;
+		_uc_mode = UC_MODE_BIG_ENDIAN;
+		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_PPC64;
+		else if (opt & RET_BITS_32) _uc_mode |= UC_MODE_PPC32;
+		else _uc_mode |= UC_MODE_PPC64;
 	} else {
 		buffer_appendf(log, "Unknown architecture\n");
 		return -1;
@@ -134,6 +144,8 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 			uc_reg_write(uc, UC_X86_REG_ESP, &reg);			
 		} else if (_uc_arch == UC_ARCH_RISCV) {
 			uc_reg_write(uc, UC_RISCV_REG_SP, &reg);
+		} else if (_uc_arch == UC_ARCH_PPC) {
+			uc_reg_write(uc, UC_PPC_REG_1, &reg);
 		}
 	}
 
@@ -180,7 +192,7 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	}
 #endif
 
-	if (_uc_mode & UC_MODE_THUMB) {
+	if (_uc_arch == UC_ARCH_ARM &&_uc_mode & UC_MODE_THUMB) {
 		err = uc_emu_start(uc, base_addr | 1, base_addr + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);
 	} else {
 		err = uc_emu_start(uc, base_addr, base_addr + asm_buffer->offset, 0, INSTRUCTION_HARD_CAP);		
@@ -250,6 +262,17 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 			uc_reg_read(uc, a0_reg + i, rb);
 			buffer_appendf(log, " a%d: 0x%llX\n", i, ((uint64_t *)rb)[0]);
 		}
+	} else if (_uc_arch == UC_ARCH_PPC) {
+		int pc_reg = UC_PPC_REG_PC;
+		int a0_reg = UC_PPC_REG_1;
+
+		uc_reg_read(uc, pc_reg, rb);
+		buffer_appendf(log, " PC: 0x%llX\n", ((uint64_t *)rb)[0]);
+	
+		for (int i = 0; i < 5; i++) {
+			uc_reg_read(uc, a0_reg + i, rb);
+			buffer_appendf(log, " r%d: 0x%llX\n", i + 1, ((uint64_t *)rb)[0]);
+		}
 	}
 	
 	uc_close(uc);
@@ -262,10 +285,9 @@ int test_vm(void) {
 	uc_engine *uc;
 	uc_err err;
 
-	char export[] = {0x4f, 0xf0, 0x01, 0x00};
-//	char export[] = {0x01, 0x00, 0xa0, 0xe3};
+	char export[] = {0x3d, 0x40, 0x80, 0x34, };
 
-	err = uc_open(UC_ARCH_ARM, UC_MODE_THUMB, &uc);
+	err = uc_open(UC_ARCH_PPC, UC_MODE_PPC32 | UC_MODE_BIG_ENDIAN, &uc);
     if (err) {
         printf("Failed on uc_open() with error returned: %u (%s)\n", err,
                uc_strerror(err));
@@ -275,13 +297,13 @@ int test_vm(void) {
 	uc_mem_map(uc, 0x0, 0x30000, UC_PROT_ALL);
 	uc_mem_write(uc, 0x0, export, sizeof(export));
 
-    err = uc_emu_start(uc, 0x0 + 1, 0x0 + 4 - 1, 0, 1000);
+    err = uc_emu_start(uc, 0x0, 0x0 + 4, 0, 1000);
     if (err) {
         printf("Failed on uc_emu_start() with error returned: %u\n", err);
     }
 
     uint64_t x0 = 0;
-    uc_reg_read(uc, UC_ARM_REG_R0, &x0);
+    uc_reg_read(uc, UC_PPC_REG_10, &x0);
     printf("x0: %lx\n", x0);
 	return 0;
 }
