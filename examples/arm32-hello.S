@@ -11,7 +11,7 @@ top:
 end:
 
 b skip
-UART_DR: .int 0x9000000
+UART_DR: .int 0x9000000 // UART_DR, write here to print characters
 string:
 .ascii "Hello, World\n"
 .byte 0

@@ -35,6 +35,7 @@ def pphtml(src_html, arch, top_level):
         return "../" + link_to
     
     data = data.replace("{{RET_VERSION}}", ret_version)
+    data = data.replace("{{TOP_LEVEL}}", "." if top_level else "..")
     data = data.replace("{{SWITCH_X86}}", get_link("x86"))
     data = data.replace("{{SWITCH_ARM64}}", get_link("arm64"))
     data = data.replace("{{SWITCH_ARM32}}", get_link("arm32"))
@@ -42,29 +43,6 @@ def pphtml(src_html, arch, top_level):
     data = data.replace("{{SWITCH_PPC}}", get_link("ppc"))
     data = data.replace("{{TITLE}}", "Ret - Online " + nice_name(arch) + " Assembler and Disassembler")
     data = data.replace("{{DESCRIPTION}}", "Online assembler and disassembler supporting ARM64, x86, ARM, Thumb, and RISC-V. Runs entirely client-side in WebAssembly.")
-    if not top_level:
-        paths_to_prefix = [
-            "./bitbash",
-            "favicon.ico",
-            "style.css",
-            "portrait.css",
-            "dark-theme.css",
-            "light-theme.css",
-            "assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png",
-            "assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png",
-            "assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png",
-            "assets/ret.png",
-            "lib/highlight.min.js",
-            "lib/x86asm.js",
-            "lib/armasm.js",
-            "lib/codejar.js",
-            "examples.js",
-            "lib.js",
-            "ui.js"
-        ]
-        for path in paths_to_prefix:
-            data = data.replace(path, "../" + path)
-        data = data.replace("\"ret.js\"", "\"../ret.js\"")
     return data
 
 def ignore_build(dir, contents):

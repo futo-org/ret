@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<link rel="icon" href="favicon.ico">
+	<link rel="icon" href="{{TOP_LEVEL}}/favicon.ico">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
@@ -63,22 +63,22 @@
 		}
 		</script>
 
-	<link rel="stylesheet" type="text/css" href="style.css">
-	<link rel="stylesheet" type="text/css" href="portrait.css"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" type="text/css" href="dark-theme.css" id="themelink">
+	<link rel="stylesheet" type="text/css" href="{{TOP_LEVEL}}/style.css">
+	<link rel="stylesheet" type="text/css" href="{{TOP_LEVEL}}/portrait.css"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="{{TOP_LEVEL}}/dark-theme.css" id="themelink">
 </head>
 <body>
 <div class="container">
 	<div class="menu" id="menu">
 		<div class="btn" id="arch-select">
-			<span id="arch-select-text">ARM64</span><img class="icon" src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+			<span id="arch-select-text">ARM64</span><img class="icon" src="{{TOP_LEVEL}}/assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 			<div class="dropdown-content" id="arch-dropdown-box">
 				<a href="{{SWITCH_X86}}"><button class="btn" id="switch-x86">x86</button></a>
 				<a href="{{SWITCH_ARM64}}"><button class="btn" id="switch-arm64">Arm64</button></a>
 				<a href="{{SWITCH_ARM32}}"><button class="btn" id="switch-arm32">Arm32</button></a>
 				<a href="{{SWITCH_ARM32}}?thumb"><button class="btn" id="switch-arm32thumb">Arm32 Thumb</button></a>
 				<a href="{{SWITCH_RISCV}}"><button class="btn" id="switch-riscv">RISC-V</button></a>
-				<!-- <a class="link-bitbash" href="./bitbash"><button class="btn">Bitbash (WIP)</button></a> -->
+				<!-- <a class="link-bitbash" href="{{TOP_LEVEL}}/bitbash"><button class="btn">Bitbash (WIP)</button></a> -->
 			</div>
 		</div>
 		<div class="btn" id="assemble" >Assemble</div>
@@ -97,7 +97,7 @@
 		</div>
 		<div class="right">
 			<div class="btn" id="examples-dropdown">
-				<span>Examples</span><img class="icon" src="assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
+				<span>Examples</span><img class="icon" src="{{TOP_LEVEL}}/assets/arrow_drop_down_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png">
 				<div class="dropdown-content" id="examples-dropdown-box"></div>
 			</div>
 			<div class="btn" id="x86-dropdown">
@@ -138,10 +138,10 @@
 				</div>
 			</div>
 			<div class="btn" id="base-address-box">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>
-			<div class="btn" id="settings-btn"><img width="24" class="icon" src="assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
-			<div class="btn" id="share-btn"><img width="24" class="icon" src="assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="settings-btn"><img width="24" class="icon" src="{{TOP_LEVEL}}/assets/settings_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
+			<div class="btn" id="share-btn"><img width="24" class="icon" src="{{TOP_LEVEL}}/assets/share_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.png"></div>
 			<div class="btn" id="help-dropdown">
-				<img src="assets/ret.png" width="30">
+				<img src="{{TOP_LEVEL}}/assets/ret.png" width="30">
 				<div class="dropdown-content" id="help-dropdown-box">
 					<textarea class="editor-textarea" readonly="true" spellcheck="false" id="help-textarea">
 ______ _   _ _____ _____ 
@@ -237,13 +237,13 @@ ESC: Close popup
 	</div>
 </div>
 </body>
-<script src="lib/highlight.min.js"></script>
-<script src="lib/x86asm.js"></script>
-<script src="lib/armasm.js"></script>
-<script src="lib/codejar.js"></script>
-<script src="examples.js"></script>
-<script src="ret.js"></script>
-<script src="ui.js"></script>
+<script src="{{TOP_LEVEL}}/lib/highlight.min.js"></script>
+<script src="{{TOP_LEVEL}}/lib/x86asm.js"></script>
+<script src="{{TOP_LEVEL}}/lib/armasm.js"></script>
+<script src="{{TOP_LEVEL}}/lib/codejar.js"></script>
+<script src="{{TOP_LEVEL}}/examples.js"></script>
+<script src="{{TOP_LEVEL}}/ret.js"></script>
+<script src="{{TOP_LEVEL}}/ui.js"></script>
 <script>
 // emscripten js will merge with this object
 var Module = {

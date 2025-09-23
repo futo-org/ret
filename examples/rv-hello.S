@@ -1,5 +1,5 @@
 la a0, string
-li a2, 0x9000000
+li a2, 0x9000000 // UART_DR, write here to print characters
 
 top:
 lbu a1, 0(a0)
