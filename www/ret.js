@@ -1,3 +1,23 @@
+function hex(integer) {
+	return "0x" + integer.toString(16);
+}
+
+function bin(integer) {
+	return "0b" + integer.toString(2);
+}
+
+function int(str) {
+	return Math.floor(Number(str));
+}
+
+function chr(code) {
+	return String.fromCharCode(code);
+}
+
+function ord(char) {
+	return char.charCodeAt();
+}
+
 const ret = {
 	// Default architecture (root-level) will be x86_64
 	DEFAULT_ARCH: 2,
@@ -59,7 +79,7 @@ const ret = {
 
 	currentArch: undefined,
 	currentSyntax: undefined,
-	bits: undefined,
+	bits: undefined, // used by RISC-V/x86/powerpc
 	aggressiveDisasm: false,
 	useGodboltOnAssembler: false,
 	currentBaseOffset: 0,
@@ -92,7 +112,10 @@ const ret = {
 		ret.baseParseOption = ret.PARSE_AS_AUTO;
 		ret.baseOutputOption = ret.OUTPUT_AS_AUTO;
 		ret.currentSyntax = ret.SYNTAX_INTEL;
-		ret.bits = 64; // used by RISC-V and x86
+		ret.bits = 64;
+		if (ret.currentArch == ret.ARCH_POWERPC) {
+			ret.bits = 32; // 64 bit support sucks in unicorn
+		}
 		importNumber("baseParseOption", "baseParseOption");
 		importNumber("baseOutputOption", "baseOutputOption");
 		importNumber("currentSyntax", "currentSyntax");
@@ -184,7 +207,7 @@ const ret = {
 		ret.hex_mem_mirror_buf = ret.re_get_hex_mem_mirror_buffer();
 
 		ret.clearLog();
-		ret.log("Ret v4 - Reverse-Engineering Tool");
+		ret.log("Ret - Reverse-Engineering Tool");
 		ret.log("Click the top left button to switch architecture.");
 		ret.log("Click 'Examples' to get started.");
 
