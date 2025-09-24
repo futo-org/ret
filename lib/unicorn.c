@@ -107,7 +107,7 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_PPC64;
 		else if (opt & RET_BITS_32) _uc_mode |= UC_MODE_PPC32;
 		else _uc_mode |= UC_MODE_PPC64;
-		if (_uc_mode & UC_MODE_LITTLE_ENDIAN) {
+		if (!(_uc_mode & UC_MODE_BIG_ENDIAN)) {
 			buffer_appendf(log, "Little Endian PowerPC is not supported in Unicorn Engine\n");
 			return -1;
 		}

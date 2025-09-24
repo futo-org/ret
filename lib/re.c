@@ -74,13 +74,13 @@ static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_eng
 		else if (opt & RET_BITS_32) _ks_mode |= KS_MODE_RISCV32;
 		if (opt & RET_RISCV_C) _ks_mode |= KS_MODE_RISCVC;
 	} else if (arch == ARCH_POWERPC) {
+		_ks_arch = KS_ARCH_PPC;
 		if (opt & RET_BIG_ENDIAN) _ks_mode = KS_MODE_BIG_ENDIAN; else _ks_mode = KS_MODE_LITTLE_ENDIAN;
 		_ks_mode |= KS_MODE_R_REG_SYNTAX;
-		_ks_arch = KS_ARCH_PPC;
 		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_PPC64;
 		else if (opt & RET_BITS_32) _ks_mode |= KS_MODE_PPC32;
-		if (_ks_mode & KS_MODE_LITTLE_ENDIAN && _ks_mode & KS_MODE_PPC32) {
-			err_buf->append(err_buf, "32-bit PowerPC Little Endian isn't supported", 0);
+		if (!(_ks_mode & KS_MODE_BIG_ENDIAN) && (_ks_mode & KS_MODE_PPC32)) {
+			err_buf->append(err_buf, "32-bit PowerPC Little Endian isn't supported in keystone", 0);
 			return -1;
 		}
 	} else {
