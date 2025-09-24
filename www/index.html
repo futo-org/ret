@@ -78,6 +78,7 @@
 				<a href="{{SWITCH_ARM32}}"><button class="btn" id="switch-arm32">Arm32</button></a>
 				<a href="{{SWITCH_ARM32}}?thumb"><button class="btn" id="switch-arm32thumb">Arm32 Thumb</button></a>
 				<a href="{{SWITCH_RISCV}}"><button class="btn" id="switch-riscv">RISC-V</button></a>
+				<a href="{{SWITCH_PPC}}"><button class="btn" id="switch-ppc">PowerPC</button></a>
 				<!-- <a class="link-bitbash" href="{{TOP_LEVEL}}/bitbash"><button class="btn">Bitbash (WIP)</button></a> -->
 			</div>
 		</div>
@@ -135,6 +136,18 @@
 						<input type="checkbox" id="riscvc" name="riscvc" />
 						<label for="riscvc">Compressed (C)</label>
 					</div>
+				</div>
+			</div>
+			<div class="btn" id="ppc-dropdown">
+				<span>PowerPC Options</span>
+				<div class="dropdown-content" id="ppc-dropdown-box">
+					<span class="padded-block">Bits:</span>
+					<div class="radio-button" name="ppc_bits">64</div>
+					<div class="radio-button" name="ppc_bits">32</div>
+
+					<span class="padded-block">Endian:</span>
+					<div class="radio-button" name="ppc_endian">Big</div>
+					<div class="radio-button" name="ppc_endian">Little</div>
 				</div>
 			</div>
 			<div class="btn" id="base-address-box">Base address: <input spellcheck="false" type="text" id="base-address" value="0x0"></div>

@@ -110,6 +110,7 @@ function setupWidgets() {
 	setupDropDown(document.querySelector("#hex-dropdown"), document.querySelector("#hex-dropdown-box"));
 	setupDropDown(document.querySelector("#x86-dropdown"), document.querySelector("#x86-dropdown-box"));
 	setupDropDown(document.querySelector("#riscv-dropdown"), document.querySelector("#riscv-dropdown-box"));
+	setupDropDown(document.querySelector("#ppc-dropdown"), document.querySelector("#ppc-dropdown-box"));
 	setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
 	setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
 	setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
@@ -156,6 +157,7 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "PowerPC";
 		document.querySelector("#menu").style.background = "#ce4f32";
 		document.querySelector("#asm").classList.add("language-armasm2");
+		document.querySelector("#ppc-dropdown").style.display = "flex";
 	}
 }
 updatePageArch();
@@ -279,14 +281,7 @@ document.querySelector("#run").onclick = function() {
 			document.querySelector("#bytes").value = "";
 		} else {
 			setBytes(ret.hex_buf);
-
-			let option = 0;
-			if (ret.bits == 64) option |= ret.BITS_64;
-			else if (ret.bits == 32) option |= ret.BITS_32;
-			else if (ret.bits == 16) option |= ret.BITS_16;
-			if (ret.riscvc) option |= ret.RISCV_C;
-
-			rc = ret.re_emulator(ret.currentArch, option, ret.currentBaseOffset, ret.mem_buf, ret.str_buf);
+			let rc = ret.emulator(ret.mem_buf, ret.str_buf);
 			ret.log(ret.get_buffer_contents(ret.str_buf));
 		}
 	});
@@ -398,6 +393,18 @@ setupRadioFromMap("riscv_bits", ret.bits, [
 	32,
 ], function(value) {
 	ret.bits = value;
+});
+setupRadioFromMap("ppc_bits", ret.bits, [
+	64,
+	32,
+], function(value) {
+	ret.bits = value;
+});
+setupRadioFromMap("ppc_endian", ret.endian, [
+	ret.BIG_ENDIAN,
+	ret.LITTLE_ENDIAN,
+], function(value) {
+	ret.endian = value;
 });
 
 document.querySelector("#parseccomments").checked = ret.parseCComments;

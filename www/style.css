@@ -314,7 +314,7 @@ button {
 	width: 100%;
 }
 
-#x86-dropdown, #riscv-dropdown {
+#x86-dropdown, #riscv-dropdown, #ppc-dropdown {
 	display: none;
 	/* font-style: italic; */
 	background: var(--special-box);

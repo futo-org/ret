@@ -15,11 +15,12 @@
     // local labels: %?[FB]?[AT]?\d{1,2}\w+
 
     const COMMENT = { variants: [
-      hljs.COMMENT('^[ \\t]*(?=#)', '$', {
-        relevance: 0,
-        excludeBegin: true
-      }),
+//      hljs.COMMENT('^[ \\t]*(?=#)', '$', {
+//        relevance: 0,
+//        excludeBegin: true
+//      }),
       hljs.COMMENT('[;@]', '$', { relevance: 0 }),
+      hljs.COMMENT('[;#]', '$', { relevance: 0 }),
       hljs.C_LINE_COMMENT_MODE,
       hljs.C_BLOCK_COMMENT_MODE
     ] };

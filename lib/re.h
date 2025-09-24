@@ -81,6 +81,9 @@ enum RetOptions {
 
 	// Enable/Disable the RISC-V C extension
 	RET_RISCV_C = 1 << 11,
+
+	RET_BIG_ENDIAN = 1 << 12,
+	RET_LITTLE_ENDIAN = 1 << 13,
 };
 
 struct RetBuffer {

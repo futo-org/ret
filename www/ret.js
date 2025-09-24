@@ -73,6 +73,8 @@ const ret = {
 	BITS_128: 1 << 9,
 	AGGRESSIVE_DISASM: 1 << 10,
 	RISCV_C: 1 << 11,
+	BIG_ENDIAN: 1 << 12,
+	LITTLE_ENDIAN: 1 << 13,
 
 	// has object with initial URL options
 	urlOptions: null,
@@ -80,6 +82,7 @@ const ret = {
 	currentArch: undefined,
 	currentSyntax: undefined,
 	bits: undefined, // used by RISC-V/x86/powerpc
+	endian: undefined, // used by powerpc
 	aggressiveDisasm: false,
 	useGodboltOnAssembler: false,
 	currentBaseOffset: 0,
@@ -113,13 +116,16 @@ const ret = {
 		ret.baseOutputOption = ret.OUTPUT_AS_AUTO;
 		ret.currentSyntax = ret.SYNTAX_INTEL;
 		ret.bits = 64;
+		ret.endian = ret.LITTLE_ENDIAN;
 		if (ret.currentArch == ret.ARCH_POWERPC) {
 			ret.bits = 32; // 64 bit support sucks in unicorn
+			ret.endian = ret.BIG_ENDIAN;
 		}
 		importNumber("baseParseOption", "baseParseOption");
 		importNumber("baseOutputOption", "baseOutputOption");
 		importNumber("currentSyntax", "currentSyntax");
 		importNumber("bits", "bits");
+		importNumber("endian", "endian");
 		importNumber("currentBaseOffset", "currentBaseOffset");
 		importBool("riscvc", "riscvc");
 		importBool("useGodboltOnAssembler", "useGodboltOnAssembler");
@@ -137,6 +143,7 @@ const ret = {
 			opt.baseParseOption = String(ret.baseParseOption);
 			opt.baseOutputOption = String(ret.baseOutputOption);
 			opt.bits = String(ret.bits);
+			opt.endian = String(ret.endian);
 			opt.currentBaseOffset = String(ret.currentBaseOffset);
 			if (ret.currentArch == ret.ARCH_RISCV) opt.riscvc = String(ret.riscvc);
 			if (ret.useGodboltOnAssembler) opt.useGodboltOnAssembler = "true";
@@ -324,29 +331,35 @@ const ret = {
 			v |= ret.OUTPUT_SPLIT_BY_FOUR;
 		return v;
 	},
-
-	assemble: function(code, outBuf, errBuf) {
-		let then = Date.now();
+	getCodeOption: function() {
 		let option = ret.currentSyntax;
 		if (ret.bits == 64) option |= ret.BITS_64;
 		else if (ret.bits == 32) option |= ret.BITS_32;
 		else if (ret.bits == 16) option |= ret.BITS_16;
 		if (ret.riscvc) option |= ret.RISCV_C;
+		option |= ret.endian;
+		return option;
+	},
+
+	assemble: function(code, outBuf, errBuf) {
+		let then = Date.now();
+		let option = ret.getCodeOption();
 		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
 		let now = Date.now();
 		return [rc, now - then];
 	},
 	disassemble: function(hexText, outBuf, errBuf) {
 		let then = Date.now();
-		let option = ret.currentSyntax;
-		if (ret.bits == 64) option |= ret.BITS_64;
-		else if (ret.bits == 32) option |= ret.BITS_32;
-		else if (ret.bits == 16) option |= ret.BITS_16;
-		if (ret.riscvc) option |= ret.RISCV_C;
+		let option = ret.getCodeOption();
 		let rc = ret.re_disassemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf,
 			hexText, ret.getParseOption(), ret.getOptionOption());
 		let now = Date.now();
 		return [rc, now - then];
+	},
+	emulator: function(memBuf, outputBuf) {
+		let option = ret.getCodeOption();
+		let rc = ret.re_emulator(ret.currentArch, option, ret.currentBaseOffset, memBuf, outputBuf);
+		return rc;
 	},
 };
 ret.init();
