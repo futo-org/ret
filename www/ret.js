@@ -291,7 +291,7 @@ const ret = {
 				selected.push(examples[i]);
 			} else if ((examples[i].arch == "rv64" || examples[i].arch == "rv") && ret.currentArch == ret.ARCH_RISCV && ret.bits == 64) {
 				selected.push(examples[i]);
-			} else if ((examples[i].arch == "ppc32") && ret.currentArch == ret.ARCH_POWERPC && ret.bits == 32) {
+			} else if ((examples[i].arch == "ppc32") && ret.currentArch == ret.ARCH_POWERPC) {
 				selected.push(examples[i]);
 			}
 		}

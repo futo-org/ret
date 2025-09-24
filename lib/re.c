@@ -128,13 +128,13 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		_cs_mode |= CS_MODE_THUMB;
 	} else if (arch == ARCH_RISCV) {
 		_cs_arch = CS_ARCH_RISCV;
-		if (opt & RET_BIG_ENDIAN) _cs_mode = CS_MODE_BIG_ENDIAN; else _cs_mode = CS_MODE_LITTLE_ENDIAN;
 		printf("%d\n", opt & RET_BIG_ENDIAN);
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_RISCV64;
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_RISCV32;
 		if (opt & RET_RISCV_C) _cs_mode |= CS_MODE_RISCVC;
 	} else if (arch == ARCH_POWERPC) {
 		_cs_arch = CS_ARCH_PPC;
+		if (opt & RET_BIG_ENDIAN) _cs_mode = CS_MODE_BIG_ENDIAN; else _cs_mode = CS_MODE_LITTLE_ENDIAN;		
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_64;
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_32;
 	} else {
