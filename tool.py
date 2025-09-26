@@ -36,6 +36,7 @@ def pphtml(src_html, arch, top_level):
     
     data = data.replace("{{RET_VERSION}}", ret_version)
     data = data.replace("{{TOP_LEVEL}}", "." if top_level else "..")
+    data = data.replace("{{CANONICAL_URL}}", "https://ret.futo.org/" if top_level else "https://ret.futo.org/" + arch)
     data = data.replace("{{SWITCH_X86}}", get_link("x86"))
     data = data.replace("{{SWITCH_ARM64}}", get_link("arm64"))
     data = data.replace("{{SWITCH_ARM32}}", get_link("arm32"))
