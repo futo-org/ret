@@ -3,6 +3,6 @@
     <url><loc>https://ret.futo.org/</loc></url>
     <url><loc>https://ret.futo.org/arm64/</loc></url>
     <url><loc>https://ret.futo.org/arm32/</loc></url>
+    <url><loc>https://ret.futo.org/riscv/</loc></url>
     <url><loc>https://ret.futo.org/arm32/?thumb</loc></url>
-    <url><loc>https://ret.futo.org/arm32/riscv</loc></url>
 </urlset>
