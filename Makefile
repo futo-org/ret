@@ -7,7 +7,7 @@ cli_build:
 	cmake -G Ninja -B buildcli -DSUPPORT_ALL=ON -DCMAKE_BUILD_TYPE=Debug
 
 bug1:
-	cmake --build buildcli && buildcli/ret --rv64 --test
+	cmake --build buildcli && buildcli/ret --rv64 --asm examples/rv64-hello.S
 
 pages-deploy:
 	git tag -f 0.4.1-rc && git push -f origin 0.4.1-rc
@@ -50,6 +50,6 @@ build_all:
 	cmake --build build_ppc --target ret
 
 clean:
-	rm -rf build_arm32 build_arm64 build_x86 build build_em buildcli deploy *.zip __pycache__ build_riscv build2
+	rm -rf build_arm32 build_arm64 build_x86 build build_em buildcli deploy *.zip __pycache__ build_riscv build2 build_ppc
 
-.PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy examples pages-deploy wrangler-deploy
+.PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy examples pages-deploy wrangler-deploy build_ppc

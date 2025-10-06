@@ -29,10 +29,10 @@ def pphtml(src_html, arch, top_level):
         if arch == link_to and top_level_arch == link_to:
             return "" # not the best way to do this
         if arch == link_to:
-            return "../" + arch
+            return "../" + arch + "/"
         if top_level_arch == link_to:
             return "../"
-        return "../" + link_to
+        return "../" + link_to + "/"
     
     data = data.replace("{{RET_VERSION}}", ret_version)
     data = data.replace("{{TOP_LEVEL}}", "." if top_level else "..")

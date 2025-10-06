@@ -181,7 +181,7 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	}
 
 	uc_hook interrupt_hook;
-	err = uc_hook_add(uc, &interrupt_hook, UC_HOOK_INTR, (uc_cb_hookintr_t *)hook_intr, &state, 1, 0, 0);
+	err = uc_hook_add(uc, &interrupt_hook, UC_HOOK_INTR, hook_intr, &state, 1, 0, 0);
 	if (err != UC_ERR_OK) {
 		buffer_appendf(log, "hook setup error\n", 0);
 		return 1;
