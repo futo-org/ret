@@ -69,6 +69,7 @@ def deploy_target(arch):
     build_dir = os.path.join(base_dst, "build")
     if os.path.exists(build_dir):
         shutil.rmtree(build_dir)
+
     os.makedirs(build_dir, exist_ok=True)
 
     shutil.copyfile(f"build_{arch}/ret.js", os.path.join(build_dir, "ret.js"))
@@ -176,10 +177,15 @@ def serve():
 
         def translate_path(self, path):
             root = os.path.abspath("www")
+            build = os.path.abspath("build")
             path = urlparse(path).path
             for p in ("/arm64", "/arm32", "/x86", "/riscv", "/ppc"):
+                if path.startswith(p + "/build"):
+                    return os.path.join(build, path.removeprefix(p + "/build/"))
                 if path == p or path.startswith(p + "/"):
                     return os.path.join(root, path.removeprefix(p).lstrip("/"))
+            if path.startswith("/build"):
+                return os.path.join(build, path.removeprefix("/build/"))
             return os.path.join(root, path.lstrip("/"))
 
     print("http://localhost:8000/")
