@@ -27,11 +27,15 @@ def pphtml(src_html, arch, top_level):
 
     def get_link(link_to):
         if arch == link_to and top_level_arch == link_to:
-            return "" # not the best way to do this
-        if arch == link_to:
-            return "../" + arch + "/"
-        if top_level_arch == link_to:
+            # link to self from top level
+            return ""
+        if arch == top_level_arch:
+            # link to other from top level
+            return link_to + "/"
+        if link_to == top_level_arch:
+            # link to top level from not top level
             return "../"
+        # link to other from not top level
         return "../" + link_to + "/"
     
     data = data.replace("{{RET_VERSION}}", ret_version)
