@@ -18,8 +18,9 @@ wrangler-deploy:
 serve:
 	python3 tool.py --serve
 
-deploy:
+deploy: build_all
 	python3 tool.py --deploy
+	python3 tool.py --zip
 
 examples:
 	python3 tool.py --examples
