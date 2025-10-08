@@ -1,30 +1,5 @@
 CMAKE := /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
-debug_build:
-	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ALL=ON
-
-cli_build:
-	cmake -G Ninja -B buildcli -DSUPPORT_ALL=ON -DCMAKE_BUILD_TYPE=Debug
-
-bug1:
-	cmake --build buildcli && buildcli/ret --rv64 --asm examples/rv64-hello.S
-
-pages-deploy:
-	git tag -f 0.4.1-rc && git push -f origin 0.4.1-rc
-
-wrangler-deploy:
-	npx wrangler pages deploy --commit-dirty=true --project-name ret ./deploy
-
-serve:
-	python3 tool.py --serve
-
-deploy: build_all
-	python3 tool.py --deploy
-	python3 tool.py --zip
-
-examples:
-	python3 tool.py --examples
-
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON -DUSE_UNICORN_WASM=ON
 
@@ -54,3 +29,30 @@ clean:
 	rm -rf build_arm32 build_arm64 build_x86 build build_em buildcli deploy *.zip __pycache__ build_riscv build2 build_ppc
 
 .PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy examples pages-deploy wrangler-deploy build_ppc
+
+# --- Daniel's targets ---
+
+debug_build:
+	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ALL=ON
+
+cli_build:
+	cmake -G Ninja -B buildcli -DSUPPORT_ALL=ON -DCMAKE_BUILD_TYPE=Debug
+
+bug1:
+	cmake --build buildcli && buildcli/ret --rv64 --asm examples/rv64-hello.S
+
+pages-deploy:
+	git tag -f 0.4.1-rc && git push -f origin 0.4.1-rc
+
+wrangler-deploy:
+	npx wrangler pages deploy --commit-dirty=true --project-name ret ./deploy
+
+serve:
+	python3 tool.py --serve
+
+deploy: build_all
+	python3 tool.py --deploy
+	python3 tool.py --zip
+
+examples:
+	python3 tool.py --examples

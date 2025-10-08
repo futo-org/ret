@@ -11,7 +11,7 @@ deploy_to_cloudflare_test:
       git submodule update --init --recursive --depth 1
       make config_all -j`nproc`
       make build_all
-      make deploy
+      python3 tool.py --deploy
       echo "google-site-verification: google38b8ae97460b2987.html" > deploy/google38b8ae97460b2987.html
       npx wrangler pages deploy ./deploy --branch main --project-name=ret-test
   artifacts:
