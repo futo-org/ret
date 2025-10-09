@@ -33,8 +33,8 @@ function createResizeBar(leftPanel, rightPanel, separator, horizontal = true) {
 		}
 	
 		function mouseup() {
-			leftPanel.style.userSelect = "all";
-			rightPanel.style.userSelect = "all";
+			leftPanel.style.userSelect = "auto";
+			rightPanel.style.userSelect = "auto";
 	
 			window.removeEventListener('mousemove', mousemove)
 			window.removeEventListener('mouseup', mouseup)
