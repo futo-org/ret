@@ -2,7 +2,7 @@
 mov ebp, 0x9000000 ; uart_dr
 start: xor     ebx, ebx        ; S1:= 0
 	mov     edx, 0x8000      ; S2:= $8000
-	mov     cx, 16          ; for I:= Size downto 1
+	mov     cx, 0x16          ; for I:= Size downto 1
 tri10: mov     ebx, edx        ; S1:= S2
 tri15: test    edx, edx        ; while S2#0
 	je      tri20
