@@ -133,29 +133,29 @@ setupWidgets();
 function updatePageArch() {
 	if (ret.currentArch == ret.ARCH_ARM64) {
 		document.querySelector("#arch-select-text").innerText = "Arm64";
-		document.querySelector("#menu").style.background = "rgb(23 55 81)";
+		document.querySelector("#menu").style.background = "rgb(23 55 81)"; // arm corp logo
 		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_X86) {
 		document.querySelector("#arch-select-text").innerText = "x86";
-		document.querySelector("#menu").style.background = "rgb(97 36 48)";
+		document.querySelector("#menu").style.background = "rgb(97 36 48)"; // amd logo
 		document.querySelector("#asm").classList.add("language-x86asm2");
 		document.querySelector("#x86-dropdown").style.display = "flex";
 	} else if (ret.currentArch == ret.ARCH_ARM32) {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
-		document.querySelector("#menu").style.background = "rgb(19 73 64)";
+		document.querySelector("#menu").style.background = "rgb(19 73 64)"; // acorn computer logo
 		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_ARM32_THUMB) {
 		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
-		document.querySelector("#menu").style.background = "rgb(24 91 83)";
+		document.querySelector("#menu").style.background = "rgb(24 91 83)"; // acorn computer logo
 		document.querySelector("#asm").classList.add("language-armasm2");
 	} else if (ret.currentArch == ret.ARCH_RISCV) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V";
-		document.querySelector("#menu").style.background = "rgb(170 65 18)";
+		document.querySelector("#menu").style.background = "rgb(179 148 84)"; // risc-v logo
 		document.querySelector("#asm").classList.add("language-armasm2");
 		document.querySelector("#riscv-dropdown").style.display = "flex";
 	} else if (ret.currentArch == ret.ARCH_POWERPC) {
 		document.querySelector("#arch-select-text").innerText = "PowerPC";
-		document.querySelector("#menu").style.background = "#ce4f32";
+		document.querySelector("#menu").style.background = "rgb(164 87 69)"; // powerpc logo
 		document.querySelector("#asm").classList.add("language-armasm2");
 		document.querySelector("#ppc-dropdown").style.display = "flex";
 	}
