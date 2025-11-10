@@ -72,6 +72,22 @@ button {
 	font-family: Sans-Serif;
 	font-size: 10pt;
 }
+.btn:hover {
+	background: var(--btn-hover);
+}
+.btn:active {
+	background: var(--btn-active);
+}
+
+.btn-green {
+	background: var(--green-btn);
+}
+.btn-green:hover {
+	background: var(--green-btn-hover);
+}
+.btn-green:active {
+	background: var(--green-btn-active);
+}
 
 .btn img {
 	vertical-align: middle;
@@ -101,14 +117,6 @@ button {
 	border: 2px solid var(--border);
 	border-left: none;
 	border-right: none;
-}
-
-.btn:hover {
-	background: var(--btn-hover);
-}
-
-.btn:active {
-	background: var(--btn-active);
 }
 
 .dropdown-content {
@@ -307,15 +315,9 @@ button {
 	margin-left: auto;
 }
 
-.link-bitbash {
-	background: #28533b;
-}
 .link-bitbash .btn {
 	width: 100%;
 }
-
 #x86-dropdown, #riscv-dropdown, #ppc-dropdown {
 	display: none;
-	/* font-style: italic; */
-	background: var(--special-box);
 }

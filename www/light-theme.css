@@ -13,7 +13,9 @@
     --help-box: #a1a1a1;
     --popup: #aeaeae;
     --popup-bar: #575757;
-    --special-box: #92df92;
+    --green-btn: #92df92;
+    --green-btn-hover: #4f674f;
+    --green-btn-active: #435743
 }
 
 .icon {
