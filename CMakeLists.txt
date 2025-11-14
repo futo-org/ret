@@ -150,6 +150,9 @@ add_executable(ret
 	lib/parser.c
 	lib/re.c
 	lib/unicorn.c
+
+	lib/cpp/preproc.c
+	lib/cpp/tokenizer.c
 )
 
 set(EXPORT_FUNCS _re_is_arch_supported,_re_init_globals,_re_assemble,_re_disassemble,_re_get_err_buffer,_re_get_hex_buffer,_re_get_str_buffer,_re_get_mem_buffer,_buffer_get_contents,_parser_to_buf,_re_is_unicorn_supported,_buffer_to_buffer,_buffer_get_data_length,_re_get_hex_mem_mirror_buffer,_re_emulator)
