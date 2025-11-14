@@ -84,6 +84,8 @@ enum RetOptions {
 
 	RET_BIG_ENDIAN = 1 << 12,
 	RET_LITTLE_ENDIAN = 1 << 13,
+
+	RET_RUN_C_PREPROCESSOR = 1 << 14,
 };
 
 struct RetBuffer {

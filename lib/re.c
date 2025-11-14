@@ -4,6 +4,7 @@
 #include <keystone/keystone.h>
 #include <capstone/capstone.h>
 #include "re.h"
+#include "cpp/preproc.h"
 
 static struct RetBuffer re_buf_err;
 static struct RetBuffer re_buf_hex;
@@ -128,7 +129,6 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		_cs_mode |= CS_MODE_THUMB;
 	} else if (arch == ARCH_RISCV) {
 		_cs_arch = CS_ARCH_RISCV;
-		printf("%d\n", opt & RET_BIG_ENDIAN);
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_RISCV64;
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_RISCV32;
 		if (opt & RET_RISCV_C) _cs_mode |= CS_MODE_RISCVC;
@@ -222,11 +222,33 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	unsigned char *encode = NULL;
 	size_t size = 0;
 
+	if (options & RET_RUN_C_PREPROCESSOR) {
+		re_buf_str.clear(&re_buf_str);
+		re_buf_str.append(&re_buf_str, input, 0);
+		FILE *i = fmemopen(re_buf_str.buffer, re_buf_str.offset, "r");
+
+		re_buf_mem.clear(&re_buf_mem);
+		FILE *o = fmemopen(re_buf_mem.buffer, re_buf_mem.length, "w");
+
+		struct cpp *cpp = cpp_new();
+		int ret = cpp_run(cpp, i, o, "stdin");
+		if (!ret) {
+			buffer_appendf(err_buf, "tinycpp error: %d", ret);
+			return -1;
+		}
+
+		fclose(i);
+		fclose(o);
+
+		input = re_buf_mem.buffer;
+
+		buf->clear(buf);
+		err_buf->clear(err_buf);
+	}
+
 	err = ks_asm(ks, input, base_addr, &encode, &size, &count);
 	if (err != KS_ERR_OK) {
-		char buffer[128];
-		snprintf(buffer, sizeof(buffer), "ERROR: %s", ks_strerror(ks_errno(ks)));
-		err_buf->append(err_buf, buffer, 0);
+		buffer_appendf(err_buf, "ERROR: %s", ks_strerror(ks_errno(ks)));
 		free(list.memb);
 		return -1;
 	} else if (size == 0) {
