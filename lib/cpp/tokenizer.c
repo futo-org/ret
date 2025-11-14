@@ -530,7 +530,7 @@ int tokenizer_get_flags(struct tokenizer *t) {
 }
 
 void tokenizer_init(struct tokenizer *t, FILE* in, int flags) {
-	*t = (struct tokenizer){ .input = in, .line = 1, .flags = flags, .bufsize = MAX_TOK_LEN};
+	*t = (struct tokenizer){ .input = in, .line = 1, .flags = flags, .bufsize = MAX_TOK_LEN, .err_fd = 2};
 }
 
 void tokenizer_register_marker(struct tokenizer *t, enum markertype mt, const char* marker)

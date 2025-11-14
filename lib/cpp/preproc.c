@@ -106,11 +106,11 @@ static void free_macros(struct cpp *cpp) {
 static void error_or_warning(const char *err, const char* type, struct tokenizer *t, struct token *curr) {
 	unsigned column = curr ? curr->column : t->column;
 	unsigned line  = curr ? curr->line : t->line;
-	dprintf(2, "<%s> %u:%u %s: '%s'\n", t->filename, line, column, type, err);
-	dprintf(2, "%s\n", t->buf);
+	dprintf(t->err_fd, "<%s> %u:%u %s: '%s'\n", t->filename, line, column, type, err);
+	dprintf(t->err_fd, "%s\n", t->buf);
 	for(int i = 0; i < strlen(t->buf); i++)
-		dprintf(2, "^");
-	dprintf(2, "\n");
+		dprintf(t->err_fd, "^");
+	dprintf(t->err_fd, "\n");
 }
 static void error(const char *err, struct tokenizer *t, struct token *curr) {
 	error_or_warning(err, "error", t, curr);
@@ -1193,14 +1193,16 @@ int parse_file(struct cpp *cpp, FILE *f, const char *fn, FILE *out) {
 		if(skip_conditional_block && !(newline && is_char(&curr, '#'))) continue;
 		if(is_char(&curr, '#')) {
 			if(!newline) {
-				error("stray #", &t, &curr);
-				return 0;
+				//error("stray #", &t, &curr);
+				//return 0;
+				continue;
 			}
 			int index = expect(&t, TT_IDENTIFIER, directives, &curr);
 			if(index == -1) {
 				if(skip_conditional_block) continue;
-				error("invalid preprocessing directive", &t, &curr);
-				return 0;
+				//error("invalid preprocessing directive", &t, &curr);
+				//return 0;
+				continue;
 			}
 			if(skip_conditional_block) switch(index) {
 				case 0: case 1: case 2: case 3: case 4:

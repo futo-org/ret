@@ -222,6 +222,8 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	unsigned char *encode = NULL;
 	size_t size = 0;
 
+	//options |= RET_RUN_C_PREPROCESSOR;
+
 	if (options & RET_RUN_C_PREPROCESSOR) {
 		re_buf_str.clear(&re_buf_str);
 		re_buf_str.append(&re_buf_str, input, 0);
