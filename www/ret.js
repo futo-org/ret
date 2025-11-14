@@ -75,6 +75,7 @@ const ret = {
 	RISCV_C: 1 << 11,
 	BIG_ENDIAN: 1 << 12,
 	LITTLE_ENDIAN: 1 << 13,
+	RUN_C_PREPROCESSOR: 1 << 14,
 
 	// has object with initial URL options
 	urlOptions: null,
@@ -338,6 +339,7 @@ const ret = {
 		else if (ret.bits == 16) option |= ret.BITS_16;
 		if (ret.riscvc) option |= ret.RISCV_C;
 		option |= ret.endian;
+		option |= ret.RUN_C_PREPROCESSOR;
 		return option;
 	},
 
