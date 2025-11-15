@@ -1161,9 +1161,10 @@ int parse_file(struct cpp *cpp, FILE *f, const char *fn, FILE *out) {
 	struct token curr;
 	tokenizer_init(&t, f, TF_PARSE_STRINGS);
 	tokenizer_set_filename(&t, fn);
-	tokenizer_register_marker(&t, MT_MULTILINE_COMMENT_START, "/*"); /**/
-	tokenizer_register_marker(&t, MT_MULTILINE_COMMENT_END, "*/");
-	tokenizer_register_marker(&t, MT_SINGLELINE_COMMENT_START, "//");
+	// Had issues with this in assembly..
+	//tokenizer_register_marker(&t, MT_MULTILINE_COMMENT_START, "/*"); /**/
+	//tokenizer_register_marker(&t, MT_MULTILINE_COMMENT_END, "*/");
+	//tokenizer_register_marker(&t, MT_SINGLELINE_COMMENT_START, "//");
 	int ret, newline=1, ws_count = 0;
 
 	int if_level = 0, if_level_active = 0, if_level_satisfied = 0;
