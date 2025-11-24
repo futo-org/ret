@@ -96,6 +96,7 @@ const ret = {
 	// Assembly options
 	splitBytesByInstruction: true,
 	splitBytesByFour: true,
+	useCpp: false,
 	// RISC-V options
 	riscvc: false,
 
@@ -134,6 +135,7 @@ const ret = {
 		importBool("aggressiveDisasm", "aggressiveDisasm");
 		importBool("splitBytesByInstruction", "splitBytesByInstruction");
 		importBool("splitBytesByFour", "splitBytesByFour");
+		importBool("useCpp", "useCpp");
 		ret.log("Loading...");
 	},
 	encodeURL: function(allOptions) {
@@ -152,6 +154,7 @@ const ret = {
 			if (ret.aggressiveDisasm) opt.aggressiveDisasm = "true";
 			if (ret.splitBytesByInstruction) opt.splitBytesByInstruction = "true";
 			if (ret.splitBytesByFour) opt.splitBytesByFour = "true";
+			if (ret.useCpp) opt.useCpp = "true";
 			opt.currentSyntax = String(ret.currentSyntax);
 		}
 		return window.location.origin + window.location.pathname + "?" + new URLSearchParams(opt).toString();
@@ -339,7 +342,8 @@ const ret = {
 		else if (ret.bits == 16) option |= ret.BITS_16;
 		if (ret.riscvc) option |= ret.RISCV_C;
 		option |= ret.endian;
-		option |= ret.RUN_C_PREPROCESSOR;
+		if (ret.useCpp)
+			option |= ret.RUN_C_PREPROCESSOR;
 		return option;
 	},
 

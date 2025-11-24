@@ -427,6 +427,11 @@ document.querySelector("#riscvc").onchange = function() {
 	ret.riscvc = this.checked;
 }
 
+document.querySelector("#usecpp").checked = ret.useCpp;
+document.querySelector("#usecpp").onchange = function() {
+	ret.useCpp = this.checked;
+}
+
 function fillExamples() {
 	document.querySelector("#examples-dropdown-box").innerHTML = "";
 	let examples = ret.getExamples();
