@@ -417,10 +417,10 @@ document.querySelector("#splitbyinst").onchange = function() {
 	ret.splitBytesByInstruction = this.checked;
 }
 
-document.querySelector("#usegodbolt").checked = ret.useGodboltOnAssembler;
-document.querySelector("#usegodbolt").onchange = function() {
-	ret.useGodboltOnAssembler = this.checked;
-}
+//document.querySelector("#usegodbolt").checked = ret.useGodboltOnAssembler;
+//document.querySelector("#usegodbolt").onchange = function() {
+//	ret.useGodboltOnAssembler = this.checked;
+//}
 
 document.querySelector("#riscvc").checked = ret.riscvc;
 document.querySelector("#riscvc").onchange = function() {
