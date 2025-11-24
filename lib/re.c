@@ -497,7 +497,8 @@ int main(int argc, char **argv) {
 		if (!strcmp(argv[i], "--rv64")) arch = ARCH_RISCV;
 		if (!strcmp(argv[i], "--ppc32")) {
 			arch = ARCH_POWERPC;
-			opt &= ~(RET_BITS_64); opt |= (RET_BITS_32);
+			opt &= ~(RET_BITS_64);
+			opt |= RET_BITS_32 | RET_BIG_ENDIAN;
 		}
 
 		if (!strcmp(argv[i], "--test")) return test();
