@@ -1194,6 +1194,7 @@ int parse_file(struct cpp *cpp, FILE *f, const char *fn, FILE *out) {
 		if(skip_conditional_block && !(newline && is_char(&curr, '#'))) continue;
 		if(is_char(&curr, '#')) {
 			if(!newline) {
+				emit_token(out, &curr, t.buf);
 				//error("stray #", &t, &curr);
 				//return 0;
 				continue;
@@ -1201,6 +1202,8 @@ int parse_file(struct cpp *cpp, FILE *f, const char *fn, FILE *out) {
 			int index = expect(&t, TT_IDENTIFIER, directives, &curr);
 			if(index == -1) {
 				if(skip_conditional_block) continue;
+				emit(out, "# ");
+				emit_token(out, &curr, t.buf);
 				//error("invalid preprocessing directive", &t, &curr);
 				//return 0;
 				continue;
