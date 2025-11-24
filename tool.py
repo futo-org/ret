@@ -4,7 +4,7 @@ import shutil
 import subprocess
 
 top_level_arch = "x86"
-ret_version = "v4.1"
+ret_version = "v4.2"
 
 def nice_name(arch):
     match arch:
