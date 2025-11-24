@@ -35,3 +35,4 @@ cmake --build buildcli
 - CodeJar: https://github.com/antonmedv/codejar/blob/master/LICENSE
 - Highlight.js: https://github.com/highlightjs/highlight.js/blob/main/LICENSE
 - Google Fonts icons: https://fonts.google.com/ (Apache License)
+- Tinycpp: https://github.com/rofl0r/tinycpp
