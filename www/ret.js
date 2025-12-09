@@ -192,6 +192,8 @@ const ret = {
 	mem_buf: null,
 	hex_mem_mirror_buf: null,
 
+	// get_buffer_contents oom
+
 	main: function() {
 		ret.re_init_globals = Module.cwrap('re_init_globals', 'void', []);
 		ret.re_is_arch_supported = Module.cwrap('re_is_arch_supported', 'number', []);
@@ -350,7 +352,12 @@ const ret = {
 	assemble: function(code, outBuf, errBuf) {
 		let then = Date.now();
 		let option = ret.getCodeOption();
-		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
+		let rc;
+		try {
+			rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
+		} catch(e) {
+			rc = -1;
+		}
 		let now = Date.now();
 		return [rc, now - then];
 	},

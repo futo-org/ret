@@ -200,10 +200,14 @@ if (editor.toString() == "") {
 }
 
 function setBytes(hex_buf) {
-	if (ret.baseOutputOption == ret.OUTPUT_AS_C_ARRAY) {
-		document.querySelector("#bytes").value = "{" + ret.get_buffer_contents(hex_buf) + "}";
-	} else {
-		document.querySelector("#bytes").value = ret.get_buffer_contents(hex_buf);
+	try {
+		if (ret.baseOutputOption == ret.OUTPUT_AS_C_ARRAY) {
+			document.querySelector("#bytes").value = "{" + ret.get_buffer_contents(hex_buf) + "}";
+		} else {
+			document.querySelector("#bytes").value = ret.get_buffer_contents(hex_buf);
+		}
+	} catch(e) {
+		ret.log(e.toString());
 	}
 }
 
@@ -233,8 +237,12 @@ function fullAssembler(code, outBuf, errBuf, doneCallback) {
 			}
 		})();
 	} else {
-		let t = ret.assemble(code, outBuf, errBuf);
-		doneCallback(t[0], t[1]);
+		try {
+			let t = ret.assemble(code, outBuf, errBuf);
+			doneCallback(t[0], t[1]);
+		} catch(e) {
+			ret.log(e.toString());
+		}
 	}
 }
 
@@ -256,13 +264,17 @@ document.querySelector("#assemble").onclick = function() {
 document.querySelector("#disassemble").onclick = function() {
 	if (ret.hex_buf == null || ret.err_buf == null) throw "NULL";	
 	ret.clearLog();
-	let obj = ret.disassemble(document.querySelector("#bytes").value, ret.str_buf, ret.err_buf);
-	let rc = obj[0];
-	if (rc != 0) {
-		ret.log(ret.get_buffer_contents(ret.err_buf));
-	} else {
-		editor.updateCode(ret.get_buffer_contents(ret.str_buf));
-		ret.log("Disassembled in " + String(obj[1]) + "us");
+	try {
+		let obj = ret.disassemble(document.querySelector("#bytes").value, ret.str_buf, ret.err_buf);
+		let rc = obj[0];
+		if (rc != 0) {
+			ret.log(ret.get_buffer_contents(ret.err_buf));
+		} else {
+			editor.updateCode(ret.get_buffer_contents(ret.str_buf));
+			ret.log("Disassembled in " + String(obj[1]) + "us");
+		}
+	} catch(e) {
+		ret.log(e.toString());
 	}
 }
 

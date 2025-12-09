@@ -184,6 +184,7 @@ static void handler(void *arg, unsigned int of, unsigned int size) {
 	if (list->n_filled >= list->length) {
 		list->length += 1000;
 		list->memb = realloc(list->memb, sizeof(struct BreakList) + (sizeof(struct BreakListMemb) * list->length));
+		if (list->memb == NULL) abort();
 	}
 	//printf("%u %u\n", of, size);
 	list->memb[list->n_filled].of = of;
@@ -208,6 +209,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 
 	struct BreakList list;
 	list.memb = malloc(sizeof(struct BreakListMemb) * 100);
+	if (list.memb == NULL) return -1;
 	list.length = 100;
 	list.n_filled = 0;
 	ks_set_instruction_stream_handler(ks, handler, &list);
