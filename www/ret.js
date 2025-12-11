@@ -352,12 +352,7 @@ const ret = {
 	assemble: function(code, outBuf, errBuf) {
 		let then = Date.now();
 		let option = ret.getCodeOption();
-		let rc;
-		try {
-			rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
-		} catch(e) {
-			rc = -1;
-		}
+		let rc = ret.re_assemble(ret.currentArch, ret.currentBaseOffset, option, outBuf, errBuf, code, ret.getOptionOption());
 		let now = Date.now();
 		return [rc, now - then];
 	},
