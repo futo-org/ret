@@ -121,7 +121,7 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_32;
 		else if (opt & RET_BITS_16) _cs_mode |= CS_MODE_16;
 	} else if (arch == ARCH_ARM64) {
-		_cs_arch = CS_ARCH_AARCH64;
+		_cs_arch = CS_ARCH_ARM64;
 	} else if (arch == ARCH_ARM32) {
 		_cs_arch = CS_ARCH_ARM;
 	} else if (arch == ARCH_ARM32_THUMB) {
@@ -262,8 +262,6 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 		return -1;
 	}
 
-	int rc = 0;
-
 	if (output_options & OUTPUT_SPLIT_BY_INSTRUCTION) {
  		const uint8_t *bytecode = (const uint8_t *)encode;
 		unsigned int last_of = 0;
@@ -294,7 +292,7 @@ int re_assemble(enum Arch arch, unsigned int base_addr, int options, struct RetB
 	ks_free(encode);
 	free(list.memb);
 
-	return rc;
+	return 0;
 }
 
 int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct RetBuffer *buf, struct RetBuffer *err_buf, const char *input, int parse_options, int output_options) {
@@ -326,7 +324,6 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct R
 		if ((arch == ARCH_ARM64 || arch == ARCH_ARM32) && (address & 0b11) != 0) {
 			is_valid_offset = 0;
 		}
-		
 		if (!end_of_valid && is_valid_offset && cs_disasm_iter(cs, &bytecode, &size, &address, inst)) {
 			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", inst->mnemonic, inst->op_str);
 			buf->append(buf, inst_buf, 0);
@@ -493,6 +490,10 @@ int main(int argc, char **argv) {
 	int opt = RET_BITS_64 | RET_SYNTAX_INTEL;
 	for (int i = 0; i < argc; i++) {
 		if (!strcmp(argv[i], "--x86")) arch = ARCH_X86;
+		if (!strcmp(argv[i], "--x86_16")) {
+			arch = ARCH_X86;
+			opt &= ~(RET_BITS_64); opt |= RET_BITS_16;
+		}
 		if (!strcmp(argv[i], "--arm")) arch = ARCH_ARM32;
 		if (!strcmp(argv[i], "--thumb")) arch = ARCH_ARM32_THUMB;
 		if (!strcmp(argv[i], "--arm64")) arch = ARCH_ARM64;
