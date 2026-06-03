@@ -318,6 +318,6 @@ button {
 .link-bitbash .btn {
 	width: 100%;
 }
-#x86-dropdown, #riscv-dropdown, #ppc-dropdown {
+.archdep-custom-dropdown {
 	display: none;
 }

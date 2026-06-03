@@ -55,7 +55,9 @@ int re_is_unicorn_supported(void) {
 
 static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_engine **ks) {
 	ks_arch _ks_arch;
-	ks_mode _ks_mode = KS_MODE_LITTLE_ENDIAN;
+	ks_mode _ks_mode;
+	if (opt & RET_BIG_ENDIAN) _ks_mode = KS_MODE_BIG_ENDIAN;
+	else _ks_mode = KS_MODE_LITTLE_ENDIAN;
 	if (arch == ARCH_X86) {
 		_ks_arch = KS_ARCH_X86;
 		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_64;
@@ -76,7 +78,6 @@ static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_eng
 		if (opt & RET_RISCV_C) _ks_mode |= KS_MODE_RISCVC;
 	} else if (arch == ARCH_POWERPC) {
 		_ks_arch = KS_ARCH_PPC;
-		if (opt & RET_BIG_ENDIAN) _ks_mode = KS_MODE_BIG_ENDIAN; else _ks_mode = KS_MODE_LITTLE_ENDIAN;
 		_ks_mode |= KS_MODE_R_REG_SYNTAX;
 		if (opt & RET_BITS_64) _ks_mode |= KS_MODE_PPC64;
 		else if (opt & RET_BITS_32) _ks_mode |= KS_MODE_PPC32;
