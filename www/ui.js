@@ -111,6 +111,7 @@ function setupWidgets() {
 	setupDropDown(document.querySelector("#x86-dropdown"), document.querySelector("#x86-dropdown-box"));
 	setupDropDown(document.querySelector("#riscv-dropdown"), document.querySelector("#riscv-dropdown-box"));
 	setupDropDown(document.querySelector("#ppc-dropdown"), document.querySelector("#ppc-dropdown-box"));
+	setupDropDown(document.querySelector("#arm-dropdown"), document.querySelector("#arm-dropdown-box"));
 	setupDropDown(document.querySelector("#examples-dropdown"), document.querySelector("#examples-dropdown-box"));
 	setupDropDown(document.querySelector("#help-dropdown"), document.querySelector("#help-dropdown-box"));
 	setupDropDown(document.querySelector("#arch-select"), document.querySelector("#arch-dropdown-box"), false, true);
@@ -144,10 +145,12 @@ function updatePageArch() {
 		document.querySelector("#arch-select-text").innerText = "Arm32";
 		document.querySelector("#menu").style.background = "rgb(19 73 64)"; // acorn computer logo
 		document.querySelector("#asm").classList.add("language-armasm2");
+		document.querySelector("#arm-dropdown").style.display = "flex";
 	} else if (ret.currentArch == ret.ARCH_ARM32_THUMB) {
 		document.querySelector("#arch-select-text").innerText = "Arm32 Thumb";
 		document.querySelector("#menu").style.background = "rgb(24 91 83)"; // acorn computer logo
 		document.querySelector("#asm").classList.add("language-armasm2");
+		document.querySelector("#arm-dropdown").style.display = "flex"; // Thumb is just ARM with less instructions.
 	} else if (ret.currentArch == ret.ARCH_RISCV) {
 		document.querySelector("#arch-select-text").innerText = "RISC-V";
 		document.querySelector("#menu").style.background = "rgb(179 148 84)"; // risc-v logo
@@ -413,6 +416,12 @@ setupRadioFromMap("ppc_bits", ret.bits, [
 	ret.bits = value;
 });
 setupRadioFromMap("ppc_endian", ret.endian, [
+	ret.BIG_ENDIAN,
+	ret.LITTLE_ENDIAN,
+], function(value) {
+	ret.endian = value;
+});
+setupRadioFromMap("arm_endian", ret.endian, [
 	ret.BIG_ENDIAN,
 	ret.LITTLE_ENDIAN,
 ], function(value) {

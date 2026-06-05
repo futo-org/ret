@@ -210,7 +210,7 @@ button {
 	border: none;
 	padding: 5px;
 	margin: 5px;
-	width: 50px;
+	width: 110px;
 	text-align: center;
 }
 
@@ -318,6 +318,6 @@ button {
 .link-bitbash .btn {
 	width: 100%;
 }
-#x86-dropdown, #riscv-dropdown, #ppc-dropdown {
+.archdep-custom-dropdown {
 	display: none;
 }

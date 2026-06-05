@@ -78,9 +78,20 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	log->clear(log);
 	uc_engine *uc;
 	uc_err err;
+	// By checking against opt instead of _uc_mode we can work around the fact that some UC_* flags are zero.
+	#define CHECK_NOT_SUPPORTED(flag, name) if (opt & (flag)) { \
+		buffer_appendf(log, name " is not supported in Unicorn Engine\n"); \
+		return -1; \
+	}
 
 	uc_arch _uc_arch = 0;
 	uc_mode _uc_mode = 0;
+
+	if (opt & RET_BIG_ENDIAN)
+		_uc_mode = UC_MODE_BIG_ENDIAN;
+	else
+		_uc_mode = UC_MODE_LITTLE_ENDIAN;
+
 	if (arch == ARCH_X86) {
 		_uc_arch = UC_ARCH_X86;
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_64;
@@ -93,9 +104,11 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	} else if (arch == ARCH_ARM32) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_ARM;
+		CHECK_NOT_SUPPORTED(RET_BIG_ENDIAN, "Big Endian ARM32");
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_THUMB;
+		CHECK_NOT_SUPPORTED(RET_BIG_ENDIAN, "Big Endian ARM32");
 	} else if (arch == ARCH_RISCV) {
 		_uc_arch = UC_ARCH_RISCV;
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_RISCV64;
@@ -103,19 +116,15 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 		else _uc_mode |= UC_MODE_RISCV64;
 	} else if (arch == ARCH_POWERPC) {
 		_uc_arch = UC_ARCH_PPC;
-		if (opt & RET_BIG_ENDIAN) _uc_mode = UC_MODE_BIG_ENDIAN; else _uc_mode = UC_MODE_LITTLE_ENDIAN;
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_PPC64;
 		else if (opt & RET_BITS_32) _uc_mode |= UC_MODE_PPC32;
 		else _uc_mode |= UC_MODE_PPC64;
-		if (!(_uc_mode & UC_MODE_BIG_ENDIAN)) {
-			buffer_appendf(log, "Little Endian PowerPC is not supported in Unicorn Engine\n");
-			return -1;
-		}
+		CHECK_NOT_SUPPORTED(RET_LITTLE_ENDIAN, "Little Endian PowerPC")
 	} else {
 		buffer_appendf(log, "Unknown architecture\n");
 		return -1;
 	}
-
+#undef CHECK_NOT_SUPPORTED
 	struct EmulatorState state = {
 		.arch = _uc_arch,
 		.log = log,
