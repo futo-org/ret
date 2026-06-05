@@ -115,7 +115,9 @@ static int re_open_ks(enum Arch arch, int opt, struct RetBuffer *err_buf, ks_eng
 
 static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *cs) {
 	cs_arch _cs_arch = 0;
-	cs_mode _cs_mode = CS_MODE_LITTLE_ENDIAN;
+	cs_mode _cs_mode;
+	if (opt & RET_BIG_ENDIAN) _cs_mode = CS_MODE_BIG_ENDIAN;
+	else _cs_mode = CS_MODE_LITTLE_ENDIAN;
 	if (arch == ARCH_X86) {
 		_cs_arch = CS_ARCH_X86;
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_64;
@@ -135,7 +137,6 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		if (opt & RET_RISCV_C) _cs_mode |= CS_MODE_RISCVC;
 	} else if (arch == ARCH_POWERPC) {
 		_cs_arch = CS_ARCH_PPC;
-		if (opt & RET_BIG_ENDIAN) _cs_mode = CS_MODE_BIG_ENDIAN; else _cs_mode = CS_MODE_LITTLE_ENDIAN;		
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_64;
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_32;
 	} else {
