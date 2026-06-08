@@ -30,9 +30,9 @@ struct EmulatorState {
 void pl011_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t value, void *user_data) {
 	struct EmulatorState *state = (struct EmulatorState *)user_data;
 
-	if (state->mode & UC_MODE_BIG_ENDIAN) {
+	if (state->mode & UC_MODE_BIG_ENDIAN && size > 1) {
 		if (state->arch & UC_ARCH_ARM64) value = bswap_64(value);
-		else value = bswap_32(value);
+		else if (state->arch == UC_ARCH_ARM) value = bswap_32(value);
 	}
 
 	switch (offset) {
