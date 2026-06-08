@@ -1,4 +1,7 @@
 CMAKE := /usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake
+ifeq ("$(wildcard $(CMAKE))","")
+  CMAKE := /usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake
+endif
 
 build_arm64:
 	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON -DUSE_UNICORN_WASM=ON
@@ -42,7 +45,7 @@ bug1:
 	cmake --build buildcli && buildcli/ret --rv64 --asm examples/rv64-hello.S
 
 pages-deploy:
-	git tag -f 0.4.1 && git push -f origin 0.4.1
+	git tag -f 0.4.3-rc && git push -f origin 0.4.3-rc
 
 wrangler-deploy:
 	npx wrangler pages deploy --commit-dirty=true --project-name ret ./deploy
