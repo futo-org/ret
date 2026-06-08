@@ -124,7 +124,7 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 
 #if UC_API_MAJOR == 1
 	if ((_uc_mode & UC_MODE_BIG_ENDIAN) && (_uc_arch == UC_ARCH_ARM)) {
-		buffer_appendf(log, "Big endian on arm32 has issues in unicorn v1\n");
+		buffer_appendf(log, "Big endian on arm32 is not supported in unicorn v1\n");
 		return -1;
 	}
 #endif
