@@ -107,10 +107,6 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_THUMB;
-		if (_uc_mode & UC_MODE_BIG_ENDIAN) {
-			buffer_appendf(log, "Big endian on arm32thumb has issues in unicorn\n");
-			return -1;
-		}
 	} else if (arch == ARCH_RISCV) {
 		_uc_arch = UC_ARCH_RISCV;
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_RISCV64;
@@ -125,6 +121,13 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 		buffer_appendf(log, "Unknown architecture\n");
 		return -1;
 	}
+
+#if UC_API_MAJOR == 1
+	if ((_uc_mode & UC_MODE_BIG_ENDIAN) && (_uc_arch == UC_ARCH_ARM)) {
+		buffer_appendf(log, "Big endian on arm32 has issues in unicorn v1\n");
+		return -1;
+	}
+#endif
 
 	struct EmulatorState state = {
 		.arch = _uc_arch,
