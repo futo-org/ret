@@ -1,3 +1,4 @@
+#include <byteswap.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <unicorn/unicorn.h>
@@ -21,18 +22,22 @@ UNICORN_EXPORT int uc_hit_execution_limit(uc_engine *uc) {
 
 struct EmulatorState {
 	uc_arch arch;
+	uc_mode mode;
 	struct RetBuffer *log;
 	char last_char;
 };
 
 void pl011_mmio_writes(uc_engine *uc, uint64_t offset, unsigned size, uint64_t value, void *user_data) {
 	struct EmulatorState *state = (struct EmulatorState *)user_data;
+
+	if (state->mode & UC_MODE_BIG_ENDIAN) {
+		if (state->arch & UC_ARCH_ARM64) value = bswap_64(value);
+		else value = bswap_32(value);
+	}
+
 	switch (offset) {
 	case 0x0: {
-		char str[2] = {'\0', '\0'};
-		str[0] = (char)value;
-		state->last_char = (char)value;
-		state->log->append(state->log, str, 0);
+		buffer_appendf(state->log, "%c", (char)value);
 	} return;
 	}
 }
@@ -78,11 +83,6 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	log->clear(log);
 	uc_engine *uc;
 	uc_err err;
-	// By checking against opt instead of _uc_mode we can work around the fact that some UC_* flags are zero.
-	#define CHECK_NOT_SUPPORTED(flag, name) if (opt & (flag)) { \
-		buffer_appendf(log, name " is not supported in Unicorn Engine\n"); \
-		return -1; \
-	}
 
 	uc_arch _uc_arch = 0;
 	uc_mode _uc_mode = 0;
@@ -104,11 +104,13 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 	} else if (arch == ARCH_ARM32) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_ARM;
-		CHECK_NOT_SUPPORTED(RET_BIG_ENDIAN, "Big Endian ARM32");
 	} else if (arch == ARCH_ARM32_THUMB) {
 		_uc_arch = UC_ARCH_ARM;
 		_uc_mode |= UC_MODE_THUMB;
-		CHECK_NOT_SUPPORTED(RET_BIG_ENDIAN, "Big Endian ARM32");
+		if (_uc_mode & UC_MODE_BIG_ENDIAN) {
+			buffer_appendf(log, "Big endian on arm32thumb has issues in unicorn\n");
+			return -1;
+		}
 	} else if (arch == ARCH_RISCV) {
 		_uc_arch = UC_ARCH_RISCV;
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_RISCV64;
@@ -119,14 +121,14 @@ int re_emulator(enum Arch arch, int opt, unsigned int base_addr, struct RetBuffe
 		if (opt & RET_BITS_64) _uc_mode |= UC_MODE_PPC64;
 		else if (opt & RET_BITS_32) _uc_mode |= UC_MODE_PPC32;
 		else _uc_mode |= UC_MODE_PPC64;
-		CHECK_NOT_SUPPORTED(RET_LITTLE_ENDIAN, "Little Endian PowerPC")
 	} else {
 		buffer_appendf(log, "Unknown architecture\n");
 		return -1;
 	}
-#undef CHECK_NOT_SUPPORTED
+
 	struct EmulatorState state = {
 		.arch = _uc_arch,
+		.mode = _uc_mode,
 		.log = log,
 		.last_char = '\n',
 	};
