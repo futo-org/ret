@@ -8,6 +8,6 @@ addi a0, a0, 1
 bne a1, zero, top
 
 j skip
-string: .string "Hello World"
+string: .string "Hello World\n"
 .align 1
 skip:

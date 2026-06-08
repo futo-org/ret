@@ -116,6 +116,7 @@ function addExample(name, arch, data) {
     add("Hello World", "rv", "rv-hello.S")
     add("Registers", "rv", "rv-regs.S")
     add("Functions", "rv", "rv-func.S")
+    add("Sierpinski", "rv", "rv-sierpinski.S")
 
     add("Hello World", "arm32", "arm32-hello.S")
     add("Registers", "arm32", "arm32-regs.S")
