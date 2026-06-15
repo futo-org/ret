@@ -9,7 +9,7 @@ deploy_to_cloudflare_test:
   script:
     - |
       git submodule update --init --recursive --depth 1
-      make config_all -j`nproc`
+      make CMAKE=/root/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake config_all -j`nproc`
       make build_all
       python3 tool.py --deploy
       echo "google-site-verification: google38b8ae97460b2987.html" > deploy/google38b8ae97460b2987.html
