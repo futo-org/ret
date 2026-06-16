@@ -124,7 +124,7 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_32;
 		else if (opt & RET_BITS_16) _cs_mode |= CS_MODE_16;
 	} else if (arch == ARCH_ARM64) {
-		_cs_arch = CS_ARCH_ARM64;
+		_cs_arch = CS_ARCH_AARCH64;
 	} else if (arch == ARCH_ARM32) {
 		_cs_arch = CS_ARCH_ARM;
 	} else if (arch == ARCH_ARM32_THUMB) {
@@ -134,7 +134,7 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 		_cs_arch = CS_ARCH_RISCV;
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_RISCV64;
 		else if (opt & RET_BITS_32) _cs_mode |= CS_MODE_RISCV32;
-		if (opt & RET_RISCV_C) _cs_mode |= CS_MODE_RISCVC;
+		if (opt & RET_RISCV_C) _cs_mode |= CS_MODE_RISCV_C;
 	} else if (arch == ARCH_POWERPC) {
 		_cs_arch = CS_ARCH_PPC;
 		if (opt & RET_BITS_64) _cs_mode |= CS_MODE_64;
