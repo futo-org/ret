@@ -45,7 +45,7 @@ bug1:
 	cmake --build buildcli && buildcli/ret --rv64 --asm examples/rv64-hello.S
 
 pages-deploy:
-	git tag -f 0.4.3-rc && git push -f origin 0.4.3-rc
+	git tag -f 0.4.3 && git push -f origin 0.4.3
 
 wrangler-deploy:
 	npx wrangler pages deploy --commit-dirty=true --project-name ret ./deploy
