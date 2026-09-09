@@ -164,6 +164,9 @@ static int re_open_cs(enum Arch arch, int opt, struct RetBuffer *err_buf, csh *c
 			cs_option(*cs, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL);
 		}
 	}
+
+	cs_option(*cs, CS_OPT_DETAIL, CS_OPT_ON);
+
 	return 0;
 }
 
@@ -327,11 +330,31 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct R
 			is_valid_offset = 0;
 		}
 		if (!end_of_valid && is_valid_offset && cs_disasm_iter(cs, &bytecode, &size, &address, inst)) {
-			snprintf(inst_buf, sizeof(inst_buf), "%s %s\n", inst->mnemonic, inst->op_str);
+			char inst_prefix[32] = {0};
+			if (arch == ARCH_X86) {
+				uint8_t *prefix = inst->detail->x86.prefix;
+				if (inst->detail->x86.rex) strcat(inst_prefix, "rex64 ");
+				// TODO: Support outputting prefixes
+				// This would depend on asm syntax and also mnemonic (nop can be prefixed, but assemblers don't support it)
+				// Right now just spit out bytes if a prefix is used
+				if (prefix[0] != 0 || prefix[1] != 0 || prefix[2] != 0 || prefix[3] != 0) {
+					const uint8_t *old_bytecode = bytecode - inst->size;
+					for (int i = 0; i < inst->size; i++) {
+						if (arch == ARCH_X86 && (options & RET_SYNTAX_NASM || options & RET_SYNTAX_MASM)) {
+							snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", old_bytecode[i]);
+						} else {
+							snprintf(inst_buf, sizeof(inst_buf), ".byte 0x%02x\n", old_bytecode[i]);
+						}
+						buf->append(buf, inst_buf, 0);
+					}
+					continue;
+				}
+			}
+
+			snprintf(inst_buf, sizeof(inst_buf), "%s%s %s\n", inst_prefix, inst->mnemonic, inst->op_str);
 			buf->append(buf, inst_buf, 0);
 		} else {
-			if (!(options & RET_AGGRESSIVE_DISASM))
-				end_of_valid = 1;
+			if (!(options & RET_AGGRESSIVE_DISASM)) end_of_valid = 1;
 			if (arch == ARCH_X86 && (options & RET_SYNTAX_NASM || options & RET_SYNTAX_MASM)) {
 				snprintf(inst_buf, sizeof(inst_buf), "db 0x%02x\n", *bytecode);
 			} else {
