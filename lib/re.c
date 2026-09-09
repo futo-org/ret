@@ -337,7 +337,15 @@ int re_disassemble(enum Arch arch, unsigned int base_addr, int options, struct R
 				// TODO: Support outputting prefixes
 				// This would depend on asm syntax and also mnemonic (nop can be prefixed, but assemblers don't support it)
 				// Right now just spit out bytes if a prefix is used
-				if (prefix[0] != 0 || prefix[1] != 0 || prefix[2] != 0 || prefix[3] != 0) {
+
+				// From x86.h:
+				/// prefix[0] indicates REP/REPNE/LOCK prefix (See X86_PREFIX_REP/REPNE/LOCK above)
+				/// prefix[1] indicates segment override (irrelevant for x86_64):
+				/// See X86_PREFIX_CS/SS/DS/ES/FS/GS above.
+				/// prefix[2] indicates operand-size override (X86_PREFIX_OPSIZE)
+				/// prefix[3] indicates address-size override (X86_PREFIX_ADDRSIZE)
+
+				if (prefix[0] != 0 || prefix[1] != 0) {
 					const uint8_t *old_bytecode = bytecode - inst->size;
 					for (int i = 0; i < inst->size; i++) {
 						if (arch == ARCH_X86 && (options & RET_SYNTAX_NASM || options & RET_SYNTAX_MASM)) {
