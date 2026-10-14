@@ -2,9 +2,13 @@ import argparse
 import os
 import shutil
 import subprocess
+import random
+import string
+import re
 
 top_level_arch = "x86"
 ret_version = "v4.3"
+cache_key = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
 
 def nice_name(arch):
     match arch:
@@ -37,7 +41,9 @@ def pphtml(src_html, arch, top_level):
             return "../"
         # link to other from not top level
         return "../" + link_to + "/"
-    
+
+    data = re.sub(r'([a-zA-Z0-9_-]+)\.js', rf'\1-{cache_key}.js', data)
+    data = data.replace("ret.wasm", rf"ret-{cache_key}.wasm")
     data = data.replace("{{RET_VERSION}}", ret_version)
     data = data.replace("{{TOP_LEVEL}}", "." if top_level else "..")
     data = data.replace("{{CANONICAL_URL}}", "https://ret.futo.tech/" if top_level else "https://ret.futo.tech/" + arch + "/")
@@ -72,7 +78,11 @@ def deploy_target(arch):
 
     os.makedirs(build_dir, exist_ok=True)
 
-    shutil.copyfile(f"build_{arch}/ret.js", os.path.join(build_dir, "ret.js"))
+    path = os.path.join(build_dir, f"ret-{cache_key}.js")
+    shutil.copyfile(f"build_{arch}/ret.js", path)
+    text = open(path, encoding="utf-8").read().replace("ret.wasm", f"ret-{cache_key}.wasm")
+    open(path, "w", encoding="utf-8").write(text)
+    
     shutil.copyfile(f"build_{arch}/ret.wasm", os.path.join(build_dir, "ret.wasm"))
 
     with open(os.path.join(base_dst, "index.html"), "w") as f:
@@ -88,6 +98,13 @@ def deploy():
     deploy_target("arm32")
     deploy_target("riscv")
     deploy_target("ppc")
+
+    for root, _, files in os.walk("deploy", topdown=False):
+        for f in files:
+            if f.endswith((".js", ".wasm")) and f"-{cache_key}" not in f:
+                base, ext = os.path.splitext(f)
+                new_f = f"{base}-{cache_key}{ext}"
+                os.rename(os.path.join(root, f), os.path.join(root, new_f))
 
 def examples():
     out = open("www/examples.js", "w")
@@ -180,6 +197,7 @@ def serve():
             root = os.path.abspath("www")
             build = os.path.abspath("build")
             path = urlparse(path).path
+            path = re.sub(rf'([a-zA-Z0-9_/_-]+)-{cache_key}\.js', r'\1.js', path)
             for p in ("/arm64", "/arm32", "/x86", "/riscv", "/ppc"):
                 if path.startswith(p + "/build"):
                     return os.path.join(build, path.removeprefix(p + "/build/"))
