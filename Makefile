@@ -4,13 +4,13 @@ ifeq ("$(wildcard $(CMAKE))","")
 endif
 
 build_arm64:
-	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON -DUSE_UNICORN_WASM=ON
+	cmake -G Ninja -B build_arm64 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM64=ON -DUSE_UNICORN_WASM=OFF
 
 build_arm32:
-	cmake -G Ninja -B build_arm32 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM32=ON -DUSE_UNICORN_WASM=ON
+	cmake -G Ninja -B build_arm32 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_ARM32=ON -DUSE_UNICORN_WASM=OFF
 
 build_x86:
-	cmake -G Ninja -B build_x86 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_X86=ON -DUSE_UNICORN_WASM=ON
+	cmake -G Ninja -B build_x86 -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_X86=ON -DUSE_UNICORN_WASM=OFF
 
 build_riscv:
 	cmake -G Ninja -B build_riscv -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DCMAKE_BUILD_TYPE=Release -DSUPPORT_RISCV=ON
@@ -34,6 +34,10 @@ clean:
 .PHONY: build_arm64 build_arm32 build_x86 build_riscv config_all build_all clean deploy examples pages-deploy wrangler-deploy build_ppc
 
 # --- Daniel's targets ---
+
+static_build:
+	cmake -G Ninja -B build_static -DSUPPORT_ALL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static"
+	cmake -G Ninja -B build_static_arm64 -DSUPPORT_ALL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static"
 
 debug_build:
 	cmake -G Ninja -B build -DCMAKE_TOOLCHAIN_FILE=$(CMAKE) -DSUPPORT_ALL=ON
